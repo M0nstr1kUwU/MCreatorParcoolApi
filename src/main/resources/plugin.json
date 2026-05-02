@@ -1,14 +1,15 @@
 {
-  "id": "demo_plugin",
+  "id": "parcool_api",
   "supportedversions": [
-    202600199999,
-    2026001
+    20253999,
+    2025300
   ],
-  "weight": 0,
+  "weight": 1,
   "info": {
-    "name": "MCreator demo plugin",
+    "name": "Parcool API",
     "version": "1.0",
-    "description": "Demo plugin to demonstrate a typical plugin structure",
-    "author": "Pylo"
+    "description": "Test plugin for Parcool API",
+    "dependencies": [],
+    "author": "M0nstr1k"
   }
 }
