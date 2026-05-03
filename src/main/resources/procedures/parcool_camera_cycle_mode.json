@@ -1,0 +1,14 @@
+{
+  "type": "parcool_camera_cycle_mode",
+  "message0": "Cycle ParCool camera mode",
+  "args0": [],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 220,
+  "tooltip": "Cycles between first person, third person back, and third person front.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "camera"
+  }
+}

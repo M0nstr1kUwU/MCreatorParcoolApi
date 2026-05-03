@@ -1,0 +1,14 @@
+{
+  "type": "parcool_camera_set_third_person_front",
+  "message0": "Set ParCool camera mode to third person front",
+  "args0": [],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 220,
+  "tooltip": "Sets the local player's camera mode to third person front.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "camera"
+  }
+}

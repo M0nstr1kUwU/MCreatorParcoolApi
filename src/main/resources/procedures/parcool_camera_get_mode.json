@@ -1,0 +1,13 @@
+{
+  "type": "parcool_camera_get_mode",
+  "message0": "ParCool camera mode",
+  "args0": [],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 220,
+  "tooltip": "1 = first person, 2 = third person back, 3 = third person front.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "camera"
+  }
+}
