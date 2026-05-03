@@ -1,6 +1,6 @@
 {
   "type": "parcool_camera_set_third_person_front",
-  "message0": "Set ParCool camera mode to third person front",
+  "message0": "Set camera mode to third person front",
   "args0": [],
   "inputsInline": true,
   "previousStatement": null,

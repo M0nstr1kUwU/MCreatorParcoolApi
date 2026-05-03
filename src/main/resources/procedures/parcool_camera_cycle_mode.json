@@ -1,6 +1,6 @@
 {
   "type": "parcool_camera_cycle_mode",
-  "message0": "Cycle ParCool camera mode",
+  "message0": "Cycle camera mode",
   "args0": [],
   "inputsInline": true,
   "previousStatement": null,

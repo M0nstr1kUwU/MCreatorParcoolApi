@@ -1,6 +1,6 @@
 {
   "type": "parcool_camera_set_first_person",
-  "message0": "Set ParCool camera mode to first person",
+  "message0": "Set camera mode to first person",
   "args0": [],
   "inputsInline": true,
   "previousStatement": null,

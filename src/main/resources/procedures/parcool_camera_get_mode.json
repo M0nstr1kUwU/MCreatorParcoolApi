@@ -1,6 +1,6 @@
 {
   "type": "parcool_camera_get_mode",
-  "message0": "ParCool camera mode",
+  "message0": "Camera mode",
   "args0": [],
   "inputsInline": true,
   "output": "Number",
