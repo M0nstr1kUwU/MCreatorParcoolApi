@@ -19,11 +19,11 @@
 - stop sprinting of %1 — остановить спринт сущности.
 
 ### Camera
-- ParCool camera mode — получить активный режим камеры: 1 = first person, 2 = third person back, 3 = third person front.
-- Cycle ParCool camera mode — переключить режим камеры по кругу.
-- Set ParCool camera mode to first person — установить вид от первого лица.
-- Set ParCool camera mode to third person back — установить вид от третьего лица сзади.
-- Set ParCool camera mode to third person front — установить вид от третьего лица спереди.
+- Camera mode — получить активный режим камеры: 1 = first person, 2 = third person back, 3 = third person front.
+- Cycle camera mode — переключить режим камеры по кругу.
+- Set camera mode to first person — установить вид от первого лица.
+- Set camera mode to third person back — установить вид от третьего лица сзади.
+- Set camera mode to third person front — установить вид от третьего лица спереди.
 
 ## Примечания
 - Блоки камеры работают только на клиенте.
