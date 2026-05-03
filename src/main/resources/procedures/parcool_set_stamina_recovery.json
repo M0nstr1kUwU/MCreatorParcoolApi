@@ -1,0 +1,17 @@
+{
+  "args0": [
+    { "type": "input_value", "name": "entity", "check": "Entity" },
+    { "type": "input_value", "name": "value", "check": "Number" }
+  ],
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 180,
+  "mcreator": {
+    "toolbox_id": "parcool",
+    "required_apis": ["parcool"],
+    "inputs": ["entity", "value"],
+    "dependencies": [
+      { "name": "entity", "type": "entity" }
+    ]
+  }
+}

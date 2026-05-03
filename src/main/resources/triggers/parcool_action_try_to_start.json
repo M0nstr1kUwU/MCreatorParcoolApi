@@ -1,0 +1,9 @@
+{
+  "id": "parcool_action_try_to_start",
+  "name": "On ParCool action try to start",
+  "dependencies": [
+    { "name": "entity", "type": "entity" }
+  ],
+  "fields": [],
+  "colour": 195
+}

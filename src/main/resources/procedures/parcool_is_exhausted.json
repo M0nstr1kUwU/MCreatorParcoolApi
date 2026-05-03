@@ -1,0 +1,16 @@
+{
+  "args0": [
+    { "type": "input_value", "name": "entity", "check": "Entity" }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 180,
+  "mcreator": {
+    "toolbox_id": "parcool",
+    "required_apis": ["parcool"],
+    "inputs": ["entity"],
+    "dependencies": [
+      { "name": "entity", "type": "entity" }
+    ]
+  }
+}

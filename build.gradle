@@ -2,6 +2,10 @@ plugins {
     id "java"
 }
 
+ext {
+    mcreator_path = "C:/Program Files/Pylo/MCreator_2025-3"
+}
+
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 tasks.jar {
@@ -15,21 +19,9 @@ tasks.register('runMCreatorWithPlugin', JavaExec) {
 
     jvmArgs '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
 
-    classpath = project(':MCreator').sourceSets.main.runtimeClasspath
+    classpath = fileTree(dir: project.ext.mcreator_path + "/lib", include: ["*.jar"])
 
-    main = 'net.mcreator.Launcher'
+    mainClass = 'net.mcreator.Launcher'
 
-    workingDir = mcreator_path
-}
-
-subprojects { subproject ->
-    subproject.plugins.withType(JavaPlugin) {
-        test {
-            dependsOn rootProject.jar
-
-            environment("MCREATOR_PLUGINS_FOLDER", new File(rootProject.projectDir, "/build/libs"))
-
-            workingDir = mcreator_path
-        }
-    }
+    workingDir = file(project.ext.mcreator_path)
 }

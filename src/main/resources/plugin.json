@@ -1,15 +1,10 @@
 {
   "id": "parcool_api",
-  "supportedversions": [
-    20253999,
-    2025300
-  ],
-  "weight": 1,
+  "supportedversions": [2025003],
   "info": {
-    "name": "Parcool API",
+    "name": "ParCool API",
     "version": "1.0",
-    "description": "Test plugin for Parcool API",
-    "dependencies": [],
-    "author": "M0nstr1k"
+    "description": "MCreator integration for ParCool",
+    "author": "M0nstr1kUwU"
   }
 }
