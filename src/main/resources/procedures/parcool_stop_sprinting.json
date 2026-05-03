@@ -1,0 +1,29 @@
+{
+  "type": "parcool_stop_sprinting",
+  "message0": "stop sprinting of %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 220,
+  "tooltip": "Stops sprinting for the selected entity.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "parcool_api",
+    "inputs": [
+      "ENTITY"
+    ],
+    "dependencies": [
+      {
+        "name": "entity",
+        "type": "entity"
+      }
+    ]
+  }
+}

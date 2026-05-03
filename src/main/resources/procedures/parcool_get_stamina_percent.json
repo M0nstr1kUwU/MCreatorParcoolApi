@@ -1,0 +1,17 @@
+{
+  "type": "parcool_get_stamina_percent",
+  "message0": "ParCool stamina percent of %1 (0-100) rounded to %2 decimals",
+  "args0": [
+    { "type": "input_value", "name": "ENTITY", "check": "Entity" },
+    { "type": "input_value", "name": "DECIMALS", "check": "Number" }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 220,
+  "tooltip": "Get stamina percent (0–100) with rounding.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "parcool_api",
+    "inputs": ["ENTITY", "DECIMALS"]
+  }
+}

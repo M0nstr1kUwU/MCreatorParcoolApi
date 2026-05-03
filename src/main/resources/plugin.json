@@ -3,8 +3,8 @@
   "supportedversions": [2025003],
   "info": {
     "name": "ParCool API",
-    "version": "1.0",
-    "description": "ParCool integration",
+    "version": "1.0.0",
+    "description": "ParCool integration for MCreator 2025.3",
     "author": "M0nstr1kUwU"
   }
 }

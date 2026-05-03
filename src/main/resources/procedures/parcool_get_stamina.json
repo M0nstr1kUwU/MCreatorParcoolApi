@@ -1,0 +1,16 @@
+{
+  "type": "parcool_get_stamina",
+  "message0": "ParCool stamina of %1",
+  "args0": [
+    { "type": "input_value", "name": "ENTITY", "check": "Entity" }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 220,
+  "tooltip": "Get current ParCool stamina.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "parcool_api",
+    "inputs": ["ENTITY"]
+  }
+}

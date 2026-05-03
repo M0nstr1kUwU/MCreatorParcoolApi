@@ -1,0 +1,18 @@
+{
+  "type": "parcool_add_stamina",
+  "message0": "add %1 ParCool stamina to %2",
+  "args0": [
+    { "type": "input_value", "name": "VALUE", "check": "Number" },
+    { "type": "input_value", "name": "ENTITY", "check": "Entity" }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 220,
+  "tooltip": "Add ParCool stamina.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "parcool_api",
+    "inputs": ["VALUE", "ENTITY"]
+  }
+}
