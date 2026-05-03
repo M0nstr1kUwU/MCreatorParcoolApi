@@ -1,9 +1,8 @@
 {
-  "id": "parcool_action_try_to_start",
   "name": "On ParCool action try to start",
-  "dependencies": [
-    { "name": "entity", "type": "entity" }
+  "dependencies_provided": [
+    { "name": "entity", "type": "entity" },
+    { "name": "event", "type": "object" }
   ],
-  "fields": [],
-  "colour": 195
+  "cancelable": true
 }
