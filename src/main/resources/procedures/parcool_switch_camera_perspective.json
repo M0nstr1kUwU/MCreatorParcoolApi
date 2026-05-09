@@ -34,6 +34,9 @@
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "camera",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
     "inputs": [
       "ENTITY"
     ],

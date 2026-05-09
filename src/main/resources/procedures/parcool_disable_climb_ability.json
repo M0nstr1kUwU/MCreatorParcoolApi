@@ -16,6 +16,9 @@
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "parcool_api",
+    "toolbox_init": [
+      "<value name=\"entity\"><block type=\"entity_from_deps\"></block></value>"
+    ],
     "inputs": [
       "ENTITY"
     ]

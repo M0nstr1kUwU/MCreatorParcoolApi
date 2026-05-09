@@ -21,6 +21,10 @@
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "parcool_api",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"VALUE\"><block type=\"math_number\"><field name=\"NUM\">100</field></block></value>"
+    ],
     "inputs": [
       "ENTITY",
       "VALUE"
