@@ -1,0 +1,33 @@
+{
+  "type": "weight_set_item_weight",
+  "message0": "set weight of item %1 to %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "item",
+      "check": "MCItem"
+    },
+    {
+      "type": "input_value",
+      "name": "weight",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 125,
+  "tooltip": "Sets the unit weight of a specific item type.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "weight_system",
+    "toolbox_init": [
+      "<value name=\"item\"><block type=\"itemstack_to_mcitem\"></block></value>",
+      "<value name=\"weight\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ],
+    "inputs": [
+      "item",
+      "weight"
+    ]
+  }
+}

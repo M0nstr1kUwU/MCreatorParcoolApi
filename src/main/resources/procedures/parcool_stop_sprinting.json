@@ -9,21 +9,15 @@
     }
   ],
   "inputsInline": true,
-  "previousStatement": null,
+  "previousStatement": null,ы
   "nextStatement": null,
   "colour": 220,
-  "tooltip": "Stops sprinting for the selected entity.",
+  "tooltip": "Stops vanilla sprinting for the selected player.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "parcool_api",
     "inputs": [
       "ENTITY"
-    ],
-    "dependencies": [
-      {
-        "name": "entity",
-        "type": "entity"
-      }
     ]
   }
 }

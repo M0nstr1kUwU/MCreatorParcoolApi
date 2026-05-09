@@ -1,0 +1,26 @@
+{
+  "type": "parcool_strip_item_enchantments",
+  "message0": "strip all enchantments from item %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "item",
+      "check": "MCItem"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 45,
+  "tooltip": "Removes all normal and stored enchantments from the given item stack. If a plain item type is used, a temporary stack is created; for real inventory changes, pass an item stack through itemstack_to_mcitem.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "other_tools",
+    "toolbox_init": [
+      "<value name=\"item\"><block type=\"itemstack_to_mcitem\"></block></value>"
+    ],
+    "inputs": [
+      "item"
+    ]
+  }
+}

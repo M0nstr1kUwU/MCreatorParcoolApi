@@ -1,0 +1,16 @@
+{
+  "type": "is_climb_disabled",
+  "message0": "is climb disabled for %1",
+  "args0": [
+    { "type": "input_value", "name": "ENTITY", "check": "Entity" }
+  ],
+  "inputsInline": true,
+  "output": "Logic",
+  "colour": 220,
+  "tooltip": "Check if climbing is disabled for this player.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "parcool_api",
+    "inputs": ["ENTITY"]
+  }
+}

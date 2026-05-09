@@ -1,0 +1,33 @@
+{
+  "type": "weight_set_auto_system_enabled",
+  "message0": "set automatic weight system for %1 to %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "entity",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "enabled",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 125,
+  "tooltip": "Enables or disables automatic overload checks for the selected player.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "weight_system",
+    "toolbox_init": [
+      "<value name=\"entity\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"enabled\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
+    ],
+    "inputs": [
+      "entity",
+      "enabled"
+    ]
+  }
+}

@@ -2,15 +2,21 @@
   "type": "parcool_get_max_stamina",
   "message0": "ParCool max stamina of %1",
   "args0": [
-    { "type": "input_value", "name": "ENTITY", "check": "Entity" }
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
   ],
   "inputsInline": true,
   "output": "Number",
   "colour": 220,
-  "tooltip": "Get maximum ParCool stamina.",
+  "tooltip": "Gets the current ParCool max stamina value stored in ParCool stamina data.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "parcool_api",
-    "inputs": ["ENTITY"]
+    "inputs": [
+      "ENTITY"
+    ]
   }
 }

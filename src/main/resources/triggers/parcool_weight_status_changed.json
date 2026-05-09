@@ -1,0 +1,33 @@
+{
+  "name": "ParCool weight status changed",
+  "dependencies_provided": [
+    {
+      "name": "entity",
+      "type": "entity"
+    },
+    {
+      "name": "world",
+      "type": "world"
+    },
+    {
+      "name": "old_status",
+      "type": "number"
+    },
+    {
+      "name": "new_status",
+      "type": "number"
+    },
+    {
+      "name": "current_weight",
+      "type": "number"
+    },
+    {
+      "name": "max_weight",
+      "type": "number"
+    },
+    {
+      "name": "load_percent",
+      "type": "number"
+    }
+  ]
+}

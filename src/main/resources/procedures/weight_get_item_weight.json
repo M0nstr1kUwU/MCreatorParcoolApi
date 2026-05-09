@@ -1,0 +1,25 @@
+{
+  "type": "weight_get_item_weight",
+  "message0": "weight of item %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "item",
+      "check": "MCItem"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 125,
+  "tooltip": "Returns the weight of the given item stack. If a plain item is used, returns unit weight.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "weight_system",
+    "toolbox_init": [
+      "<value name=\"item\"><block type=\"itemstack_to_mcitem\"></block></value>"
+    ],
+    "inputs": [
+      "item"
+    ]
+  }
+}

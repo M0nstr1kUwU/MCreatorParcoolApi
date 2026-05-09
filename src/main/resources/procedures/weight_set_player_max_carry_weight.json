@@ -1,0 +1,33 @@
+{
+  "type": "weight_set_player_max_carry_weight",
+  "message0": "set max carry weight of %1 to %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "entity",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "weight",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 125,
+  "tooltip": "Sets maximum carry weight for the selected player.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "weight_system",
+    "toolbox_init": [
+      "<value name=\"entity\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"weight\"><block type=\"math_number\"><field name=\"NUM\">64</field></block></value>"
+    ],
+    "inputs": [
+      "entity",
+      "weight"
+    ]
+  }
+}

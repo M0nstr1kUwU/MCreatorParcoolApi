@@ -2,17 +2,28 @@
   "type": "parcool_set_stamina",
   "message0": "set ParCool stamina of %1 to %2",
   "args0": [
-    { "type": "input_value", "name": "ENTITY", "check": "Entity" },
-    { "type": "input_value", "name": "VALUE", "check": "Number" }
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "VALUE",
+      "check": "Number"
+    }
   ],
   "inputsInline": true,
   "previousStatement": null,
   "nextStatement": null,
   "colour": 220,
-  "tooltip": "Set current ParCool stamina.",
+  "tooltip": "Sets the player's current ParCool stamina and synchronizes the change in multiplayer.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "parcool_api",
-    "inputs": ["ENTITY", "VALUE"]
+    "inputs": [
+      "ENTITY",
+      "VALUE"
+    ]
   }
 }

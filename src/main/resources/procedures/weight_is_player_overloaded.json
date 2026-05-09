@@ -1,0 +1,25 @@
+{
+  "type": "weight_is_player_overloaded",
+  "message0": "is %1 overloaded by weight",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "entity",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 125,
+  "tooltip": "Returns true if inventory weight is greater than max carry weight.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "weight_system",
+    "toolbox_init": [
+      "<value name=\"entity\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "entity"
+    ]
+  }
+}

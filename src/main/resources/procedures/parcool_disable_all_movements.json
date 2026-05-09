@@ -1,0 +1,23 @@
+{
+  "type": "parcool_disable_all_movements",
+  "message0": "disable all ParCool movement abilities for %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 220,
+  "tooltip": "Disables the ParCool movement abilities covered by this plugin task: sprint, climb, jump, hang, and wall-run.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "parcool_api",
+    "inputs": [
+      "ENTITY"
+    ]
+  }
+}
