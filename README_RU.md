@@ -63,7 +63,7 @@ src/main/resources/neoforge-1.21.1/templates/
 ---
 
 ## Настройка base_templates
-*[!] В плагине он уже есть*
+# *[!] В плагине он уже есть*
 Создай файл:
 
 ```text
