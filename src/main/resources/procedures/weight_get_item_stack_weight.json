@@ -1,6 +1,6 @@
 {
-  "type": "weight_get_item_weight",
-  "message0": "unit weight of item %1",
+  "type": "weight_get_item_stack_weight",
+  "message0": "stack weight of item %1",
   "args0": [
     {
       "type": "input_value",
@@ -11,7 +11,7 @@
   "inputsInline": true,
   "output": "Number",
   "colour": 125,
-  "tooltip": "Returns the configured unit weight of the given item type.",
+  "tooltip": "Returns the total weight of the given item stack: unit weight multiplied by stack count.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "weight_system",

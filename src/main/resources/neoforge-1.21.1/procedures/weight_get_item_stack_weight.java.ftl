@@ -3,7 +3,7 @@
 ((java.util.function.Supplier<Double>) () -> {
 	try {
 		net.minecraft.world.item.ItemStack _stack = ${mappedMCItemToItemStackCode(input$item, 1)};
-		return ${package}.weight.ParCoolApiWeightSystem.getUnitWeight(_stack);
+		return ${package}.weight.ParCoolApiWeightSystem.getStackWeight(_stack);
 	} catch (Throwable ignored) {
 		return 0.0;
 	}

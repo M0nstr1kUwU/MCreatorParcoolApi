@@ -1,0 +1,33 @@
+{
+  "type": "weight_set_item_weight_by_string",
+  "message0": "set weight of item with id %1 to %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "item_id",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "weight",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 125,
+  "tooltip": "Sets unit weight of an item by registry ID string, for example minecraft:stone or create:andesite_alloy.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "weight_system",
+    "toolbox_init": [
+      "<value name=\"item_id\"><block type=\"text\"><field name=\"TEXT\">minecraft:stone</field></block></value>",
+      "<value name=\"weight\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ],
+    "inputs": [
+      "item_id",
+      "weight"
+    ]
+  }
+}

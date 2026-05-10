@@ -9,9 +9,10 @@ import net.neoforged.neoforge.common.NeoForge;
 
 public final class ParCoolApiBridgeEvents {
 	public static final int WEIGHT_STATUS_NORMAL = 0;
-	public static final int WEIGHT_STATUS_OVERLOADED = 1;
-	public static final int WEIGHT_STATUS_HEAVY_OVERLOADED = 2;
-	public static final int WEIGHT_STATUS_CRITICAL_OVERLOADED = 3;
+    public static final int WEIGHT_STATUS_LIGHT_OVERLOADED = 1;
+    public static final int WEIGHT_STATUS_HEAVY_OVERLOADED = 2;
+    public static final int WEIGHT_STATUS_SEVERE_OVERLOADED = 3;
+    public static final int WEIGHT_STATUS_CRITICAL_OVERLOADED = 4;
 
 	public static final int ABILITY_SPRINT = 1;
 	public static final int ABILITY_CLIMB = 2;
