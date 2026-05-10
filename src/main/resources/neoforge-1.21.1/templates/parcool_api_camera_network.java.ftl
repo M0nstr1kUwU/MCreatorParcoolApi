@@ -35,14 +35,19 @@ public final class ParCoolApiCameraNetwork {
 	}
 
 	public static void sendToPlayer(ServerPlayer player, String perspectiveName) {
+		sendToPlayer(player, perspectiveName, 0);
+	}
+
+	public static void sendToPlayer(ServerPlayer player, String perspectiveName, int delayTicks) {
 		if (player == null) {
 			return;
 		}
 
 		String normalized = normalizePerspectiveName(perspectiveName);
+		int safeDelayTicks = Math.max(0, delayTicks);
 
 		${package}.events.ParCoolApiBridgeEvents.fireCameraPerspectiveRequested(player, perspectiveNameToId(normalized));
-		PacketDistributor.sendToPlayer(player, new SetCameraPerspectivePayload(normalized));
+		PacketDistributor.sendToPlayer(player, new SetCameraPerspectivePayload(normalized, safeDelayTicks));
 	}
 
 	private static String normalizePerspectiveName(String perspectiveName) {
@@ -65,13 +70,15 @@ public final class ParCoolApiCameraNetwork {
 		};
 	}
 
-	public record SetCameraPerspectivePayload(String perspectiveName) implements CustomPacketPayload {
+	public record SetCameraPerspectivePayload(String perspectiveName, int delayTicks) implements CustomPacketPayload {
 		public static final CustomPacketPayload.Type<SetCameraPerspectivePayload> TYPE =
 			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "parcool_api_camera_perspective"));
 
 		public static final StreamCodec<RegistryFriendlyByteBuf, SetCameraPerspectivePayload> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.STRING_UTF8,
 			SetCameraPerspectivePayload::perspectiveName,
+			ByteBufCodecs.INT,
+			SetCameraPerspectivePayload::delayTicks,
 			SetCameraPerspectivePayload::new
 		);
 
@@ -81,7 +88,18 @@ public final class ParCoolApiCameraNetwork {
 		}
 
 		private static void handleClient(SetCameraPerspectivePayload payload, IPayloadContext context) {
-			context.enqueueWork(() -> ClientCameraPerspectiveHandler.apply(payload.perspectiveName()));
+			context.enqueueWork(() -> {
+				int safeDelayTicks = Math.max(0, payload.delayTicks());
+
+				if (safeDelayTicks <= 0) {
+					ClientCameraPerspectiveHandler.apply(payload.perspectiveName());
+				} else {
+					${package}.client.ParCoolApiClientScheduler.queueClientWork(
+						safeDelayTicks,
+						() -> ClientCameraPerspectiveHandler.apply(payload.perspectiveName())
+					);
+				}
+			});
 		}
 	}
 

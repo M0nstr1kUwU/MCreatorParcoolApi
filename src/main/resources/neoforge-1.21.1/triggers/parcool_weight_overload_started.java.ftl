@@ -1,13 +1,16 @@
-@net.neoforged.fml.common.EventBusSubscriber(modid = "${modid}")
-public class ${name}Procedure {
-	@net.neoforged.bus.api.SubscribeEvent
+<#include "procedures.java.ftl">
+@EventBusSubscriber public class ${name}Procedure {
+	@SubscribeEvent
 	public static void onParCoolWeightOverloadStarted(${package}.events.ParCoolApiBridgeEvents.WeightOverloadStartedEvent event) {
-		execute(
-			event,
-			event.getPlayer(),
-			event.getWorld(),
-			event.getCurrentWeight(),
-			event.getMaxWeight(),
-			event.getLoadPercent()
-		);
+		<#assign dependenciesCode>
+			<@procedureDependenciesCode dependencies, {
+				"entity": "event.getPlayer()",
+				"world": "event.getWorld()",
+				"current_weight": "event.getCurrentWeight()",
+				"max_weight": "event.getMaxWeight()",
+				"load_percent": "event.getLoadPercent()",
+				"event": "event"
+			}/>
+		</#assign>
+		execute(event<#if dependenciesCode?has_content>,</#if>${dependenciesCode});
 	}

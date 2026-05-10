@@ -1,15 +1,18 @@
-@net.neoforged.fml.common.EventBusSubscriber(modid = "${modid}")
-public class ${name}Procedure {
-	@net.neoforged.bus.api.SubscribeEvent
+<#include "procedures.java.ftl">
+@EventBusSubscriber public class ${name}Procedure {
+	@SubscribeEvent
 	public static void onParCoolWeightStatusChanged(${package}.events.ParCoolApiBridgeEvents.WeightStatusChangedEvent event) {
-		execute(
-			event,
-			event.getPlayer(),
-			event.getWorld(),
-			event.getOldStatus(),
-			event.getNewStatus(),
-			event.getCurrentWeight(),
-			event.getMaxWeight(),
-			event.getLoadPercent()
-		);
+		<#assign dependenciesCode>
+			<@procedureDependenciesCode dependencies, {
+				"entity": "event.getPlayer()",
+				"world": "event.getWorld()",
+				"old_status": "event.getOldStatus()",
+				"new_status": "event.getNewStatus()",
+				"current_weight": "event.getCurrentWeight()",
+				"max_weight": "event.getMaxWeight()",
+				"load_percent": "event.getLoadPercent()",
+				"event": "event"
+			}/>
+		</#assign>
+		execute(event<#if dependenciesCode?has_content>,</#if>${dependenciesCode});
 	}

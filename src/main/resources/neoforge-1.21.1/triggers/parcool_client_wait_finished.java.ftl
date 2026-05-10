@@ -1,10 +1,13 @@
-@net.neoforged.fml.common.EventBusSubscriber(modid = "${modid}")
-public class ${name}Procedure {
-	@net.neoforged.bus.api.SubscribeEvent
+<#include "procedures.java.ftl">
+@EventBusSubscriber public class ${name}Procedure {
+	@SubscribeEvent
 	public static void onParCoolClientWaitFinished(${package}.events.ParCoolApiBridgeEvents.ClientWaitFinishedEvent event) {
-		execute(
-			event,
-			event.getPlayer(),
-			event.getWorld()
-		);
+		<#assign dependenciesCode>
+			<@procedureDependenciesCode dependencies, {
+				"entity": "event.getPlayer()",
+				"world": "event.getWorld()",
+				"event": "event"
+			}/>
+		</#assign>
+		execute(event<#if dependenciesCode?has_content>,</#if>${dependenciesCode});
 	}

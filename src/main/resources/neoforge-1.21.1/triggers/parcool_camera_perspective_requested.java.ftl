@@ -1,11 +1,14 @@
-@net.neoforged.fml.common.EventBusSubscriber(modid = "${modid}")
-public class ${name}Procedure {
-	@net.neoforged.bus.api.SubscribeEvent
+<#include "procedures.java.ftl">
+@EventBusSubscriber public class ${name}Procedure {
+	@SubscribeEvent
 	public static void onParCoolCameraPerspectiveRequested(${package}.events.ParCoolApiBridgeEvents.CameraPerspectiveRequestedEvent event) {
-		execute(
-			event,
-			event.getPlayer(),
-			event.getWorld(),
-			event.getPerspectiveId()
-		);
+		<#assign dependenciesCode>
+			<@procedureDependenciesCode dependencies, {
+				"entity": "event.getPlayer()",
+				"world": "event.getWorld()",
+				"perspective_id": "event.getPerspectiveId()",
+				"event": "event"
+			}/>
+		</#assign>
+		execute(event<#if dependenciesCode?has_content>,</#if>${dependenciesCode});
 	}
