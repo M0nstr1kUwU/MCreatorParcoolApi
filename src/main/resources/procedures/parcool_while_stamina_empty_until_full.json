@@ -1,0 +1,39 @@
+{
+  "type": "parcool_while_stamina_empty_until_full",
+  "message0": "for %1 if ParCool stamina reached 0 run until full %2 %3",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "entity",
+      "check": "Entity"
+    },
+    {
+      "type": "input_dummy"
+    },
+    {
+      "type": "input_statement",
+      "name": "do"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 220,
+  "tooltip": "Runs nested blocks after ParCool stamina reaches 0, and keeps running them until stamina is fully restored.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "parcool_api",
+    "toolbox_init": [
+      "<value name=\"entity\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "entity"
+    ],
+    "statements": [
+      {
+        "name": "do",
+        "disable_local_variables": true
+      }
+    ]
+  }
+}

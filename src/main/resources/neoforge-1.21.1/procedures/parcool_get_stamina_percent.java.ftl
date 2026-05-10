@@ -1,24 +1,29 @@
 <#if input$ENTITY?? && input$DECIMALS??>
-(${input$ENTITY} instanceof net.minecraft.world.entity.player.Player _player
-	? ((java.util.function.Supplier<Double>) () -> {
-		try {
-			int _value = com.alrex.parcool.api.Stamina.get(_player).getValue();
-			int _max = com.alrex.parcool.api.Stamina.get(_player).getMaxValue();
-
-			if (_max <= 0) {
-				return 0.0;
-			}
-
-			int _decimals = (int) Math.max(0, Math.min(10, Math.round(${input$DECIMALS})));
-			double _scale = Math.pow(10.0, _decimals);
-			double _percent = ((double) _value / (double) _max) * 100.0;
-
-			return Math.round(_percent * _scale) / _scale;
-		} catch (Throwable ignored) {
+((java.util.function.Supplier<Double>) () -> {
+	try {
+		if (!((${input$ENTITY}) instanceof net.minecraft.world.entity.player.Player)) {
 			return 0.0;
 		}
-	}).get()
-	: 0)
+
+		net.minecraft.world.entity.player.Player __parcoolApiStaminaPercentPlayer =
+			(net.minecraft.world.entity.player.Player) (${input$ENTITY});
+
+		int __parcoolApiStaminaValue = com.alrex.parcool.api.Stamina.get(__parcoolApiStaminaPercentPlayer).getValue();
+		int __parcoolApiStaminaMax = com.alrex.parcool.api.Stamina.get(__parcoolApiStaminaPercentPlayer).getMaxValue();
+
+		if (__parcoolApiStaminaMax <= 0) {
+			return 0.0;
+		}
+
+		int __parcoolApiDecimals = (int) Math.max(0, Math.min(10, Math.round(${input$DECIMALS})));
+		double __parcoolApiScale = Math.pow(10.0, __parcoolApiDecimals);
+		double __parcoolApiPercent = ((double) __parcoolApiStaminaValue / (double) __parcoolApiStaminaMax) * 100.0;
+
+		return Math.round(__parcoolApiPercent * __parcoolApiScale) / __parcoolApiScale;
+	} catch (Throwable ignored) {
+		return 0.0;
+	}
+}).get()
 <#else>
 0
 </#if>

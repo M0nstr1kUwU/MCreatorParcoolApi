@@ -13,3 +13,6 @@ base_templates:
 
   - template: parcool_api_client_scheduler.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/client/ParCoolApiClientScheduler.java"
+
+  - template: parcool_api_stamina_monitor.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiStaminaMonitor.java"
