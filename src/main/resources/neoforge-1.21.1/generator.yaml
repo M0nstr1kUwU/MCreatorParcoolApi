@@ -28,3 +28,18 @@ base_templates:
 
   - template: parcool_api_weight_network.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/network/ParCoolApiWeightNetwork.java"
+
+  - template: party_api_system.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiSystem.java"
+
+  - template: party_api_network.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/network/PartyApiNetwork.java"
+
+  - template: party_api_client.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/client/PartyApiClient.java"
+
+  - template: party_api_commands.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiCommands.java"
+
+  - template: hitbox_api_bridge.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/hitbox/HitboxApiBridge.java"

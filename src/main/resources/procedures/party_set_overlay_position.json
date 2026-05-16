@@ -1,0 +1,31 @@
+{
+  "type": "party_set_overlay_position",
+  "message0": "set party overlay position for %1 to %2",
+  "args0": [
+    { "type": "input_value", "name": "ENTITY", "check": "Entity" },
+    {
+      "type": "field_dropdown",
+      "name": "POSITION",
+      "options": [
+        ["left center", "LEFT_CENTER"],
+        ["left top", "LEFT_TOP"],
+        ["left bottom", "LEFT_BOTTOM"],
+        ["right center", "RIGHT_CENTER"],
+        ["right top", "RIGHT_TOP"],
+        ["right bottom", "RIGHT_BOTTOM"]
+      ]
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 260,
+  "tooltip": "Sets party overlay position for selected player.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": ["<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"],
+    "inputs": ["ENTITY"],
+    "fields": ["POSITION"]
+  }
+}

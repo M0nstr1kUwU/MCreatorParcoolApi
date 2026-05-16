@@ -10,18 +10,7 @@ CurseForge file id: 7760593
 Curse Maven: curse.maven:parcool-482378:7760593
 ```
 
-Плагин добавляет:
-
-- проверки и ограничения движений ParCool;
-- блоки ParCool stamina;
-- синхронизацию ParCool client/server;
-- packet-backed переключение камеры;
-- систему веса и перегруза;
-- снятие зачарований с предметов;
-- utility-блоки для спавна предметов, зон, дистанций, инвентаря и движения сущностей;
-- кастомные триггеры для веса, движений, камеры, предметов и клиента.
-
-Плагин рассчитан на мультиплеер: игровая логика выполняется на сервере, а клиентские действия выполняются через packets.
+Плагин рассчитан на мультиплеер: игровая логика выполняется на сервере, а клиентские функции вроде камеры, HUD и GUI работают через packets/client helpers.
 
 ---
 
@@ -35,7 +24,11 @@ ParCool: 1.21.1-3.4.3.3-NF
 Java: 21
 ```
 
-ParCool должен быть установлен и на клиенте, и на сервере.
+Рекомендуемая зависимость:
+
+```gradle
+implementation "curse.maven:parcool-482378:7760593"
+```
 
 Рекомендуемый API-файл:
 
@@ -58,98 +51,77 @@ neoforge-1.21.1:
     }
 ```
 
-Включить API нужно здесь:
+Включить API:
 
 ```text
 Workspace settings -> External APIs -> ParCool API
-```
-
-Если используется Nexus Compiler или другой dependency helper, там тоже должна быть эта же версия ParCool.
-
----
-
-## Важные папки
-
-```text
-src/main/resources/plugin.json
-src/main/resources/apis/
-src/main/resources/procedures/
-src/main/resources/triggers/
-src/main/resources/neoforge-1.21.1/procedures/
-src/main/resources/neoforge-1.21.1/triggers/
-src/main/resources/neoforge-1.21.1/templates/
-src/main/resources/neoforge-1.21.1/generator.yaml
 ```
 
 ---
 
 ## Base templates
 
-`src/main/resources/neoforge-1.21.1/generator.yaml`:
+Добавь в:
+
+```text
+src/main/resources/neoforge-1.21.1/generator.yaml
+```
 
 ```yaml
 base_templates:
   - template: parcool_api_runtime.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiRuntime.java"
-
   - template: parcool_api_bridge_events.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/events/ParCoolApiBridgeEvents.java"
-
   - template: parcool_api_movement_bridge.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiMovementBridge.java"
-
   - template: parcool_api_stamina_bridge.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiStaminaBridge.java"
-
   - template: parcool_api_stamina_monitor.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiStaminaMonitor.java"
-
+  - template: parcool_api_vanilla_jump_bridge.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiVanillaJumpBridge.java"
   - template: parcool_api_weight_system.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/weight/ParCoolApiWeightSystem.java"
-
+  - template: parcool_api_weight_network.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/network/ParCoolApiWeightNetwork.java"
   - template: parcool_api_camera_network.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/network/ParCoolApiCameraNetwork.java"
-
   - template: parcool_api_client_scheduler.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/client/ParCoolApiClientScheduler.java"
-```
-
-Генерируемые классы:
-
-```text
-<mod package>/parcool/ParCoolApiRuntime.java
-<mod package>/events/ParCoolApiBridgeEvents.java
-<mod package>/parcool/ParCoolApiMovementBridge.java
-<mod package>/parcool/ParCoolApiStaminaBridge.java
-<mod package>/parcool/ParCoolApiStaminaMonitor.java
-<mod package>/weight/ParCoolApiWeightSystem.java
-<mod package>/network/ParCoolApiCameraNetwork.java
-<mod package>/client/ParCoolApiClientScheduler.java
+  - template: party_api_system.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiSystem.java"
+  - template: party_api_network.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/network/PartyApiNetwork.java"
+  - template: party_api_client.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/client/PartyApiClient.java"
+  - template: party_api_commands.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiCommands.java"
+  - template: hitbox_api_bridge.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/hitbox/HitboxApiBridge.java"
 ```
 
 ---
 
 ## Стиль имён
 
-Все входы procedure-блоков используют **UPPER_CASE**:
+Входы procedure-блоков используют **UPPER_CASE**:
 
 ```text
-ENTITY, VALUE, WEIGHT, ENABLED, ITEM, ITEM_ID, DECIMALS, TICKS,
-X, Y, Z, X1, Y1, Z1, X2, Y2, Z2, AMOUNT, DELAY, RADIUS
+ENTITY, TARGET, LEADER, VALUE, WEIGHT, ENABLED, ITEM, ITEM_ID,
+DECIMALS, TICKS, X, Y, Z, X1, Y1, Z1, X2, Y2, Z2,
+AMOUNT, DELAY, RADIUS, WIDTH, HEIGHT, KEY, POSITION
 ```
 
-Dependencies триггеров остаются **lower_case**:
-
-```text
-entity, world, current_weight, max_weight, load_percent,
-old_status, new_status, ability_id, enabled, perspective_id, itemstack, event
-```
+Dependencies триггеров остаются **lower_case**.
 
 ---
 
-# Движения ParCool
+# Возможности плагина
 
-Boolean-блоки:
+## ParCool movement
+
+Проверки:
 
 ```text
 can ENTITY ParCool sprint
@@ -159,7 +131,7 @@ can ENTITY ParCool jump
 is ENTITY currently ParCool hanging
 ```
 
-Action-блоки:
+Действия:
 
 ```text
 disable ParCool sprint ability for ENTITY
@@ -173,51 +145,23 @@ force sync ParCool permissions to ENTITY
 request ParCool client handshake for ENTITY
 ```
 
-Ограничения используют новый API ParCool:
-
-```java
-com.alrex.parcool.api.unstable.Limitation
-```
-
-Схема runtime-ограничения:
+Рекомендуемая синхронизация при входе:
 
 ```text
-Limitation.get(player, id)
-enable / disable
-permit(action, true/false)
-apply
+wait 40 ticks
+request ParCool client handshake for Event/target entity
+force sync ParCool permissions to Event/target entity
 ```
 
-`disable all ParCool movement abilities` проходит по:
-
-```java
-com.alrex.parcool.common.action.Actions.LIST
-```
-
-и отключает все зарегистрированные ParCool actions.
-
----
-
-# ParCool client/server sync
-
-ParCool требует, чтобы клиент отправил серверу свои client settings. Bridge повторно отправляет client handshake:
-
-```java
-ClientInformationPayload(playerUUID, true, ClientSetting.readFromLocalConfig())
-```
-
-Рекомендуемая процедура входа:
+## Vanilla jump
 
 ```text
-When player joins world:
-    wait 40 ticks
-    request ParCool client handshake for Event/target entity
-    force sync ParCool permissions to Event/target entity
+set vanilla jump disabled for ENTITY to ENABLED
 ```
 
----
+Используется системой веса при heavy-перегрузе и выше.
 
-# Stamina
+## Stamina
 
 Getter-блоки:
 
@@ -229,7 +173,7 @@ is ENTITY ParCool exhausted
 ParCool stamina recovery attribute of ENTITY
 ```
 
-Setter/action-блоки:
+Action-блоки:
 
 ```text
 add VALUE ParCool stamina to ENTITY
@@ -239,125 +183,43 @@ set ParCool max stamina of ENTITY to VALUE
 set ParCool stamina recovery of ENTITY to VALUE
 ```
 
-Setter-блоки работают на сервере и требуют `ServerPlayer`.
-
-Bridge использует:
-
-```java
-com.alrex.parcool.api.Stamina
-com.alrex.parcool.api.Attributes.MAX_STAMINA
-com.alrex.parcool.api.Attributes.STAMINA_RECOVERY
-```
-
-Блок stamina monitor:
+Monitor:
 
 ```text
 for ENTITY if ParCool stamina reached 0 run until full:
     DO
 ```
 
-Поведение:
-
-```text
-stamina выше 0 -> ничего не делает
-stamina дошла до 0 -> запускает вложенные блоки
-stamina восстанавливается -> продолжает выполнять вложенные блоки
-stamina полная -> останавливает вложенные блоки
-```
-
----
-
-# Камера
+## Camera and client wait
 
 ```text
 switch camera perspective of ENTITY to PERSPECTIVE
 switch camera perspective of ENTITY to PERSPECTIVE after TICKS client ticks
+for client player ENTITY wait TICKS client ticks then DO
 ```
 
-Варианты:
-
-```text
-first person
-third person back
-third person front
-```
-
-Камера управляется на клиенте, поэтому используется packet-backed логика.
-
----
-
-# Client wait
-
-```text
-for client player ENTITY wait TICKS client ticks then:
-    DO
-```
-
-Подходит для клиентской визуальной/UI/косметической логики. Сервер не может передавать произвольный вложенный Java-код клиенту, поэтому для server-triggered client actions нужны отдельные packet-backed blocks.
-
----
-
-# Снятие зачарований
+## Enchantments
 
 ```text
 strip all enchantments from item ITEM
 ```
 
-Удаляет:
+Удаляет обычные зачарования, stored enchantments и glint override.
 
-- обычные зачарования;
-- stored enchantments;
-- enchantment glint override.
+## Weight system
 
-Для изменения реального предмета в инвентаре передавай настоящий item stack, например предмет в main hand.
-
----
-
-# Система веса
-
-Формула:
-
-```text
-общий вес = сумма(вес одной единицы предмета * количество в стаке)
-```
-
-Учитывается:
-
-```text
-основной инвентарь
-броня
-offhand
-```
-
-Данные хранятся здесь:
+Хранение:
 
 ```text
 world/data/<modid>_parcool_api_weight_system_v2.dat
 ```
 
-Runtime maps — только кэш. Старый player persistentData используется только для migration/fallback.
-
-Блоки настройки:
+Блоки:
 
 ```text
 set weight of all registered items to WEIGHT
 set weight of item ITEM to WEIGHT
 set weight of item with id ITEM_ID to WEIGHT
-```
-
-`set weight of all registered items to X` задаёт default item weight и очищает конкретные overrides.
-
-Для предметов из других модов используй registry IDs:
-
-```text
-minecraft:stone
-create:andesite_alloy
-farmersdelight:cabbage
-```
-
-Getter-блоки:
-
-```text
 unit weight of item ITEM
 stack weight of item ITEM
 unit weight of item with id ITEM_ID
@@ -365,59 +227,169 @@ inventory weight of ENTITY
 max carry weight of ENTITY
 carry load percent of ENTITY rounded to DECIMALS decimals
 is ENTITY overloaded by weight
-```
-
-Блоки управления:
-
-```text
 set max carry weight of ENTITY to WEIGHT
 set automatic weight system for ENTITY to ENABLED
 update weight overload state for ENTITY
 ```
 
----
+Стадии:
 
-## Стадии перегруза
-
-| Статус | Название | Порог |
+| Статус | Порог | Значение |
 |---:|---|---|
-| 0 | Норма | `< 75%` |
-| 1 | Лёгкий перегруз | `75% - 124%` |
-| 2 | Сильный перегруз | `125% - 174%` |
-| 3 | Тяжёлый перегруз | `175% - 199%` |
-| 4 | Критический перегруз | `>= 200%` |
+| 0 | `< 75%` | норма |
+| 1 | `75% - 124%` | лёгкий перегруз |
+| 2 | `125% - 174%` | сильный перегруз, vanilla jump disabled |
+| 3 | `175% - 199%` | тяжёлый перегруз |
+| 4 | `>= 200%` | критический перегруз, Darkness, all ParCool movements disabled |
 
-Эффекты:
+## Party tools
+
+Хранение:
 
 ```text
-Статус 1: Slowness I
-Статус 2: Slowness II, Mining Fatigue I, запрет sprint
-Статус 3: Slowness III, Mining Fatigue II, Weakness I, запрет sprint/jump/wall-run
-Статус 4: сильная Slowness, Mining Fatigue III, Weakness II, Darkness, запрет всех ParCool movements
+world/data/<modid>_party_api_system_v1.dat
 ```
+
+Команды:
+
+```text
+/party create
+/party invite <player>
+/party accept
+/party leave
+/party kick <player>
+/party pvp <true|false>
+/party pin <player>
+/party unpin <player>
+/party position <position>
+/party gui
+```
+
+Блоки:
+
+```text
+create party with leader ENTITY show self? SHOW_SELF
+add player TARGET to party of LEADER
+remove player ENTITY from party
+set party PvP by ENTITY to ENABLED
+open party GUI for ENTITY
+set party overlay position for ENTITY to POSITION
+set party show self for ENTITY to ENABLED
+set party overlay stat KEY of ENTITY to VALUE
+```
+
+Overlay показывает только online-участников. Отображается до 4 закреплённых участников; если никто не закреплён — первые 4 online-участника.
 
 ---
 
-# Utility-блоки
+# Кастомизация ассетов Party UI
+
+Party UI поддерживает необязательные PNG-ассеты. Если текстура есть, плагин использует её. Если текстуры нет, используется стандартный минималистичный UI на прямоугольниках.
+
+Папка:
+
+```text
+src/main/resources/assets/<modid>/textures/gui/party/
+```
+
+В готовом JAR:
+
+```text
+assets/<modid>/textures/gui/party/
+```
+
+Имена файлов — в нижнем регистре.
+
+## Ассеты overlay
+
+| Файл | Размер | Назначение |
+|---|---:|---|
+| `overlay_member_frame.png` | `96x19` | фон/рамка участника |
+| `overlay_hp_empty.png` | `88x3` | пустая HP-полоска |
+| `overlay_hp_full.png` | `88x3` | заполненная HP-полоска |
+| `overlay_absorption.png` | `88x3` | golden HP поверх HP |
+| `overlay_food_empty.png` | `88x2` | пустая полоска еды |
+| `overlay_food_full.png` | `88x2` | заполненная полоска еды |
+| `overlay_saturation.png` | `88x2` | saturation поверх еды |
+
+Разметка overlay:
+
+```text
+frame: 96x19
+никнейм: x + 4, y + 2
+HP:      x + 4, y + 11, 88x3
+еда:     x + 4, y + 16, 88x2
+```
+
+## Ассеты Party GUI
+
+| Файл | Размер | Назначение |
+|---|---:|---|
+| `gui_background.png` | `320x220` | фон GUI по центру |
+| `gui_member_frame.png` | `280x28` | фон/рамка участника |
+| `gui_hp_empty.png` | `90x4` | пустая HP-полоска |
+| `gui_hp_full.png` | `90x4` | заполненная HP-полоска |
+| `gui_absorption.png` | `90x4` | golden HP поверх HP |
+| `gui_food_empty.png` | `90x3` | пустая полоска еды |
+| `gui_food_full.png` | `90x3` | заполненная полоска еды |
+| `gui_saturation.png` | `90x3` | saturation поверх еды |
+| `button_pin.png` | `44x16` | кнопка Pin |
+| `button_unpin.png` | `44x16` | кнопка Unpin |
+
+Разметка GUI:
+
+```text
+background: по центру 320x220
+строка: 280x28
+никнейм: x + 8, y + 5
+HP:      x + 8, y + 17, 90x4
+еда:     x + 8, y + 23, 90x3
+кнопка:  x + 228, y + 6, 44x16
+```
+
+Каждый ассет необязателен. Можно заменить только рамку, только полоски или только фон. Всё отсутствующее автоматически отрисуется стандартно.
+
+Рекомендации:
+
+```text
+PNG
+прозрачность где нужно
+точные размеры из таблиц
+lowercase имена
+без пробелов
+```
+
+Проверочный путь:
+
+```text
+assets/<modid>/textures/gui/party/<file>.png
+```
+
+## Hitbox tools
+
+```text
+hitbox width of ENTITY
+hitbox height of ENTITY
+set hitbox of ENTITY to width WIDTH height HEIGHT
+refresh hitbox dimensions of ENTITY
+```
+
+Прямое изменение hitbox может быть временным, потому что Minecraft может обновить dimensions сущности.
+
+## Utility blocks
 
 ```text
 spawn item ITEM at x X y Y z Z amount AMOUNT pickup delay DELAY despawnable? DESPAWNABLE
-if entity ENTITY is inside cuboid x1 X1 y1 Y1 z1 Z1 x2 X2 y2 Y2 z2 Z2: DO
+if entity ENTITY is inside cuboid x1 X1 y1 Y1 z1 Z1 x2 X2 y2 Y2 z2 Z2 do DO
 count item ITEM in inventory of ENTITY
 remove item ITEM amount AMOUNT from inventory of ENTITY
 give item ITEM amount AMOUNT to ENTITY drop overflow? DROP_OVERFLOW
-if entity ENTITY is within radius RADIUS from x X y Y z Z: DO
+if entity ENTITY is within radius RADIUS from x X y Y z Z do DO
 distance from entity ENTITY to x X y Y z Z
 set motion of entity ENTITY to x X y Y z Z
 ```
 
-`DELAY` в spawn item block — это задержка подбора в тиках.
-
----
-
-# Кастомные триггеры
-
-Триггеры веса:
+## Custom triggers
 
 ```text
 ParCool weight status changed
@@ -425,141 +397,37 @@ ParCool player became overloaded
 ParCool player stopped being overloaded
 ParCool player entered heavy overload
 ParCool player entered critical overload
-```
-
-Триггер движения:
-
-```text
 ParCool movement ability changed by plugin
-```
-
-Триггер sync:
-
-```text
 ParCool permissions force synced
-```
-
-Триггер камеры:
-
-```text
 ParCool camera perspective requested
-```
-
-Триггер предметов:
-
-```text
 ParCool item enchantments stripped
-```
-
-Клиентский триггер:
-
-```text
 ParCool client wait finished
 ```
 
-Dependencies триггеров остаются lower-case и передаются через `procedureDependenciesCode`.
+## Cleanup после изменения templates
 
----
-
-# Рекомендуемая настройка
-
-Server start:
-
-```text
-set weight of all registered items to 1
-set weight of item stone to 2
-set weight of item cobblestone to 2
-set weight of item iron ingot to 1.5
-set weight of item diamond sword to 5
-set weight of item enchanted book to 1.5
-set weight of item with id "create:andesite_alloy" to 1.5
-```
-
-Player join:
-
-```text
-set automatic weight system for Event/target entity to true
-wait 40 ticks
-request ParCool client handshake for Event/target entity
-force sync ParCool permissions to Event/target entity
-update weight overload state for Event/target entity
-```
-
-Max carry weight задавай только если нужно инициализировать или изменить значение:
-
-```text
-set max carry weight of Event/target entity to 200
-```
-
----
-
-# Cleanup перед тестом
-
-После крупных изменений шаблонов удали generated-файлы:
+Удали generated helper-файлы и сделай Regenerate code:
 
 ```text
 src/main/java/net/mcreator/<modid>/parcool/ParCoolApiMovementBridge.java
 src/main/java/net/mcreator/<modid>/parcool/ParCoolApiStaminaBridge.java
 src/main/java/net/mcreator/<modid>/parcool/ParCoolApiStaminaMonitor.java
-src/main/java/net/mcreator/<modid>/client/ParCoolApiClientScheduler.java
-src/main/java/net/mcreator/<modid>/network/ParCoolApiCameraNetwork.java
+src/main/java/net/mcreator/<modid>/parcool/ParCoolApiVanillaJumpBridge.java
 src/main/java/net/mcreator/<modid>/weight/ParCoolApiWeightSystem.java
+src/main/java/net/mcreator/<modid>/network/ParCoolApiWeightNetwork.java
+src/main/java/net/mcreator/<modid>/network/ParCoolApiCameraNetwork.java
+src/main/java/net/mcreator/<modid>/client/ParCoolApiClientScheduler.java
+src/main/java/net/mcreator/<modid>/party/PartyApiSystem.java
+src/main/java/net/mcreator/<modid>/party/PartyApiCommands.java
+src/main/java/net/mcreator/<modid>/network/PartyApiNetwork.java
+src/main/java/net/mcreator/<modid>/client/PartyApiClient.java
+src/main/java/net/mcreator/<modid>/hitbox/HitboxApiBridge.java
 ```
 
-Для чистого теста удали старые данные:
+Чистые тестовые данные:
 
 ```text
-run/world/data/<modid>_parcool_api_weight_system.dat
 run/world/data/<modid>_parcool_api_weight_system_v2.dat
-run/world/serverconfig/parcool/limitations/parcool_api/mcreator_bridge/
-```
-
----
-
-# Частые проблемы
-
-## ParCool не работает при первом входе
-
-Проверь, что сервер загрузил:
-
-```text
-1.21.1-3.4.3.3-NF
-```
-
-После задержки входа вызови:
-
-```text
-request ParCool client handshake
-force sync ParCool permissions
-```
-
-## Disable all movement ничего не делает
-
-Проверь generated Java. Там должны быть:
-
-```java
-com.alrex.parcool.api.unstable.Limitation
-com.alrex.parcool.common.action.Actions.LIST
-```
-
-Также проверь, что procedure-блок использует `ENTITY`.
-
-## Перегруз всё ещё считается от 64
-
-Проверь, что блок использует `ENTITY` и `WEIGHT`, выполняется на сервере, и старые weight data удалены перед тестом.
-
-## Item weight возвращает 0
-
-Проверь, что templates используют:
-
-```text
-ITEM
-ITEM_ID
-WEIGHT
-```
-
-Для modded items лучше использовать:
-
-```text
-unit weight of item with id "modid:item_name"
+run/world/data/<modid>_party_api_system_v1.dat
+run/world/serverconfig/parcool/limitations/parcool_api/
 ```
