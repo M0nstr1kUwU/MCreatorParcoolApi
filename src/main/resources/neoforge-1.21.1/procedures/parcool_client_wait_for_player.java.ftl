@@ -1,9 +1,9 @@
 <#-- @formatter:off -->
-<#if input$entity?? && input$ticks??>
-if (${input$entity} instanceof net.minecraft.world.entity.player.Player _clientWaitPlayer) {
+<#if input$ENTITY?? && input$TICKS??>
+if (${input$ENTITY} instanceof net.minecraft.world.entity.player.Player _clientWaitPlayer) {
 	${package}.client.ParCoolApiClientScheduler.queueClientWorkForLocalPlayer(
 		_clientWaitPlayer.getUUID(),
-		${opt.toInt(input$ticks)},
+		${opt.toInt(input$TICKS)},
 		() -> {
 			${statement$do}
 		}

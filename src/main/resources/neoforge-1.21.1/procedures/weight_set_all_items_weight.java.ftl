@@ -1,3 +1,3 @@
-<#if input$weight??>
-${package}.weight.ParCoolApiWeightSystem.setAllRegisteredItemsWeight((double) ${input$weight});
+<#if input$WEIGHT??>
+${package}.weight.ParCoolApiWeightSystem.setAllRegisteredItemsWeight((double) ${input$WEIGHT});
 </#if>

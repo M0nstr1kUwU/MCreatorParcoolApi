@@ -1,45 +1,74 @@
 # MCreator ParCool API Bridge
 
-Плагин для **MCreator 2025.3** под **NeoForge 1.21.1**, который добавляет блоки процедур, helper-классы и кастомные триггеры для интеграции с модом **ParCool**.
+Плагин для **MCreator 2025.3**, который интегрирует **ParCool** с **NeoForge 1.21.1**.
+
+Целевая версия ParCool:
+
+```text
+ParCool-1.21.1-3.4.3.3-NF.jar
+CurseForge file id: 7760593
+Curse Maven: curse.maven:parcool-482378:7760593
+```
 
 Плагин добавляет:
 
 - проверки и ограничения движений ParCool;
-- синхронизацию ParCool permissions / limitations;
-- блоки для работы со стаминой;
-- переключение камеры с сервера на клиент через packet;
-- отложенное переключение камеры;
-- клиентскую задержку выполнения;
+- блоки ParCool stamina;
+- синхронизацию ParCool client/server;
+- packet-backed переключение камеры;
+- систему веса и перегруза;
 - снятие зачарований с предметов;
-- систему веса инвентаря и перегруза;
-- поддержку веса предметов из других модов по строковому ID;
-- кастомные триггеры для ParCool, камеры, предметов и веса.
+- utility-блоки для спавна предметов, зон, дистанций, инвентаря и движения сущностей;
+- кастомные триггеры для веса, движений, камеры, предметов и клиента.
 
-Плагин проектируется под мультиплеер. Вся игровая авторитетная логика выполняется на сервере. Клиентские действия, например смена камеры, выполняются на клиенте конкретного игрока через сетевой пакет.
+Плагин рассчитан на мультиплеер: игровая логика выполняется на сервере, а клиентские действия выполняются через packets.
 
 ---
 
 ## Требования
 
-Рекомендуемая связка:
-
-- MCreator 2025.3
-- NeoForge 1.21.1
-- ParCool для NeoForge 1.21.1
-
-ParCool должен быть загружен и на клиенте, и на сервере.
-
-В server log должна быть строка примерно такого вида:
-
 ```text
-ParCool! ... (parcool)
+MCreator: 2025.3
+Minecraft: 1.21.1
+Loader: NeoForge
+ParCool: 1.21.1-3.4.3.3-NF
+Java: 21
 ```
 
-Если ParCool есть только на этапе компиляции, но не загружается во время запуска сервера, синхронизация permissions и ограничения движений работать нормально не будут.
+ParCool должен быть установлен и на клиенте, и на сервере.
+
+Рекомендуемый API-файл:
+
+```text
+src/main/resources/apis/parcool_api.yaml
+```
+
+```yaml
+name: ParCool API
+
+neoforge-1.21.1:
+  required_when_enabled: true
+  gradle: |
+    repositories {
+      maven { url "https://cursemaven.com" }
+    }
+
+    dependencies {
+      implementation "curse.maven:parcool-482378:7760593"
+    }
+```
+
+Включить API нужно здесь:
+
+```text
+Workspace settings -> External APIs -> ParCool API
+```
+
+Если используется Nexus Compiler или другой dependency helper, там тоже должна быть эта же версия ParCool.
 
 ---
 
-## Важные папки плагина
+## Важные папки
 
 ```text
 src/main/resources/plugin.json
@@ -52,51 +81,28 @@ src/main/resources/neoforge-1.21.1/templates/
 src/main/resources/neoforge-1.21.1/generator.yaml
 ```
 
-Файл `generator.yaml` нужен для генерации общих helper-классов через `base_templates`.
-
 ---
 
-## Генерируемые helper-классы
+## Base templates
 
-Эти классы создаются в целевом MCreator workspace:
-
-```text
-<mod package>/events/ParCoolApiBridgeEvents.java
-<mod package>/parcool/ParCoolApiMovementBridge.java
-<mod package>/weight/ParCoolApiWeightSystem.java
-<mod package>/network/ParCoolApiCameraNetwork.java
-<mod package>/client/ParCoolApiClientScheduler.java
-```
-
-Они генерируются из шаблонов:
-
-```text
-src/main/resources/neoforge-1.21.1/templates/parcool_api_bridge_events.java.ftl
-src/main/resources/neoforge-1.21.1/templates/parcool_api_movement_bridge.java.ftl
-src/main/resources/neoforge-1.21.1/templates/parcool_api_weight_system.java.ftl
-src/main/resources/neoforge-1.21.1/templates/parcool_api_camera_network.java.ftl
-src/main/resources/neoforge-1.21.1/templates/parcool_api_client_scheduler.java.ftl
-```
-
----
-
-## `generator.yaml`
-
-Путь:
-
-```text
-src/main/resources/neoforge-1.21.1/generator.yaml
-```
-
-Минимальное содержимое:
+`src/main/resources/neoforge-1.21.1/generator.yaml`:
 
 ```yaml
 base_templates:
+  - template: parcool_api_runtime.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiRuntime.java"
+
   - template: parcool_api_bridge_events.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/events/ParCoolApiBridgeEvents.java"
 
   - template: parcool_api_movement_bridge.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiMovementBridge.java"
+
+  - template: parcool_api_stamina_bridge.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiStaminaBridge.java"
+
+  - template: parcool_api_stamina_monitor.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiStaminaMonitor.java"
 
   - template: parcool_api_weight_system.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/weight/ParCoolApiWeightSystem.java"
@@ -108,212 +114,206 @@ base_templates:
     name: "@SRCROOT/@BASEPACKAGEPATH/client/ParCoolApiClientScheduler.java"
 ```
 
-Если твоя сборка MCreator воспринимает этот YAML как полный генератор, а не как overlay, не используй минимальный файл отдельно. В таком случае перенеси эти `base_templates` в полноценный generator overlay.
-
----
-
-# Блоки движений ParCool
-
-## Проверки
-
-Эти блоки возвращают `Boolean`:
-
-- `can [entity] ParCool sprint`
-- `can [entity] ParCool climb`
-- `can [entity] ParCool wall-run`
-- `can [entity] ParCool jump`
-- `is [entity] currently ParCool hanging`
-
-Пример:
+Генерируемые классы:
 
 ```text
-если Event/target entity может ParCool climb:
-    отправить сообщение "Ты можешь карабкаться"
+<mod package>/parcool/ParCoolApiRuntime.java
+<mod package>/events/ParCoolApiBridgeEvents.java
+<mod package>/parcool/ParCoolApiMovementBridge.java
+<mod package>/parcool/ParCoolApiStaminaBridge.java
+<mod package>/parcool/ParCoolApiStaminaMonitor.java
+<mod package>/weight/ParCoolApiWeightSystem.java
+<mod package>/network/ParCoolApiCameraNetwork.java
+<mod package>/client/ParCoolApiClientScheduler.java
 ```
 
 ---
 
-## Блоки действия
+## Стиль имён
 
-Эти блоки работают на сервере. Они используют ParCool server limitations и затем синхронизируют обновлённые permissions игроку.
-
-- `if [condition] disable ParCool sprint ability for [entity]`
-- `if [condition] disable ParCool climb ability for [entity]`
-- `if [condition] disable ParCool jump ability for [entity]`
-- `if [condition] disable ParCool hang ability for [entity]`
-- `if [condition] disable ParCool wall-run ability for [entity]`
-- `if [condition] disable all ParCool movement abilities for [entity]`
-- `enable all ParCool movement abilities for [entity]`
-
-Пример:
+Все входы procedure-блоков используют **UPPER_CASE**:
 
 ```text
-если игрок вошёл в сильный перегруз:
-    disable ParCool sprint ability
-    disable ParCool jump ability
-    disable ParCool wall-run ability
+ENTITY, VALUE, WEIGHT, ENABLED, ITEM, ITEM_ID, DECIMALS, TICKS,
+X, Y, Z, X1, Y1, Z1, X2, Y2, Z2, AMOUNT, DELAY, RADIUS
 ```
 
-Чтобы восстановить движения:
+Dependencies триггеров остаются **lower_case**:
 
 ```text
-enable all ParCool movement abilities for Event/target entity
-force sync ParCool permissions to Event/target entity
+entity, world, current_weight, max_weight, load_percent,
+old_status, new_status, ability_id, enabled, perspective_id, itemstack, event
 ```
 
 ---
 
-# Синхронизация ParCool permissions
+# Движения ParCool
 
-## Блок
+Boolean-блоки:
 
 ```text
-force sync ParCool permissions to [entity]
+can ENTITY ParCool sprint
+can ENTITY ParCool climb
+can ENTITY ParCool wall-run
+can ENTITY ParCool jump
+is ENTITY currently ParCool hanging
 ```
 
-Используй его, если ParCool permissions не появляются у клиента сразу после входа на dedicated server.
+Action-блоки:
 
-Рекомендуемая процедура при входе игрока:
+```text
+disable ParCool sprint ability for ENTITY
+disable ParCool climb ability for ENTITY
+disable ParCool jump ability for ENTITY
+disable ParCool hang ability for ENTITY
+disable ParCool wall-run ability for ENTITY
+disable all ParCool movement abilities for ENTITY
+enable all ParCool movement abilities for ENTITY
+force sync ParCool permissions to ENTITY
+request ParCool client handshake for ENTITY
+```
+
+Ограничения используют новый API ParCool:
+
+```java
+com.alrex.parcool.api.unstable.Limitation
+```
+
+Схема runtime-ограничения:
+
+```text
+Limitation.get(player, id)
+enable / disable
+permit(action, true/false)
+apply
+```
+
+`disable all ParCool movement abilities` проходит по:
+
+```java
+com.alrex.parcool.common.action.Actions.LIST
+```
+
+и отключает все зарегистрированные ParCool actions.
+
+---
+
+# ParCool client/server sync
+
+ParCool требует, чтобы клиент отправил серверу свои client settings. Bridge повторно отправляет client handshake:
+
+```java
+ClientInformationPayload(playerUUID, true, ClientSetting.readFromLocalConfig())
+```
+
+Рекомендуемая процедура входа:
 
 ```text
 When player joins world:
     wait 40 ticks
+    request ParCool client handshake for Event/target entity
     force sync ParCool permissions to Event/target entity
 ```
 
-Некоторые версии ParCool загружают и отправляют player limitations только после полного входа игрока. Задержка 20-40 серверных тиков помогает избежать проблем первого входа.
+---
+
+# Stamina
+
+Getter-блоки:
+
+```text
+ParCool stamina of ENTITY
+ParCool max stamina of ENTITY
+ParCool stamina percent of ENTITY rounded to DECIMALS decimals
+is ENTITY ParCool exhausted
+ParCool stamina recovery attribute of ENTITY
+```
+
+Setter/action-блоки:
+
+```text
+add VALUE ParCool stamina to ENTITY
+consume VALUE ParCool stamina from ENTITY
+set ParCool stamina of ENTITY to VALUE
+set ParCool max stamina of ENTITY to VALUE
+set ParCool stamina recovery of ENTITY to VALUE
+```
+
+Setter-блоки работают на сервере и требуют `ServerPlayer`.
+
+Bridge использует:
+
+```java
+com.alrex.parcool.api.Stamina
+com.alrex.parcool.api.Attributes.MAX_STAMINA
+com.alrex.parcool.api.Attributes.STAMINA_RECOVERY
+```
+
+Блок stamina monitor:
+
+```text
+for ENTITY if ParCool stamina reached 0 run until full:
+    DO
+```
+
+Поведение:
+
+```text
+stamina выше 0 -> ничего не делает
+stamina дошла до 0 -> запускает вложенные блоки
+stamina восстанавливается -> продолжает выполнять вложенные блоки
+stamina полная -> останавливает вложенные блоки
+```
 
 ---
 
-# Переключение камеры
-
-## Мгновенное переключение камеры
+# Камера
 
 ```text
-switch camera perspective of [entity] to [perspective]
+switch camera perspective of ENTITY to PERSPECTIVE
+switch camera perspective of ENTITY to PERSPECTIVE after TICKS client ticks
 ```
 
-Доступные варианты:
-
-- first person
-- third person back
-- third person front
-
-Это серверный вызов, который выполняется на клиенте. Сервер отправляет пакет целевому игроку, а клиент меняет локальный тип камеры.
-
-Пример:
+Варианты:
 
 ```text
-Когда начинается катсцена:
-    switch camera perspective of Event/target entity to third person back
+first person
+third person back
+third person front
 ```
 
----
-
-## Отложенное переключение камеры
-
-```text
-switch camera perspective of [entity] to [perspective] after [ticks] client ticks
-```
-
-Используй этот блок вместо вложения camera block внутрь `client wait`.
-
-Правильно:
-
-```text
-switch camera perspective of Event/target entity to third person back after 20 client ticks
-```
-
-Нежелательный вариант:
-
-```text
-client wait 20 ticks:
-    switch camera perspective ...
-```
-
-Такой вариант может молча ничего не сделать, потому что `client wait` выполняет вложенный код на клиенте, а packet-backed camera block должен запускаться на сервере.
+Камера управляется на клиенте, поэтому используется packet-backed логика.
 
 ---
 
 # Client wait
 
-## Блок
-
 ```text
-for client player [entity] wait [ticks] client ticks then:
-    do ...
+for client player ENTITY wait TICKS client ticks then:
+    DO
 ```
 
-Он ставит отложенную задачу на физическом клиенте выбранного игрока.
-
-Подходит для логики, которая уже выполняется на клиенте:
-
-- визуальные эффекты;
-- HUD / UI;
-- локальные проверки;
-- чисто клиентские косметические действия.
-
-Важное ограничение:
-
-Сервер не может отправить произвольный вложенный Java-код на клиент. Если серверная процедура должна вызвать клиентское действие, для этого нужен отдельный packet-backed блок. Переключение камеры реализовано именно так.
+Подходит для клиентской визуальной/UI/косметической логики. Сервер не может передавать произвольный вложенный Java-код клиенту, поэтому для server-triggered client actions нужны отдельные packet-backed blocks.
 
 ---
 
 # Снятие зачарований
 
-## Блок
-
 ```text
-strip all enchantments from item [item]
+strip all enchantments from item ITEM
 ```
-
-Вход использует `MCItem` для совместимости с UI MCreator, но внутри шаблон конвертирует его в `ItemStack`.
 
 Удаляет:
 
 - обычные зачарования;
-- stored enchantments у enchanted book.
+- stored enchantments;
+- enchantment glint override.
 
-Рекомендуемое использование:
-
-```text
-strip all enchantments from item in main hand of Event/target entity
-```
-
-Если передать обычный тип предмета, например `Items.DIAMOND_SWORD`, код создаст временный stack. Чтобы изменить реальный предмет в инвентаре, нужно передавать настоящий item stack через `itemstack_to_mcitem`.
-
----
-
-# Блоки стамины
-
-Плагин включает блоки для чтения и изменения ParCool stamina.
-
-Типичные блоки:
-
-- добавить ParCool stamina;
-- потратить ParCool stamina;
-- получить текущую ParCool stamina;
-- получить максимум ParCool stamina;
-- получить процент stamina с округлением до выбранного количества знаков;
-- проверить exhaustion;
-- задать текущую stamina;
-- задать max stamina;
-- получить stamina recovery attribute;
-- задать stamina recovery attribute.
-
-Не вызывай stamina setters слишком рано при входе игрока. Если нужна настройка при входе, лучше делать задержку на несколько серверных тиков и потом вызывать force sync permissions.
+Для изменения реального предмета в инвентаре передавай настоящий item stack, например предмет в main hand.
 
 ---
 
 # Система веса
-
-Система веса задаёт предметам вес одной единицы и считает общий вес игрока.
-
-Учитываются:
-
-- основной инвентарь;
-- броня;
-- offhand.
 
 Формула:
 
@@ -321,179 +321,63 @@ strip all enchantments from item in main hand of Event/target entity
 общий вес = сумма(вес одной единицы предмета * количество в стаке)
 ```
 
-Значения игрока сохраняются в persistent data:
-
-- максимальный переносимый вес;
-- включена ли автоматическая система веса;
-- последний известный статус веса.
-
-Это нужно, чтобы настройки игрока не сбрасывались после перезахода или перезагрузки мира.
-
----
-
-## Блоки настройки веса
-
-### Задать вес всем зарегистрированным предметам
+Учитывается:
 
 ```text
-set weight of all registered items to [number]
+основной инвентарь
+броня
+offhand
 ```
 
-Рекомендуется вызывать при старте сервера:
+Данные хранятся здесь:
 
 ```text
-set weight of all registered items to 1
+world/data/<modid>_parcool_api_weight_system_v2.dat
 ```
 
-### Задать вес конкретному предмету
+Runtime maps — только кэш. Старый player persistentData используется только для migration/fallback.
+
+Блоки настройки:
 
 ```text
-set weight of item [item] to [number]
+set weight of all registered items to WEIGHT
+set weight of item ITEM to WEIGHT
+set weight of item with id ITEM_ID to WEIGHT
 ```
 
-Примеры:
+`set weight of all registered items to X` задаёт default item weight и очищает конкретные overrides.
+
+Для предметов из других модов используй registry IDs:
 
 ```text
-set weight of item stone to 2
-set weight of item iron ingot to 1.5
-set weight of item diamond sword to 5
-set weight of item enchanted book to 1.5
+minecraft:stone
+create:andesite_alloy
+farmersdelight:cabbage
 ```
 
-### Задать вес предмету по строковому ID
+Getter-блоки:
 
 ```text
-set weight of item with id [string] to [number]
+unit weight of item ITEM
+stack weight of item ITEM
+unit weight of item with id ITEM_ID
+inventory weight of ENTITY
+max carry weight of ENTITY
+carry load percent of ENTITY rounded to DECIMALS decimals
+is ENTITY overloaded by weight
 ```
 
-Это нужно для предметов из других модов.
-
-Примеры:
+Блоки управления:
 
 ```text
-set weight of item with id "minecraft:stone" to 2
-set weight of item with id "create:andesite_alloy" to 1.5
-set weight of item with id "farmersdelight:cabbage" to 0.4
-```
-
-Если строка не содержит namespace, плагин считает, что это предмет из `minecraft`.
-
-Пример:
-
-```text
-"stone" -> "minecraft:stone"
+set max carry weight of ENTITY to WEIGHT
+set automatic weight system for ENTITY to ENABLED
+update weight overload state for ENTITY
 ```
 
 ---
 
-## Блоки получения веса
-
-### Вес одной единицы предмета
-
-```text
-unit weight of item [item]
-```
-
-Возвращает настроенный вес одной единицы предмета.
-
-Это не то же самое, что вес всего stack. Например, если один камень весит `2`, то stack из 64 камней весит `128`.
-
-### Вес всего stack
-
-```text
-stack weight of item [item]
-```
-
-Возвращает:
-
-```text
-unit weight * stack count
-```
-
-### Вес одной единицы по строковому ID
-
-```text
-unit weight of item with id [string]
-```
-
-Удобно для проверки веса предметов из других модов.
-
-### Вес инвентаря
-
-```text
-inventory weight of [entity]
-```
-
-Возвращает общий переносимый вес игрока.
-
-### Максимальный переносимый вес
-
-```text
-max carry weight of [entity]
-```
-
-### Процент нагрузки с округлением
-
-```text
-carry load percent of [entity] rounded to [decimals] decimals
-```
-
-Примеры:
-
-```text
-75 = первый порог наказаний
-125 = порог сильного перегруза
-175 = порог тяжёлого перегруза
-200 = критический порог
-```
-
-### Проверка перегруза
-
-```text
-is [entity] overloaded by weight
-```
-
-Возвращает `true`, если нагрузка игрока не меньше `75%`.
-
----
-
-## Блоки управления весом
-
-### Задать максимальный переносимый вес
-
-```text
-set max carry weight of [entity] to [number]
-```
-
-Пример:
-
-```text
-set max carry weight of Event/target entity to 64
-```
-
-Это значение сохраняется в persistent data игрока.
-
-### Включить или выключить автоматическую систему веса
-
-```text
-set automatic weight system for [entity] to [true/false]
-```
-
-Это значение сохраняется в persistent data игрока.
-
-### Вручную обновить состояние веса
-
-```text
-update weight overload state for [entity]
-```
-
-Сразу пересчитывает вес и применяет или снимает эффекты и ParCool limitations.
-
----
-
-# Стадии перегруза
-
-Текущая система начинает наказания с **75%** нагрузки и идёт этапами до **200%**.
+## Стадии перегруза
 
 | Статус | Название | Порог |
 |---:|---|---|
@@ -503,226 +387,83 @@ update weight overload state for [entity]
 | 3 | Тяжёлый перегруз | `175% - 199%` |
 | 4 | Критический перегруз | `>= 200%` |
 
-## Статус 0 — норма
-
-Наказаний нет.
-
-## Статус 1 — лёгкий перегруз
-
 Эффекты:
 
-- Slowness I
+```text
+Статус 1: Slowness I
+Статус 2: Slowness II, Mining Fatigue I, запрет sprint
+Статус 3: Slowness III, Mining Fatigue II, Weakness I, запрет sprint/jump/wall-run
+Статус 4: сильная Slowness, Mining Fatigue III, Weakness II, Darkness, запрет всех ParCool movements
+```
 
-Ограничения ParCool:
+---
 
-- нет
+# Utility-блоки
 
-## Статус 2 — сильный перегруз
+```text
+spawn item ITEM at x X y Y z Z amount AMOUNT pickup delay DELAY despawnable? DESPAWNABLE
+if entity ENTITY is inside cuboid x1 X1 y1 Y1 z1 Z1 x2 X2 y2 Y2 z2 Z2: DO
+count item ITEM in inventory of ENTITY
+remove item ITEM amount AMOUNT from inventory of ENTITY
+give item ITEM amount AMOUNT to ENTITY drop overflow? DROP_OVERFLOW
+if entity ENTITY is within radius RADIUS from x X y Y z Z: DO
+distance from entity ENTITY to x X y Y z Z
+set motion of entity ENTITY to x X y Y z Z
+```
 
-Эффекты:
-
-- Slowness II
-- Mining Fatigue I
-
-Ограничения ParCool:
-
-- FastRun
-
-## Статус 3 — тяжёлый перегруз
-
-Эффекты:
-
-- Slowness III
-- Mining Fatigue II
-- Weakness I
-
-Ограничения ParCool:
-
-- FastRun
-- ChargeJump
-- JumpFromBar
-- HorizontalWallRun
-- VerticalWallRun
-
-## Статус 4 — критический перегруз
-
-Эффекты:
-
-- сильная Slowness
-- Mining Fatigue III
-- Weakness II
-- Darkness
-
-Ограничения ParCool:
-
-- FastRun
-- ChargeJump
-- JumpFromBar
-- HorizontalWallRun
-- VerticalWallRun
-- ClimbUp
-- ClimbPoles
-- HangDown
-- ClingToCliff
-
-Когда игрок возвращается ниже порога ограничения, weight-specific ParCool limitation очищается.
+`DELAY` в spawn item block — это задержка подбора в тиках.
 
 ---
 
 # Кастомные триггеры
 
-Плагин добавляет custom global triggers.
-
-Файлы триггеров лежат здесь:
+Триггеры веса:
 
 ```text
-src/main/resources/triggers/
-src/main/resources/neoforge-1.21.1/triggers/
+ParCool weight status changed
+ParCool player became overloaded
+ParCool player stopped being overloaded
+ParCool player entered heavy overload
+ParCool player entered critical overload
 ```
 
-Шаблоны триггеров используют MCreator-паттерн `procedureDependenciesCode`, поэтому сгенерированная процедура получает только те зависимости, которые реально используются в процедуре.
+Триггер движения:
 
----
+```text
+ParCool movement ability changed by plugin
+```
 
-## Триггеры веса
+Триггер sync:
 
-### ParCool weight status changed
+```text
+ParCool permissions force synced
+```
 
-Зависимости:
+Триггер камеры:
 
-- `entity`
-- `world`
-- `old_status`
-- `new_status`
-- `current_weight`
-- `max_weight`
-- `load_percent`
+```text
+ParCool camera perspective requested
+```
 
-Подходит для общей реакции на любые изменения статуса веса.
+Триггер предметов:
 
-### ParCool player became overloaded
+```text
+ParCool item enchantments stripped
+```
 
-Зависимости:
+Клиентский триггер:
 
-- `entity`
-- `world`
-- `current_weight`
-- `max_weight`
-- `load_percent`
+```text
+ParCool client wait finished
+```
 
-### ParCool player stopped being overloaded
-
-Зависимости:
-
-- `entity`
-- `world`
-- `current_weight`
-- `max_weight`
-- `load_percent`
-
-### ParCool player entered heavy overload
-
-Зависимости:
-
-- `entity`
-- `world`
-- `current_weight`
-- `max_weight`
-- `load_percent`
-
-### ParCool player entered critical overload
-
-Зависимости:
-
-- `entity`
-- `world`
-- `current_weight`
-- `max_weight`
-- `load_percent`
-
----
-
-## Триггер изменения ParCool movement ability
-
-### ParCool movement ability changed by plugin
-
-Зависимости:
-
-- `entity`
-- `world`
-- `ability_id`
-- `enabled`
-
-ID способностей:
-
-| ID | Способность |
-|---:|---|
-| 1 | sprint |
-| 2 | climb |
-| 3 | jump |
-| 4 | hang |
-| 5 | wall-run |
-| 6 | all movements |
-
----
-
-## Триггер синхронизации permissions
-
-### ParCool permissions force synced
-
-Зависимости:
-
-- `entity`
-- `world`
-
----
-
-## Триггер камеры
-
-### ParCool camera perspective requested
-
-Зависимости:
-
-- `entity`
-- `world`
-- `perspective_id`
-
-ID камеры:
-
-| ID | Камера |
-|---:|---|
-| 0 | first person |
-| 1 | third person back |
-| 2 | third person front |
-
----
-
-## Триггер предметов
-
-### ParCool item enchantments stripped
-
-Зависимости:
-
-- `itemstack`
-
----
-
-## Клиентский триггер
-
-### ParCool client wait finished
-
-Зависимости:
-
-- `entity`
-- `world`
-
-Этот триггер срабатывает на физическом клиенте.
+Dependencies триггеров остаются lower-case и передаются через `procedureDependenciesCode`.
 
 ---
 
 # Рекомендуемая настройка
 
-## Процедура при старте сервера
+Server start:
 
 ```text
 set weight of all registered items to 1
@@ -731,118 +472,94 @@ set weight of item cobblestone to 2
 set weight of item iron ingot to 1.5
 set weight of item diamond sword to 5
 set weight of item enchanted book to 1.5
-
 set weight of item with id "create:andesite_alloy" to 1.5
-set weight of item with id "farmersdelight:cabbage" to 0.4
 ```
 
-## Процедура при входе игрока
+Player join:
 
 ```text
-set max carry weight of Event/target entity to 64
 set automatic weight system for Event/target entity to true
 wait 40 ticks
+request ParCool client handshake for Event/target entity
 force sync ParCool permissions to Event/target entity
+update weight overload state for Event/target entity
 ```
 
-Так как max carry weight и auto-enabled сохраняются, их не обязательно задавать при каждом входе, если ты не хочешь сбросить или обновить настройки игрока.
+Max carry weight задавай только если нужно инициализировать или изменить значение:
+
+```text
+set max carry weight of Event/target entity to 200
+```
 
 ---
 
-# Что работает на сервере
+# Cleanup перед тестом
 
-- расчёт веса;
-- эффекты перегруза;
-- ParCool movement limitations;
-- запросы синхронизации permissions;
-- блоки стамины;
-- снятие зачарований.
+После крупных изменений шаблонов удали generated-файлы:
 
-# Что работает на клиенте
+```text
+src/main/java/net/mcreator/<modid>/parcool/ParCoolApiMovementBridge.java
+src/main/java/net/mcreator/<modid>/parcool/ParCoolApiStaminaBridge.java
+src/main/java/net/mcreator/<modid>/parcool/ParCoolApiStaminaMonitor.java
+src/main/java/net/mcreator/<modid>/client/ParCoolApiClientScheduler.java
+src/main/java/net/mcreator/<modid>/network/ParCoolApiCameraNetwork.java
+src/main/java/net/mcreator/<modid>/weight/ParCoolApiWeightSystem.java
+```
 
-- переключение камеры;
-- отложенное переключение камеры;
-- client wait;
-- локальная визуальная/UI-логика.
+Для чистого теста удали старые данные:
 
-Камера — клиентская настройка, поэтому она должна работать через packet.
+```text
+run/world/data/<modid>_parcool_api_weight_system.dat
+run/world/data/<modid>_parcool_api_weight_system_v2.dat
+run/world/serverconfig/parcool/limitations/parcool_api/mcreator_bridge/
+```
 
 ---
 
 # Частые проблемы
 
-## ParCool работает только после перезахода
+## ParCool не работает при первом входе
 
-Добавь при входе игрока:
-
-```text
-wait 40 ticks
-force sync ParCool permissions to Event/target entity
-```
-
-## Движения остались выключенными
-
-Выполни:
+Проверь, что сервер загрузил:
 
 ```text
-enable all ParCool movement abilities for Event/target entity
-force sync ParCool permissions to Event/target entity
+1.21.1-3.4.3.3-NF
 ```
 
-Также проверь serverconfig ParCool на наличие limitations.
-
-## Отложенная камера не работает
-
-Не помещай camera block внутрь client wait. Используй:
+После задержки входа вызови:
 
 ```text
-switch camera perspective of Event/target entity to third person back after 20 client ticks
+request ParCool client handshake
+force sync ParCool permissions
 ```
 
-## Вес не обновляется
+## Disable all movement ничего не делает
 
-Проверь, что автоматическая система веса включена:
+Проверь generated Java. Там должны быть:
+
+```java
+com.alrex.parcool.api.unstable.Limitation
+com.alrex.parcool.common.action.Actions.LIST
+```
+
+Также проверь, что procedure-блок использует `ENTITY`.
+
+## Перегруз всё ещё считается от 64
+
+Проверь, что блок использует `ENTITY` и `WEIGHT`, выполняется на сервере, и старые weight data удалены перед тестом.
+
+## Item weight возвращает 0
+
+Проверь, что templates используют:
 
 ```text
-set automatic weight system for Event/target entity to true
+ITEM
+ITEM_ID
+WEIGHT
 ```
 
-или вручную вызови:
-
-```text
-update weight overload state for Event/target entity
-```
-
-## Unit weight предмета возвращает 0
-
-Используй обновлённый блок `unit weight of item` для веса типа предмета и `stack weight of item` для веса всего stack.
-
-Если работаешь с предметом из другого мода, лучше использовать string-ID блоки:
+Для modded items лучше использовать:
 
 ```text
 unit weight of item with id "modid:item_name"
 ```
-
-## Снятие зачарований не меняет предмет в инвентаре
-
-Используй настоящий item stack, а не просто тип предмета.
-
-Хорошо:
-
-```text
-item in main hand of Event/target entity
-```
-
-Плохо для изменения инвентаря:
-
-```text
-plain Diamond Sword item type
-```
-
----
-
-# Заметки для разработки
-
-Плагин специально держит игровую логику server-authoritative. Клиентские системы изолированы и не должны напрямую менять серверное игровое состояние.
-
-Версии MCreator, NeoForge и ParCool желательно держать согласованными. Внутренние классы и методы ParCool отличаются между версиями, поэтому для некоторых sync-методов используются compatibility wrappers и reflection.

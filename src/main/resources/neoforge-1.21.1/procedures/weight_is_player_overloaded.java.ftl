@@ -1,6 +1,6 @@
-<#if input$entity??>
-((${input$entity}) instanceof net.minecraft.world.entity.player.Player
-	? ${package}.weight.ParCoolApiWeightSystem.isOverloaded((net.minecraft.world.entity.player.Player) (${input$entity}))
+<#if input$ENTITY??>
+((${input$ENTITY}) instanceof net.minecraft.world.entity.player.Player
+	? ${package}.weight.ParCoolApiWeightSystem.isOverloaded((net.minecraft.world.entity.player.Player) (${input$ENTITY}))
 	: false)
 <#else>
 false

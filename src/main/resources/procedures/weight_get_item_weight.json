@@ -4,7 +4,7 @@
   "args0": [
     {
       "type": "input_value",
-      "name": "item",
+      "name": "ITEM",
       "check": "MCItem"
     }
   ],
@@ -16,10 +16,10 @@
   "mcreator": {
     "toolbox_id": "weight_system",
     "toolbox_init": [
-      "<value name=\"item\"><block type=\"itemstack_to_mcitem\"></block></value>"
+      "<value name=\"ITEM\"><block type=\"itemstack_to_mcitem\"></block></value>"
     ],
     "inputs": [
-      "item"
+      "ITEM"
     ]
   }
 }

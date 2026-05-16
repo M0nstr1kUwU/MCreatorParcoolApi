@@ -1,5 +1,5 @@
-<#if input$item_id??>
-${package}.weight.ParCoolApiWeightSystem.getUnitWeightById(String.valueOf(${input$item_id}))
+<#if input$ITEM_ID??>
+${package}.weight.ParCoolApiWeightSystem.getUnitWeightById(String.valueOf(${input$ITEM_ID}))
 <#else>
 0
 </#if>

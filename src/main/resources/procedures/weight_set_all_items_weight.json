@@ -4,7 +4,7 @@
   "args0": [
     {
       "type": "input_value",
-      "name": "weight",
+      "name": "WEIGHT",
       "check": "Number"
     }
   ],
@@ -17,10 +17,10 @@
   "mcreator": {
     "toolbox_id": "weight_system",
     "toolbox_init": [
-      "<value name=\"weight\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+      "<value name=\"WEIGHT\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
     ],
     "inputs": [
-      "weight"
+      "WEIGHT"
     ]
   }
 }

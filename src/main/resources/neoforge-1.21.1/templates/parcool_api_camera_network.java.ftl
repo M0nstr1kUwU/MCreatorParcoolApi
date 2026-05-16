@@ -18,7 +18,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 @EventBusSubscriber(modid = "${modid}", bus = EventBusSubscriber.Bus.MOD)
 public final class ParCoolApiCameraNetwork {
-	private static final String NETWORK_VERSION = "1";
+	private static final String NETWORK_VERSION = "2";
 
 	private ParCoolApiCameraNetwork() {
 	}
@@ -31,6 +31,12 @@ public final class ParCoolApiCameraNetwork {
 			SetCameraPerspectivePayload.TYPE,
 			SetCameraPerspectivePayload.STREAM_CODEC,
 			SetCameraPerspectivePayload::handleClient
+		);
+
+		registrar.playToClient(
+			RequestParCoolClientHandshakePayload.TYPE,
+			RequestParCoolClientHandshakePayload.STREAM_CODEC,
+			RequestParCoolClientHandshakePayload::handleClient
 		);
 	}
 
@@ -48,6 +54,17 @@ public final class ParCoolApiCameraNetwork {
 
 		${package}.events.ParCoolApiBridgeEvents.fireCameraPerspectiveRequested(player, perspectiveNameToId(normalized));
 		PacketDistributor.sendToPlayer(player, new SetCameraPerspectivePayload(normalized, safeDelayTicks));
+	}
+
+	public static void requestParCoolClientHandshake(ServerPlayer player) {
+		if (player == null) {
+			return;
+		}
+
+		try {
+			PacketDistributor.sendToPlayer(player, RequestParCoolClientHandshakePayload.INSTANCE);
+		} catch (Throwable ignored) {
+		}
 	}
 
 	private static String normalizePerspectiveName(String perspectiveName) {
@@ -91,6 +108,8 @@ public final class ParCoolApiCameraNetwork {
 			context.enqueueWork(() -> {
 				int safeDelayTicks = Math.max(0, payload.delayTicks());
 
+				${package}.client.ParCoolApiClientScheduler.requestParCoolClientHandshakeBurst();
+
 				if (safeDelayTicks <= 0) {
 					ClientCameraPerspectiveHandler.apply(payload.perspectiveName());
 				} else {
@@ -100,6 +119,25 @@ public final class ParCoolApiCameraNetwork {
 					);
 				}
 			});
+		}
+	}
+
+	public enum RequestParCoolClientHandshakePayload implements CustomPacketPayload {
+		INSTANCE;
+
+		public static final CustomPacketPayload.Type<RequestParCoolClientHandshakePayload> TYPE =
+			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "parcool_api_request_client_handshake"));
+
+		public static final StreamCodec<RegistryFriendlyByteBuf, RequestParCoolClientHandshakePayload> STREAM_CODEC =
+			StreamCodec.unit(INSTANCE);
+
+		@Override
+		public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
+
+		private static void handleClient(RequestParCoolClientHandshakePayload payload, IPayloadContext context) {
+			context.enqueueWork(${package}.client.ParCoolApiClientScheduler::requestParCoolClientHandshakeBurst);
 		}
 	}
 

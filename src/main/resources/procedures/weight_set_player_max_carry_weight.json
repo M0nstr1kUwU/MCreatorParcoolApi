@@ -4,12 +4,12 @@
   "args0": [
     {
       "type": "input_value",
-      "name": "entity",
+      "name": "ENTITY",
       "check": "Entity"
     },
     {
       "type": "input_value",
-      "name": "weight",
+      "name": "WEIGHT",
       "check": "Number"
     }
   ],
@@ -22,12 +22,12 @@
   "mcreator": {
     "toolbox_id": "weight_system",
     "toolbox_init": [
-      "<value name=\"entity\"><block type=\"entity_from_deps\"></block></value>",
-      "<value name=\"weight\"><block type=\"math_number\"><field name=\"NUM\">64</field></block></value>"
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"WEIGHT\"><block type=\"math_number\"><field name=\"NUM\">64</field></block></value>"
     ],
     "inputs": [
-      "entity",
-      "weight"
+      "ENTITY",
+      "WEIGHT"
     ]
   }
 }

@@ -1,13 +1,14 @@
 <#include "mcitems.ftl">
-<#if input$item??>
+<#if input$ITEM??>
 ((java.util.function.Supplier<Double>) () -> {
 	try {
-		net.minecraft.world.item.ItemStack __parcoolApiUnitWeightStack =
-			${mappedMCItemToItemStackCode(input$item, 1)};
+		net.minecraft.world.item.ItemStack _stack = ${mappedMCItemToItemStackCode(input$ITEM, 1)};
 
-		return ${package}.weight.ParCoolApiWeightSystem.getUnitWeight(__parcoolApiUnitWeightStack);
+		return !_stack.isEmpty()
+			? ${package}.weight.ParCoolApiWeightSystem.getUnitWeight(_stack)
+			: 0.0D;
 	} catch (Throwable ignored) {
-		return 0.0;
+		return 0.0D;
 	}
 }).get()
 <#else>

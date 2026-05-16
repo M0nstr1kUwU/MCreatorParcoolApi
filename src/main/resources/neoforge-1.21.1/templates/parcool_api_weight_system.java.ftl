@@ -21,12 +21,18 @@ import net.minecraft.world.level.saveddata.SavedData;
 
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 @EventBusSubscriber(modid = "${modid}")
 public final class ParCoolApiWeightSystem {
-	private static final String DATA_NAME = "${modid}_parcool_api_weight_system";
+	private static final String DATA_NAME = "${modid}_parcool_api_weight_system_v2";
+
+	private static final String LEGACY_TAG_MAX_CARRY_WEIGHT = "ParCoolApiWeight_MaxCarryWeight";
+	private static final String LEGACY_TAG_HAS_AUTO_ENABLED = "ParCoolApiWeight_HasAutoEnabled";
+	private static final String LEGACY_TAG_AUTO_ENABLED = "ParCoolApiWeight_AutoEnabled";
+	private static final String LEGACY_TAG_LAST_STATUS = "ParCoolApiWeight_LastStatus";
 
 	private static final Map<ResourceLocation, Double> ITEM_WEIGHTS = new ConcurrentHashMap<>();
 	private static final Map<UUID, Double> PLAYER_MAX_WEIGHTS = new ConcurrentHashMap<>();
@@ -42,26 +48,38 @@ public final class ParCoolApiWeightSystem {
 	}
 
 	@SubscribeEvent
-    public static void onPlayerLoggedIn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
-    	if (event.getEntity() instanceof ServerPlayer serverPlayer) {
-    		getMaxCarryWeight(serverPlayer);
-    		isAutoEnabled(serverPlayer);
-    		getLastStatus(serverPlayer);
+	public static void onServerStarted(ServerStartedEvent event) {
+		loadedFromSavedData = false;
+		ITEM_WEIGHTS.clear();
+		PLAYER_MAX_WEIGHTS.clear();
+		PLAYER_AUTO_ENABLED.clear();
+		PLAYER_LAST_STATUS.clear();
 
-    		${JavaModName}.queueServerWork(20, () -> updatePlayerWeightState(serverPlayer));
-    		${JavaModName}.queueServerWork(40, () -> updatePlayerWeightState(serverPlayer));
-    		${JavaModName}.queueServerWork(80, () -> updatePlayerWeightState(serverPlayer));
-    	}
-    }
+		ensureLoadedFromSavedData();
+	}
 
-	private static void ensurePlayerDefaults(ServerPlayer player) {
-		if (player == null) {
-			return;
+	@SubscribeEvent
+	public static void onPlayerLoggedIn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
+		if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+			ensureLoadedFromSavedData();
+			migrateLegacyPlayerDataIfNeeded(serverPlayer);
+
+			getMaxCarryWeight(serverPlayer);
+			isAutoEnabled(serverPlayer);
+			getLastStatus(serverPlayer);
+
+			${JavaModName}.queueServerWork(20, () -> {
+				if (serverPlayer.connection != null) {
+					updatePlayerWeightState(serverPlayer);
+				}
+			});
+
+			${JavaModName}.queueServerWork(60, () -> {
+				if (serverPlayer.connection != null) {
+					updatePlayerWeightState(serverPlayer);
+				}
+			});
 		}
-
-		getMaxCarryWeight(player);
-		isAutoEnabled(player);
-		getLastStatus(player);
 	}
 
 	public static void setDefaultItemWeight(double weight) {
@@ -82,7 +100,7 @@ public final class ParCoolApiWeightSystem {
 		defaultItemWeight = Math.max(0.0D, weight);
 		ITEM_WEIGHTS.clear();
 
-		saveGlobalSettings();
+		saveAll();
 	}
 
 	public static void setItemWeight(ItemStack stack, double weight) {
@@ -197,43 +215,72 @@ public final class ParCoolApiWeightSystem {
 		return total;
 	}
 
-	public static void setMaxCarryWeight(Player player, double maxWeight) {
-    	if (player == null) {
-    		return;
-    	}
+	public static void setMaxCarryWeight(ServerPlayer player, double maxWeight) {
+		if (player == null) {
+			return;
+		}
 
-    	double safeMaxWeight = sanitizeMaxCarryWeight(maxWeight);
+		ensureLoadedFromSavedData();
 
-    	player.getPersistentData().putDouble("ParCoolApiWeight_MaxCarryWeight", safeMaxWeight);
-    	PLAYER_MAX_WEIGHTS.put(player.getUUID(), safeMaxWeight);
+		UUID uuid = player.getUUID();
+		double safeMaxWeight = sanitizeMaxCarryWeight(maxWeight);
 
-    	if (player instanceof ServerPlayer serverPlayer) {
-    		updatePlayerWeightState(serverPlayer);
-    	}
-    }
+		PLAYER_MAX_WEIGHTS.put(uuid, safeMaxWeight);
+
+		ParCoolApiWeightSavedData data = getSavedData();
+
+		if (data != null) {
+			data.playerMaxWeights.put(uuid, safeMaxWeight);
+			data.setDirty();
+		}
+
+		player.getPersistentData().putDouble(LEGACY_TAG_MAX_CARRY_WEIGHT, safeMaxWeight);
+		updatePlayerWeightState(player);
+	}
 
 	public static double getMaxCarryWeight(Player player) {
-    	if (player == null) {
-    		return defaultMaxCarryWeight;
-    	}
+		if (player == null) {
+			return defaultMaxCarryWeight;
+		}
 
-    	if (player.getPersistentData().contains("ParCoolApiWeight_MaxCarryWeight")) {
-    		double stored = sanitizeMaxCarryWeight(player.getPersistentData().getDouble("ParCoolApiWeight_MaxCarryWeight"));
-    		PLAYER_MAX_WEIGHTS.put(player.getUUID(), stored);
-    		return stored;
-    	}
+		ensureLoadedFromSavedData();
 
-    	if (PLAYER_MAX_WEIGHTS.containsKey(player.getUUID())) {
-    		double stored = sanitizeMaxCarryWeight(PLAYER_MAX_WEIGHTS.get(player.getUUID()));
-    		player.getPersistentData().putDouble("ParCoolApiWeight_MaxCarryWeight", stored);
-    		return stored;
-    	}
+		UUID uuid = player.getUUID();
 
-    	double fallback = sanitizeMaxCarryWeight(defaultMaxCarryWeight);
-    	player.getPersistentData().putDouble("ParCoolApiWeight_MaxCarryWeight", fallback);
-    	PLAYER_MAX_WEIGHTS.put(player.getUUID(), fallback);
-    	return fallback;
-    }
+		if (PLAYER_MAX_WEIGHTS.containsKey(uuid)) {
+			return sanitizeMaxCarryWeight(PLAYER_MAX_WEIGHTS.get(uuid));
+		}
+
+		ParCoolApiWeightSavedData data = getSavedData();
+
+		if (data != null && data.playerMaxWeights.containsKey(uuid)) {
+			double stored = sanitizeMaxCarryWeight(data.playerMaxWeights.get(uuid));
+			PLAYER_MAX_WEIGHTS.put(uuid, stored);
+			return stored;
+		}
+
+		if (player.getPersistentData().contains(LEGACY_TAG_MAX_CARRY_WEIGHT)) {
+			double migrated = sanitizeMaxCarryWeight(player.getPersistentData().getDouble(LEGACY_TAG_MAX_CARRY_WEIGHT));
+			PLAYER_MAX_WEIGHTS.put(uuid, migrated);
+
+			if (data != null) {
+				data.playerMaxWeights.put(uuid, migrated);
+				data.setDirty();
+			}
+
+			return migrated;
+		}
+
+		double fallback = sanitizeMaxCarryWeight(defaultMaxCarryWeight);
+		PLAYER_MAX_WEIGHTS.put(uuid, fallback);
+
+		if (data != null) {
+			data.playerMaxWeights.put(uuid, fallback);
+			data.setDirty();
+		}
+
+		return fallback;
+	}
 
 	public static void setDefaultMaxCarryWeight(double maxWeight) {
 		ensureLoadedFromSavedData();
@@ -284,66 +331,145 @@ public final class ParCoolApiWeightSystem {
 		return 0;
 	}
 
-	public static void setAutoEnabled(Player player, boolean enabled) {
-    	if (player == null) {
-    		return;
-    	}
+	public static void setAutoEnabled(ServerPlayer player, boolean enabled) {
+		if (player == null) {
+			return;
+		}
 
-    	player.getPersistentData().putBoolean("ParCoolApiWeight_HasAutoEnabled", true);
-    	player.getPersistentData().putBoolean("ParCoolApiWeight_AutoEnabled", enabled);
-    	PLAYER_AUTO_ENABLED.put(player.getUUID(), enabled);
+		ensureLoadedFromSavedData();
 
-    	if (!enabled && player instanceof ServerPlayer serverPlayer) {
-    		clearParCoolWeightRestriction(serverPlayer);
-    		setLastStatus(serverPlayer, 0);
-    	}
-    }
+		UUID uuid = player.getUUID();
+
+		PLAYER_AUTO_ENABLED.put(uuid, enabled);
+
+		ParCoolApiWeightSavedData data = getSavedData();
+
+		if (data != null) {
+			data.playerAutoEnabled.put(uuid, enabled);
+			data.setDirty();
+		}
+
+		player.getPersistentData().putBoolean(LEGACY_TAG_HAS_AUTO_ENABLED, true);
+		player.getPersistentData().putBoolean(LEGACY_TAG_AUTO_ENABLED, enabled);
+
+		if (!enabled) {
+			clearParCoolWeightRestriction(player);
+			setLastStatus(player, 0);
+		}
+
+		updatePlayerWeightState(player);
+	}
 
 	public static boolean isAutoEnabled(Player player) {
-    	if (player == null) {
-    		return false;
-    	}
+		if (player == null) {
+			return false;
+		}
 
-    	if (player.getPersistentData().getBoolean("ParCoolApiWeight_HasAutoEnabled")) {
-    		boolean stored = player.getPersistentData().getBoolean("ParCoolApiWeight_AutoEnabled");
-    		PLAYER_AUTO_ENABLED.put(player.getUUID(), stored);
-    		return stored;
-    	}
+		ensureLoadedFromSavedData();
 
-    	player.getPersistentData().putBoolean("ParCoolApiWeight_HasAutoEnabled", true);
-    	player.getPersistentData().putBoolean("ParCoolApiWeight_AutoEnabled", true);
-    	PLAYER_AUTO_ENABLED.put(player.getUUID(), true);
-    	return true;
-    }
+		UUID uuid = player.getUUID();
+
+		if (PLAYER_AUTO_ENABLED.containsKey(uuid)) {
+			return PLAYER_AUTO_ENABLED.get(uuid);
+		}
+
+		ParCoolApiWeightSavedData data = getSavedData();
+
+		if (data != null && data.playerAutoEnabled.containsKey(uuid)) {
+			boolean stored = data.playerAutoEnabled.get(uuid);
+			PLAYER_AUTO_ENABLED.put(uuid, stored);
+			return stored;
+		}
+
+		if (player.getPersistentData().getBoolean(LEGACY_TAG_HAS_AUTO_ENABLED)) {
+			boolean migrated = player.getPersistentData().getBoolean(LEGACY_TAG_AUTO_ENABLED);
+			PLAYER_AUTO_ENABLED.put(uuid, migrated);
+
+			if (data != null) {
+				data.playerAutoEnabled.put(uuid, migrated);
+				data.setDirty();
+			}
+
+			return migrated;
+		}
+
+		PLAYER_AUTO_ENABLED.put(uuid, true);
+
+		if (data != null) {
+			data.playerAutoEnabled.put(uuid, true);
+			data.setDirty();
+		}
+
+		return true;
+	}
 
 	public static void setAutoUpdateIntervalTicks(int ticks) {
 		autoUpdateIntervalTicks = Math.max(1, ticks);
 	}
 
 	private static int getLastStatus(Player player) {
-    	if (player == null) {
-    		return -1;
-    	}
+		if (player == null) {
+			return -1;
+		}
 
-    	if (player.getPersistentData().contains("ParCoolApiWeight_LastStatus")) {
-    		int stored = player.getPersistentData().getInt("ParCoolApiWeight_LastStatus");
-    		PLAYER_LAST_STATUS.put(player.getUUID(), stored);
-    		return stored;
-    	}
+		ensureLoadedFromSavedData();
 
-    	PLAYER_LAST_STATUS.put(player.getUUID(), -1);
-    	player.getPersistentData().putInt("ParCoolApiWeight_LastStatus", -1);
-    	return -1;
-    }
+		UUID uuid = player.getUUID();
+
+		if (PLAYER_LAST_STATUS.containsKey(uuid)) {
+			return PLAYER_LAST_STATUS.get(uuid);
+		}
+
+		ParCoolApiWeightSavedData data = getSavedData();
+
+		if (data != null && data.playerLastStatus.containsKey(uuid)) {
+			int stored = data.playerLastStatus.get(uuid);
+			PLAYER_LAST_STATUS.put(uuid, stored);
+			return stored;
+		}
+
+		if (player.getPersistentData().contains(LEGACY_TAG_LAST_STATUS)) {
+			int migrated = player.getPersistentData().getInt(LEGACY_TAG_LAST_STATUS);
+			PLAYER_LAST_STATUS.put(uuid, migrated);
+
+			if (data != null) {
+				data.playerLastStatus.put(uuid, migrated);
+				data.setDirty();
+			}
+
+			return migrated;
+		}
+
+		PLAYER_LAST_STATUS.put(uuid, -1);
+
+		if (data != null) {
+			data.playerLastStatus.put(uuid, -1);
+			data.setDirty();
+		}
+
+		return -1;
+	}
 
 	private static void setLastStatus(Player player, int status) {
-    	if (player == null) {
-    		return;
-    	}
+		if (player == null) {
+			return;
+		}
 
-    	PLAYER_LAST_STATUS.put(player.getUUID(), status);
-    	player.getPersistentData().putInt("ParCoolApiWeight_LastStatus", status);
-    }
+		ensureLoadedFromSavedData();
+
+		UUID uuid = player.getUUID();
+
+		PLAYER_LAST_STATUS.put(uuid, status);
+
+		ParCoolApiWeightSavedData data = getSavedData();
+
+		if (data != null) {
+			data.playerLastStatus.put(uuid, status);
+			data.setDirty();
+		}
+
+		player.getPersistentData().putInt(LEGACY_TAG_LAST_STATUS, status);
+	}
 
 	public static void updatePlayerWeightState(Player player) {
 		if (!(player instanceof ServerPlayer serverPlayer)) {
@@ -413,58 +539,28 @@ public final class ParCoolApiWeightSystem {
 		}
 
 		try {
-			com.alrex.parcool.server.limitation.Limitation limitation =
-				com.alrex.parcool.server.limitation.Limitations.createLimitationOf(
-					player.getUUID(),
-					new com.alrex.parcool.server.limitation.Limitation.ID("parcool_api", "weight_overload")
-				);
-
-			limitation.setEnabled(true);
-
-			if (status >= 2) {
-				limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.FastRun.class, false);
+			if (status >= 4) {
+				${package}.parcool.ParCoolApiMovementBridge.disableAllMovements(player);
+				return;
 			}
 
 			if (status >= 3) {
-				limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.ChargeJump.class, false);
-				limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.JumpFromBar.class, false);
-				limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.HorizontalWallRun.class, false);
-				limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.VerticalWallRun.class, false);
+				${package}.parcool.ParCoolApiMovementBridge.disableSprint(player);
+				${package}.parcool.ParCoolApiMovementBridge.disableJump(player);
+				${package}.parcool.ParCoolApiMovementBridge.disableWallRun(player);
+				return;
 			}
 
-			if (status >= 4) {
-				limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.ClimbUp.class, false);
-				limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.ClimbPoles.class, false);
-				limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.HangDown.class, false);
-				limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.ClingToCliff.class, false);
+			if (status >= 2) {
+				${package}.parcool.ParCoolApiMovementBridge.disableSprint(player);
 			}
-
-			${package}.parcool.ParCoolApiMovementBridge.schedulePermissionBurst(player);
 		} catch (Throwable ignored) {
 		}
 	}
 
 	private static void clearParCoolWeightRestriction(ServerPlayer player) {
 		try {
-			com.alrex.parcool.server.limitation.Limitation limitation =
-				com.alrex.parcool.server.limitation.Limitations.createLimitationOf(
-					player.getUUID(),
-					new com.alrex.parcool.server.limitation.Limitation.ID("parcool_api", "weight_overload")
-				);
-
-			limitation.setEnabled(false);
-
-			limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.FastRun.class, true);
-			limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.ChargeJump.class, true);
-			limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.JumpFromBar.class, true);
-			limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.HorizontalWallRun.class, true);
-			limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.VerticalWallRun.class, true);
-			limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.ClimbUp.class, true);
-			limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.ClimbPoles.class, true);
-			limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.HangDown.class, true);
-			limitation.setPossibilityOf(com.alrex.parcool.common.action.impl.ClingToCliff.class, true);
-
-			${package}.parcool.ParCoolApiMovementBridge.schedulePermissionBurst(player);
+			${package}.parcool.ParCoolApiMovementBridge.enableAllMovements(player);
 		} catch (Throwable ignored) {
 		}
 	}
@@ -487,12 +583,42 @@ public final class ParCoolApiWeightSystem {
 	}
 
 	private static double sanitizeMaxCarryWeight(double value) {
-    	if (Double.isNaN(value) || Double.isInfinite(value) || value < 2.0D) {
-    		return Math.max(64.0D, defaultMaxCarryWeight);
-    	}
+		if (Double.isNaN(value) || Double.isInfinite(value) || value < 2.0D) {
+			return Math.max(64.0D, defaultMaxCarryWeight);
+		}
 
-    	return value;
-    }
+		return value;
+	}
+
+	private static void migrateLegacyPlayerDataIfNeeded(ServerPlayer player) {
+		if (player == null) {
+			return;
+		}
+
+		ensureLoadedFromSavedData();
+
+		UUID uuid = player.getUUID();
+		ParCoolApiWeightSavedData data = getSavedData();
+
+		if (data == null) {
+			return;
+		}
+
+		if (!data.playerMaxWeights.containsKey(uuid) && player.getPersistentData().contains(LEGACY_TAG_MAX_CARRY_WEIGHT)) {
+			data.playerMaxWeights.put(uuid, sanitizeMaxCarryWeight(player.getPersistentData().getDouble(LEGACY_TAG_MAX_CARRY_WEIGHT)));
+			data.setDirty();
+		}
+
+		if (!data.playerAutoEnabled.containsKey(uuid) && player.getPersistentData().getBoolean(LEGACY_TAG_HAS_AUTO_ENABLED)) {
+			data.playerAutoEnabled.put(uuid, player.getPersistentData().getBoolean(LEGACY_TAG_AUTO_ENABLED));
+			data.setDirty();
+		}
+
+		if (!data.playerLastStatus.containsKey(uuid) && player.getPersistentData().contains(LEGACY_TAG_LAST_STATUS)) {
+			data.playerLastStatus.put(uuid, player.getPersistentData().getInt(LEGACY_TAG_LAST_STATUS));
+			data.setDirty();
+		}
+	}
 
 	private static ParCoolApiWeightSavedData getSavedData() {
 		try {
@@ -573,28 +699,27 @@ public final class ParCoolApiWeightSystem {
 		data.setDirty();
 	}
 
-	private static void savePlayerSettings(UUID uuid) {
-		if (uuid == null) {
-			return;
-		}
-
+	private static void saveAll() {
 		ParCoolApiWeightSavedData data = getSavedData();
 
 		if (data == null) {
 			return;
 		}
 
-		if (PLAYER_MAX_WEIGHTS.containsKey(uuid)) {
-			data.playerMaxWeights.put(uuid, sanitizeMaxCarryWeight(PLAYER_MAX_WEIGHTS.get(uuid)));
-		}
+		data.defaultItemWeight = defaultItemWeight;
+		data.defaultMaxCarryWeight = defaultMaxCarryWeight;
 
-		if (PLAYER_AUTO_ENABLED.containsKey(uuid)) {
-			data.playerAutoEnabled.put(uuid, PLAYER_AUTO_ENABLED.get(uuid));
-		}
+		data.itemWeights.clear();
+		data.itemWeights.putAll(ITEM_WEIGHTS);
 
-		if (PLAYER_LAST_STATUS.containsKey(uuid)) {
-			data.playerLastStatus.put(uuid, PLAYER_LAST_STATUS.get(uuid));
-		}
+		data.playerMaxWeights.clear();
+		data.playerMaxWeights.putAll(PLAYER_MAX_WEIGHTS);
+
+		data.playerAutoEnabled.clear();
+		data.playerAutoEnabled.putAll(PLAYER_AUTO_ENABLED);
+
+		data.playerLastStatus.clear();
+		data.playerLastStatus.putAll(PLAYER_LAST_STATUS);
 
 		data.setDirty();
 	}
@@ -611,7 +736,7 @@ public final class ParCoolApiWeightSystem {
 		public static ParCoolApiWeightSavedData load(CompoundTag tag, HolderLookup.Provider provider) {
 			ParCoolApiWeightSavedData data = new ParCoolApiWeightSavedData();
 
-			data.defaultItemWeight = Math.max(0.0D, tag.getDouble("DefaultItemWeight"));
+			data.defaultItemWeight = tag.contains("DefaultItemWeight") ? Math.max(0.0D, tag.getDouble("DefaultItemWeight")) : 1.0D;
 			data.defaultMaxCarryWeight = tag.contains("DefaultMaxCarryWeight") ? Math.max(2.0D, tag.getDouble("DefaultMaxCarryWeight")) : 64.0D;
 
 			ListTag itemWeightsTag = tag.getList("ItemWeights", Tag.TAG_COMPOUND);

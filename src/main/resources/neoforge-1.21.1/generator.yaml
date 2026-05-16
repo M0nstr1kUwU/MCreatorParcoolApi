@@ -1,9 +1,15 @@
 base_templates:
+  - template: parcool_api_runtime.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiRuntime.java"
+
   - template: parcool_api_bridge_events.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/events/ParCoolApiBridgeEvents.java"
 
   - template: parcool_api_movement_bridge.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiMovementBridge.java"
+
+  - template: parcool_api_stamina_bridge.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiStaminaBridge.java"
 
   - template: parcool_api_weight_system.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/weight/ParCoolApiWeightSystem.java"

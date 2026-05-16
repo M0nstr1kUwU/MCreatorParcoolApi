@@ -4,7 +4,7 @@
   "args0": [
     {
       "type": "input_value",
-      "name": "item_id",
+      "name": "ITEM_ID",
       "check": "String"
     }
   ],
@@ -16,10 +16,10 @@
   "mcreator": {
     "toolbox_id": "weight_system",
     "toolbox_init": [
-      "<value name=\"item_id\"><block type=\"text\"><field name=\"TEXT\">minecraft:stone</field></block></value>"
+      "<value name=\"ITEM_ID\"><block type=\"text\"><field name=\"TEXT\">minecraft:stone</field></block></value>"
     ],
     "inputs": [
-      "item_id"
+      "ITEM_ID"
     ]
   }
 }

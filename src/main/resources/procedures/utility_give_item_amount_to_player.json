@@ -1,0 +1,57 @@
+{
+  "type": "utility_give_item_amount_to_player",
+  "message0": "give item %1 amount %2 to %3 drop overflow? %4",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ITEM",
+      "check": "MCItem"
+    },
+    {
+      "type": "input_value",
+      "name": "AMOUNT",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "DROP_OVERFLOW",
+      "options": [
+        [
+          "yes",
+          "TRUE"
+        ],
+        [
+          "no",
+          "FALSE"
+        ]
+      ]
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 45,
+  "tooltip": "Gives selected amount of item to player. If inventory is full, overflow can be dropped.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "other_tools",
+    "toolbox_init": [
+      "<value name=\"ITEM\"><block type=\"itemstack_to_mcitem\"></block></value>",
+      "<value name=\"AMOUNT\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ITEM",
+      "AMOUNT",
+      "ENTITY"
+    ],
+    "fields": [
+      "DROP_OVERFLOW"
+    ]
+  }
+}

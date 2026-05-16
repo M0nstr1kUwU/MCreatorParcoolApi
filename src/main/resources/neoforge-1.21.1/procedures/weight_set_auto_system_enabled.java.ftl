@@ -1,5 +1,5 @@
-<#if input$entity?? && input$enabled??>
-if (${input$entity} instanceof net.minecraft.world.entity.player.Player _player) {
-	${package}.weight.ParCoolApiWeightSystem.setAutoEnabled(_player, ${input$enabled});
+<#if input$ENTITY?? && input$ENABLED??>
+if (${input$ENTITY} instanceof net.minecraft.server.level.ServerPlayer _serverPlayer) {
+	${package}.weight.ParCoolApiWeightSystem.setAutoEnabled(_serverPlayer, ${input$ENABLED});
 }
 </#if>

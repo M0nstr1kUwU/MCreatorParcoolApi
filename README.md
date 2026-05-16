@@ -1,45 +1,74 @@
-# MCreator ParCool API Bridge
+# MCreator ParCool API
 
-Production-oriented **MCreator 2025.3** plugin bridge for **ParCool** on **NeoForge 1.21.1**.
+MCreator 2025.3 plugin for integrating **ParCool** with **NeoForge 1.21.1**.
 
-The plugin adds MCreator procedure blocks, helper classes, and custom triggers for:
+Target ParCool build:
 
-- ParCool movement ability checks and restrictions;
-- ParCool permission / limitation synchronization;
-- ParCool stamina helpers;
-- server-to-client camera perspective switching;
-- delayed server-to-client camera switching;
-- client-side delayed execution utilities;
-- item enchantment stripping;
+```text
+ParCool-1.21.1-3.4.3.3-NF.jar
+CurseForge file id: 7760593
+Curse Maven: curse.maven:parcool-482378:7760593
+```
+
+The plugin adds:
+
+- ParCool movement checks and restrictions;
+- ParCool stamina blocks;
+- ParCool client/server synchronization helpers;
+- packet-backed camera switching;
 - inventory weight and overload mechanics;
-- weight values for vanilla and modded items;
-- custom triggers for ParCool, camera, item, and weight systems.
+- item enchantment stripping;
+- utility blocks for item spawning, areas, distance checks, inventory operations, and entity motion;
+- custom triggers for weight, movement, camera, item, and client events.
 
-The plugin is designed for multiplayer. Gameplay-authoritative logic runs on the server. Client-only logic, such as camera perspective switching, is executed on the target client through packets.
+The plugin is multiplayer-oriented: gameplay logic runs on the server, while client-only actions are executed through packets.
 
 ---
 
 ## Requirements
 
-Recommended target:
-
-- MCreator 2025.3
-- NeoForge 1.21.1
-- ParCool NeoForge 1.21.1
-
-ParCool must be loaded on both client and server runtime.
-
-In the server log, you should see something like:
-
 ```text
-ParCool! ... (parcool)
+MCreator: 2025.3
+Minecraft: 1.21.1
+Loader: NeoForge
+ParCool: 1.21.1-3.4.3.3-NF
+Java: 21
 ```
 
-If ParCool is available only at compile time but is not loaded at runtime, ParCool permission syncing and movement restriction logic will not work correctly.
+ParCool must be installed on both client and server.
+
+Recommended API dependency file:
+
+```text
+src/main/resources/apis/parcool_api.yaml
+```
+
+```yaml
+name: ParCool API
+
+neoforge-1.21.1:
+  required_when_enabled: true
+  gradle: |
+    repositories {
+      maven { url "https://cursemaven.com" }
+    }
+
+    dependencies {
+      implementation "curse.maven:parcool-482378:7760593"
+    }
+```
+
+Enable it in:
+
+```text
+Workspace settings -> External APIs -> ParCool API
+```
+
+If you use Nexus Compiler or another dependency helper, point it to the same ParCool build.
 
 ---
 
-## Important plugin folders
+## Important folders
 
 ```text
 src/main/resources/plugin.json
@@ -52,51 +81,28 @@ src/main/resources/neoforge-1.21.1/templates/
 src/main/resources/neoforge-1.21.1/generator.yaml
 ```
 
-The `generator.yaml` file is required for generating shared helper classes from `base_templates`.
-
 ---
 
-## Required generated helper classes
+## Base templates
 
-These helper classes are generated into the target MCreator workspace:
-
-```text
-<mod package>/events/ParCoolApiBridgeEvents.java
-<mod package>/parcool/ParCoolApiMovementBridge.java
-<mod package>/weight/ParCoolApiWeightSystem.java
-<mod package>/network/ParCoolApiCameraNetwork.java
-<mod package>/client/ParCoolApiClientScheduler.java
-```
-
-They come from:
-
-```text
-src/main/resources/neoforge-1.21.1/templates/parcool_api_bridge_events.java.ftl
-src/main/resources/neoforge-1.21.1/templates/parcool_api_movement_bridge.java.ftl
-src/main/resources/neoforge-1.21.1/templates/parcool_api_weight_system.java.ftl
-src/main/resources/neoforge-1.21.1/templates/parcool_api_camera_network.java.ftl
-src/main/resources/neoforge-1.21.1/templates/parcool_api_client_scheduler.java.ftl
-```
-
----
-
-## `generator.yaml`
-
-Path:
-
-```text
-src/main/resources/neoforge-1.21.1/generator.yaml
-```
-
-Minimal content:
+`src/main/resources/neoforge-1.21.1/generator.yaml` should include:
 
 ```yaml
 base_templates:
+  - template: parcool_api_runtime.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiRuntime.java"
+
   - template: parcool_api_bridge_events.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/events/ParCoolApiBridgeEvents.java"
 
   - template: parcool_api_movement_bridge.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiMovementBridge.java"
+
+  - template: parcool_api_stamina_bridge.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiStaminaBridge.java"
+
+  - template: parcool_api_stamina_monitor.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiStaminaMonitor.java"
 
   - template: parcool_api_weight_system.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/weight/ParCoolApiWeightSystem.java"
@@ -108,392 +114,272 @@ base_templates:
     name: "@SRCROOT/@BASEPACKAGEPATH/client/ParCoolApiClientScheduler.java"
 ```
 
-If your MCreator setup treats this YAML as a full generator definition instead of merging it as an overlay, copy these `base_templates` entries into your generator overlay configuration instead of using a minimal standalone file.
-
----
-
-# ParCool movement ability blocks
-
-## Boolean / condition blocks
-
-These blocks return `Boolean`:
-
-- `can [entity] ParCool sprint`
-- `can [entity] ParCool climb`
-- `can [entity] ParCool wall-run`
-- `can [entity] ParCool jump`
-- `is [entity] currently ParCool hanging`
-
-Example:
+Generated helper classes:
 
 ```text
-if can Event/target entity ParCool climb:
-    send chat message "You can climb"
+<mod package>/parcool/ParCoolApiRuntime.java
+<mod package>/events/ParCoolApiBridgeEvents.java
+<mod package>/parcool/ParCoolApiMovementBridge.java
+<mod package>/parcool/ParCoolApiStaminaBridge.java
+<mod package>/parcool/ParCoolApiStaminaMonitor.java
+<mod package>/weight/ParCoolApiWeightSystem.java
+<mod package>/network/ParCoolApiCameraNetwork.java
+<mod package>/client/ParCoolApiClientScheduler.java
 ```
 
 ---
 
-## Action blocks
+## Naming convention
 
-These are server-side action blocks. They use ParCool server limitations and then sync the updated permissions to the player.
-
-- `if [condition] disable ParCool sprint ability for [entity]`
-- `if [condition] disable ParCool climb ability for [entity]`
-- `if [condition] disable ParCool jump ability for [entity]`
-- `if [condition] disable ParCool hang ability for [entity]`
-- `if [condition] disable ParCool wall-run ability for [entity]`
-- `if [condition] disable all ParCool movement abilities for [entity]`
-- `enable all ParCool movement abilities for [entity]`
-
-Recommended usage:
+All procedure block inputs use **UPPER_CASE**:
 
 ```text
-if player enters heavy overload:
-    disable ParCool sprint ability
-    disable ParCool jump ability
-    disable ParCool wall-run ability
+ENTITY, VALUE, WEIGHT, ENABLED, ITEM, ITEM_ID, DECIMALS, TICKS,
+X, Y, Z, X1, Y1, Z1, X2, Y2, Z2, AMOUNT, DELAY, RADIUS
 ```
 
-To restore all movement abilities:
+Trigger dependencies stay **lower_case**:
 
 ```text
-enable all ParCool movement abilities for Event/target entity
-force sync ParCool permissions to Event/target entity
+entity, world, current_weight, max_weight, load_percent,
+old_status, new_status, ability_id, enabled, perspective_id, itemstack, event
 ```
 
 ---
 
-# ParCool permission sync
+# ParCool movement blocks
 
-## Block
+Boolean checks:
 
 ```text
-force sync ParCool permissions to [entity]
+can ENTITY ParCool sprint
+can ENTITY ParCool climb
+can ENTITY ParCool wall-run
+can ENTITY ParCool jump
+is ENTITY currently ParCool hanging
 ```
 
-Use this when ParCool permissions are not available on the client immediately after joining a dedicated server.
+Action blocks:
 
-Recommended join procedure:
+```text
+disable ParCool sprint ability for ENTITY
+disable ParCool climb ability for ENTITY
+disable ParCool jump ability for ENTITY
+disable ParCool hang ability for ENTITY
+disable ParCool wall-run ability for ENTITY
+disable all ParCool movement abilities for ENTITY
+enable all ParCool movement abilities for ENTITY
+force sync ParCool permissions to ENTITY
+request ParCool client handshake for ENTITY
+```
+
+Movement restrictions use the newer ParCool API:
+
+```java
+com.alrex.parcool.api.unstable.Limitation
+```
+
+The bridge applies runtime restrictions by calling:
+
+```text
+Limitation.get(player, id)
+enable / disable
+permit(action, true/false)
+apply
+```
+
+`disable all ParCool movement abilities` iterates through:
+
+```java
+com.alrex.parcool.common.action.Actions.LIST
+```
+
+so all registered ParCool actions are affected.
+
+---
+
+# ParCool client/server sync
+
+ParCool needs the client to send local client settings to the server. The bridge sends a repeated client handshake using:
+
+```java
+ClientInformationPayload(playerUUID, true, ClientSetting.readFromLocalConfig())
+```
+
+Recommended join logic:
 
 ```text
 When player joins world:
     wait 40 ticks
+    request ParCool client handshake for Event/target entity
     force sync ParCool permissions to Event/target entity
 ```
-
-Some ParCool versions load and sync player limitations only after the player has fully joined. Delaying the sync by 20-40 server ticks helps avoid first-join permission issues.
-
----
-
-# Camera switching
-
-## Immediate camera switch
-
-```text
-switch camera perspective of [entity] to [perspective]
-```
-
-Available perspectives:
-
-- first person
-- third person back
-- third person front
-
-This is a server-triggered, client-executed action. The server sends a packet to the target player, and the client changes the local camera type.
-
-Example:
-
-```text
-When cutscene starts:
-    switch camera perspective of Event/target entity to third person back
-```
-
----
-
-## Delayed camera switch
-
-```text
-switch camera perspective of [entity] to [perspective] after [ticks] client ticks
-```
-
-Use this instead of nesting the camera block inside `client wait`.
-
-Correct:
-
-```text
-switch camera perspective of Event/target entity to third person back after 20 client ticks
-```
-
-Avoid this pattern:
-
-```text
-client wait 20 ticks:
-    switch camera perspective ...
-```
-
-That pattern may silently do nothing because `client wait` runs client-side, while the packet-backed camera block expects to be triggered server-side.
-
----
-
-# Client wait
-
-## Block
-
-```text
-for client player [entity] wait [ticks] client ticks then:
-    do ...
-```
-
-This queues delayed work on the physical client of the selected player.
-
-Use it for logic that is already running on the client, such as:
-
-- visual-only effects;
-- HUD / UI logic;
-- local checks;
-- client-only cosmetic actions.
-
-Important limitation:
-
-A server cannot send arbitrary nested generated Java code to the client. If a server-side procedure needs to cause a client-side action, create a dedicated packet-backed block for that action. The camera switcher is implemented this way.
-
----
-
-# Item enchantment stripping
-
-## Block
-
-```text
-strip all enchantments from item [item]
-```
-
-The input uses `MCItem` for MCreator UI compatibility, but the template converts it to `ItemStack` internally using MCreator's item conversion pattern.
-
-It removes:
-
-- normal enchantments;
-- stored enchantments from enchanted books.
-
-Recommended usage:
-
-```text
-strip all enchantments from item in main hand of Event/target entity
-```
-
-If you pass a plain item type such as `Items.DIAMOND_SWORD`, the code creates a temporary stack. For real inventory changes, pass an actual item stack through `itemstack_to_mcitem`.
 
 ---
 
 # Stamina blocks
 
-The plugin includes helpers for reading and changing ParCool stamina.
+Getter blocks:
 
-Typical blocks:
+```text
+ParCool stamina of ENTITY
+ParCool max stamina of ENTITY
+ParCool stamina percent of ENTITY rounded to DECIMALS decimals
+is ENTITY ParCool exhausted
+ParCool stamina recovery attribute of ENTITY
+```
 
-- add ParCool stamina;
-- consume ParCool stamina;
-- get current ParCool stamina;
-- get max ParCool stamina;
-- get stamina percent rounded to selected decimals;
-- check if stamina is exhausted;
-- set current stamina;
-- set max stamina;
-- get stamina recovery attribute;
-- set stamina recovery attribute.
+Setter/action blocks:
 
-Avoid calling stamina setters too early on player join. If you need join-time setup, delay it by a few server ticks and force-sync ParCool permissions afterwards.
+```text
+add VALUE ParCool stamina to ENTITY
+consume VALUE ParCool stamina from ENTITY
+set ParCool stamina of ENTITY to VALUE
+set ParCool max stamina of ENTITY to VALUE
+set ParCool stamina recovery of ENTITY to VALUE
+```
+
+Setter blocks are server-side and require `ServerPlayer`.
+
+The bridge uses:
+
+```java
+com.alrex.parcool.api.Stamina
+com.alrex.parcool.api.Attributes.MAX_STAMINA
+com.alrex.parcool.api.Attributes.STAMINA_RECOVERY
+```
+
+Stamina monitor block:
+
+```text
+for ENTITY if ParCool stamina reached 0 run until full:
+    DO
+```
+
+Behavior:
+
+```text
+stamina above 0  -> does nothing
+stamina reaches 0 -> starts nested blocks
+stamina recovering -> keeps running nested blocks
+stamina full -> stops nested blocks
+```
+
+---
+
+# Camera blocks
+
+```text
+switch camera perspective of ENTITY to PERSPECTIVE
+switch camera perspective of ENTITY to PERSPECTIVE after TICKS client ticks
+```
+
+Available perspectives:
+
+```text
+first person
+third person back
+third person front
+```
+
+Camera switching is packet-backed because camera control is client-only.
+
+Use the delayed camera block instead of putting the camera block inside client wait.
+
+---
+
+# Client wait
+
+```text
+for client player ENTITY wait TICKS client ticks then:
+    DO
+```
+
+Use this for client-side visual/UI/cosmetic logic. A server cannot send arbitrary nested Java code to the client; for server-triggered client actions, use dedicated packet-backed blocks.
+
+---
+
+# Item enchantment stripping
+
+```text
+strip all enchantments from item ITEM
+```
+
+Removes:
+
+- normal enchantments;
+- stored enchantments;
+- enchantment glint override.
+
+Use a real item stack, such as the item in the player's main hand, if you want to modify inventory contents.
 
 ---
 
 # Weight system
 
-The weight system assigns unit weight to items and calculates total carried weight.
-
-Included inventory sources:
-
-- main inventory;
-- armor inventory;
-- offhand inventory.
-
-Formula:
+The weight system calculates:
 
 ```text
-total weight = sum(item unit weight * stack count)
+total weight = sum(unit item weight * stack count)
 ```
 
-Player-specific values are persisted in player persistent data:
-
-- max carry weight;
-- automatic weight system enabled/disabled;
-- last known weight status.
-
-This prevents the main player weight settings from resetting after reconnecting or reloading the world.
-
----
-
-## Weight setup blocks
-
-### Set weight for all registered items
+Included sources:
 
 ```text
-set weight of all registered items to [number]
+main inventory
+armor
+offhand
 ```
 
-Recommended on server start:
+Data storage:
 
 ```text
-set weight of all registered items to 1
+world/data/<modid>_parcool_api_weight_system_v2.dat
 ```
 
-### Set specific item weight
+Runtime maps are only cache. Legacy player persistent data is only used for migration/fallback.
+
+Weight setup blocks:
 
 ```text
-set weight of item [item] to [number]
+set weight of all registered items to WEIGHT
+set weight of item ITEM to WEIGHT
+set weight of item with id ITEM_ID to WEIGHT
 ```
 
-Examples:
+`set weight of all registered items to X` sets the default item weight and clears specific overrides.
+
+For modded items, use registry IDs:
 
 ```text
-set weight of item stone to 2
-set weight of item iron ingot to 1.5
-set weight of item diamond sword to 5
-set weight of item enchanted book to 1.5
+minecraft:stone
+create:andesite_alloy
+farmersdelight:cabbage
 ```
 
-### Set item weight by string ID
+Weight getter blocks:
 
 ```text
-set weight of item with id [string] to [number]
+unit weight of item ITEM
+stack weight of item ITEM
+unit weight of item with id ITEM_ID
+inventory weight of ENTITY
+max carry weight of ENTITY
+carry load percent of ENTITY rounded to DECIMALS decimals
+is ENTITY overloaded by weight
 ```
 
-Use this for items from other mods.
-
-Examples:
+Weight control blocks:
 
 ```text
-set weight of item with id "minecraft:stone" to 2
-set weight of item with id "create:andesite_alloy" to 1.5
-set weight of item with id "farmersdelight:cabbage" to 0.4
-```
-
-If the string does not contain a namespace, the plugin treats it as a Minecraft item ID.
-
-Example:
-
-```text
-"stone" -> "minecraft:stone"
+set max carry weight of ENTITY to WEIGHT
+set automatic weight system for ENTITY to ENABLED
+update weight overload state for ENTITY
 ```
 
 ---
 
-## Weight read blocks
-
-### Unit weight of item
-
-```text
-unit weight of item [item]
-```
-
-Returns the configured weight of one item unit.
-
-This is different from stack weight. For example, if one stone has weight `2`, a stack of 64 stones has stack weight `128`.
-
-### Stack weight of item
-
-```text
-stack weight of item [item]
-```
-
-Returns:
-
-```text
-unit weight * stack count
-```
-
-### Unit weight by string ID
-
-```text
-unit weight of item with id [string]
-```
-
-Useful for checking configured weight for modded items.
-
-### Inventory weight
-
-```text
-inventory weight of [entity]
-```
-
-Returns the player's total carried weight.
-
-### Max carry weight
-
-```text
-max carry weight of [entity]
-```
-
-### Load percent, rounded
-
-```text
-carry load percent of [entity] rounded to [decimals] decimals
-```
-
-Examples:
-
-```text
-75 = first penalty threshold
-125 = heavy overload threshold
-175 = severe overload threshold
-200 = critical overload threshold
-```
-
-### Is overloaded by weight
-
-```text
-is [entity] overloaded by weight
-```
-
-Returns `true` when player load is at least `75%`.
-
----
-
-## Weight control blocks
-
-### Set max carry weight
-
-```text
-set max carry weight of [entity] to [number]
-```
-
-Example:
-
-```text
-set max carry weight of Event/target entity to 64
-```
-
-This value is persisted in the player's persistent data.
-
-### Enable or disable automatic weight system
-
-```text
-set automatic weight system for [entity] to [true/false]
-```
-
-This value is persisted in the player's persistent data.
-
-### Manual update
-
-```text
-update weight overload state for [entity]
-```
-
-Forces recalculation and applies or clears overload effects and ParCool limitations.
-
----
-
-# Weight overload stages
-
-The current overload system starts penalties at **75%** load and uses staged thresholds up to **200%**.
+## Weight stages
 
 | Status | Meaning | Threshold |
 |---:|---|---|
@@ -503,226 +389,83 @@ The current overload system starts penalties at **75%** load and uses staged thr
 | 3 | Severe overload | `175% - 199%` |
 | 4 | Critical overload | `>= 200%` |
 
-## Status 0 — normal
-
-No penalties.
-
-## Status 1 — light overload
-
 Effects:
 
-- Slowness I
+```text
+Status 1: Slowness I
+Status 2: Slowness II, Mining Fatigue I, sprint restriction
+Status 3: Slowness III, Mining Fatigue II, Weakness I, sprint/jump/wall-run restrictions
+Status 4: strong Slowness, Mining Fatigue III, Weakness II, Darkness, all ParCool movement restrictions
+```
 
-ParCool restrictions:
+---
 
-- none
+# Utility blocks
 
-## Status 2 — heavy overload
+```text
+spawn item ITEM at x X y Y z Z amount AMOUNT pickup delay DELAY despawnable? DESPAWNABLE
+if entity ENTITY is inside cuboid x1 X1 y1 Y1 z1 Z1 x2 X2 y2 Y2 z2 Z2: DO
+count item ITEM in inventory of ENTITY
+remove item ITEM amount AMOUNT from inventory of ENTITY
+give item ITEM amount AMOUNT to ENTITY drop overflow? DROP_OVERFLOW
+if entity ENTITY is within radius RADIUS from x X y Y z Z: DO
+distance from entity ENTITY to x X y Y z Z
+set motion of entity ENTITY to x X y Y z Z
+```
 
-Effects:
-
-- Slowness II
-- Mining Fatigue I
-
-ParCool restrictions:
-
-- FastRun
-
-## Status 3 — severe overload
-
-Effects:
-
-- Slowness III
-- Mining Fatigue II
-- Weakness I
-
-ParCool restrictions:
-
-- FastRun
-- ChargeJump
-- JumpFromBar
-- HorizontalWallRun
-- VerticalWallRun
-
-## Status 4 — critical overload
-
-Effects:
-
-- strong Slowness
-- Mining Fatigue III
-- Weakness II
-- Darkness
-
-ParCool restrictions:
-
-- FastRun
-- ChargeJump
-- JumpFromBar
-- HorizontalWallRun
-- VerticalWallRun
-- ClimbUp
-- ClimbPoles
-- HangDown
-- ClingToCliff
-
-When the player goes below the restriction threshold, the weight-specific ParCool limitation is cleared.
+`DELAY` in the spawn item block is pickup delay in ticks.
 
 ---
 
 # Custom triggers
 
-The plugin adds custom global triggers.
-
-Custom trigger files live in:
+Weight triggers:
 
 ```text
-src/main/resources/triggers/
-src/main/resources/neoforge-1.21.1/triggers/
+ParCool weight status changed
+ParCool player became overloaded
+ParCool player stopped being overloaded
+ParCool player entered heavy overload
+ParCool player entered critical overload
 ```
 
-The trigger templates use MCreator's `procedureDependenciesCode` pattern, so the generated procedure receives only the dependencies it actually uses.
+Movement trigger:
 
----
+```text
+ParCool movement ability changed by plugin
+```
 
-## Weight triggers
+Permission sync trigger:
 
-### ParCool weight status changed
+```text
+ParCool permissions force synced
+```
 
-Dependencies:
+Camera trigger:
 
-- `entity`
-- `world`
-- `old_status`
-- `new_status`
-- `current_weight`
-- `max_weight`
-- `load_percent`
+```text
+ParCool camera perspective requested
+```
 
-Use this for general reactions to all weight status changes.
+Item trigger:
 
-### ParCool player became overloaded
+```text
+ParCool item enchantments stripped
+```
 
-Dependencies:
+Client trigger:
 
-- `entity`
-- `world`
-- `current_weight`
-- `max_weight`
-- `load_percent`
+```text
+ParCool client wait finished
+```
 
-### ParCool player stopped being overloaded
-
-Dependencies:
-
-- `entity`
-- `world`
-- `current_weight`
-- `max_weight`
-- `load_percent`
-
-### ParCool player entered heavy overload
-
-Dependencies:
-
-- `entity`
-- `world`
-- `current_weight`
-- `max_weight`
-- `load_percent`
-
-### ParCool player entered critical overload
-
-Dependencies:
-
-- `entity`
-- `world`
-- `current_weight`
-- `max_weight`
-- `load_percent`
-
----
-
-## ParCool movement trigger
-
-### ParCool movement ability changed by plugin
-
-Dependencies:
-
-- `entity`
-- `world`
-- `ability_id`
-- `enabled`
-
-Ability IDs:
-
-| ID | Ability |
-|---:|---|
-| 1 | sprint |
-| 2 | climb |
-| 3 | jump |
-| 4 | hang |
-| 5 | wall-run |
-| 6 | all movements |
-
----
-
-## Permission sync trigger
-
-### ParCool permissions force synced
-
-Dependencies:
-
-- `entity`
-- `world`
-
----
-
-## Camera trigger
-
-### ParCool camera perspective requested
-
-Dependencies:
-
-- `entity`
-- `world`
-- `perspective_id`
-
-Perspective IDs:
-
-| ID | Perspective |
-|---:|---|
-| 0 | first person |
-| 1 | third person back |
-| 2 | third person front |
-
----
-
-## Item trigger
-
-### ParCool item enchantments stripped
-
-Dependencies:
-
-- `itemstack`
-
----
-
-## Client trigger
-
-### ParCool client wait finished
-
-Dependencies:
-
-- `entity`
-- `world`
-
-This trigger fires on the physical client.
+Trigger dependencies remain lower-case and are passed through `procedureDependenciesCode`.
 
 ---
 
 # Recommended setup
 
-## Server start procedure
+Server start:
 
 ```text
 set weight of all registered items to 1
@@ -731,120 +474,94 @@ set weight of item cobblestone to 2
 set weight of item iron ingot to 1.5
 set weight of item diamond sword to 5
 set weight of item enchanted book to 1.5
-
 set weight of item with id "create:andesite_alloy" to 1.5
-set weight of item with id "farmersdelight:cabbage" to 0.4
 ```
 
-## Player join procedure
+Player join:
 
 ```text
-set max carry weight of Event/target entity to 64
 set automatic weight system for Event/target entity to true
 wait 40 ticks
+request ParCool client handshake for Event/target entity
 force sync ParCool permissions to Event/target entity
+update weight overload state for Event/target entity
 ```
 
-Since max carry weight and auto-enabled state are persistent, you do not need to set them every join unless you want to reset or update player configuration.
+Set max carry weight only when you intentionally want to initialize or change it:
+
+```text
+set max carry weight of Event/target entity to 200
+```
 
 ---
 
-# Multiplayer notes
+# Cleanup before testing
 
-Server-side systems:
+Delete generated files before regenerating after major template changes:
 
-- weight calculation;
-- overload effects;
-- ParCool movement limitations;
-- permission sync requests;
-- stamina helpers;
-- enchantment stripping.
+```text
+src/main/java/net/mcreator/<modid>/parcool/ParCoolApiMovementBridge.java
+src/main/java/net/mcreator/<modid>/parcool/ParCoolApiStaminaBridge.java
+src/main/java/net/mcreator/<modid>/parcool/ParCoolApiStaminaMonitor.java
+src/main/java/net/mcreator/<modid>/client/ParCoolApiClientScheduler.java
+src/main/java/net/mcreator/<modid>/network/ParCoolApiCameraNetwork.java
+src/main/java/net/mcreator/<modid>/weight/ParCoolApiWeightSystem.java
+```
 
-Client-side systems:
+For clean tests, remove old data:
 
-- camera perspective switch;
-- delayed camera switch;
-- client wait;
-- local visual/UI behavior.
-
-Camera changes are client-only and must be packet-backed.
+```text
+run/world/data/<modid>_parcool_api_weight_system.dat
+run/world/data/<modid>_parcool_api_weight_system_v2.dat
+run/world/serverconfig/parcool/limitations/parcool_api/mcreator_bridge/
+```
 
 ---
 
 # Troubleshooting
 
-## ParCool works only after reconnect
+## ParCool does not work on first join
 
-Use this on player join:
-
-```text
-wait 40 ticks
-force sync ParCool permissions to Event/target entity
-```
-
-## Movement stays disabled
-
-Run:
+Make sure the loaded ParCool build is:
 
 ```text
-enable all ParCool movement abilities for Event/target entity
-force sync ParCool permissions to Event/target entity
+1.21.1-3.4.3.3-NF
 ```
 
-Also check server config folders for ParCool limitations.
-
-## Delayed camera switch does not work
-
-Do not put the camera block inside client wait. Use:
+Then call after player join delay:
 
 ```text
-switch camera perspective of Event/target entity to third person back after 20 client ticks
+request ParCool client handshake
+force sync ParCool permissions
 ```
 
-## Weight does not update
+## Disable all movement does nothing
 
-Make sure automatic weight system is enabled:
+Check generated Java. It should use:
+
+```java
+com.alrex.parcool.api.unstable.Limitation
+com.alrex.parcool.common.action.Actions.LIST
+```
+
+Also check that the procedure block uses `ENTITY`.
+
+## Weight penalties still count from 64
+
+Check that the block uses `ENTITY` and `WEIGHT`, runs server-side, and old weight data was deleted before testing.
+
+## Item weight returns 0
+
+Check that the templates use:
 
 ```text
-set automatic weight system for Event/target entity to true
+ITEM
+ITEM_ID
+WEIGHT
 ```
 
-or manually call:
-
-```text
-update weight overload state for Event/target entity
-```
-
-## Unit item weight returns 0
-
-Use the updated `unit weight of item` block for item type weight, and `stack weight of item` for stack total weight.
-
-If you are working with a modded item, prefer string ID blocks:
+For modded items, prefer:
 
 ```text
 unit weight of item with id "modid:item_name"
 ```
-
-## Item enchant stripping does not affect inventory
-
-Use an actual item stack, not just a plain item type.
-
-Good:
-
-```text
-item in main hand of Event/target entity
-```
-
-Bad for inventory mutation:
-
-```text
-plain Diamond Sword item type
-```
-
----
-
-# Development notes
-
-The plugin intentionally keeps gameplay logic server-authoritative. Client-only systems are isolated and should not modify server gameplay state directly.
-
-Keep MCreator version, NeoForge version, and ParCool version aligned. ParCool internal packages and methods differ between versions, so compatibility wrappers use reflection for sync methods where needed.

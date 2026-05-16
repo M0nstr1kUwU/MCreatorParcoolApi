@@ -4,7 +4,7 @@
   "args0": [
     {
       "type": "input_value",
-      "name": "entity",
+      "name": "ENTITY",
       "check": "Entity"
     },
     {
@@ -27,7 +27,7 @@
     },
     {
       "type": "input_value",
-      "name": "ticks",
+      "name": "TICKS",
       "check": "Number"
     }
   ],
@@ -40,12 +40,12 @@
   "mcreator": {
     "toolbox_id": "camera",
     "toolbox_init": [
-      "<value name=\"entity\"><block type=\"entity_from_deps\"></block></value>",
-      "<value name=\"ticks\"><block type=\"math_number\"><field name=\"NUM\">20</field></block></value>"
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"TICKS\"><block type=\"math_number\"><field name=\"NUM\">20</field></block></value>"
     ],
     "inputs": [
-      "entity",
-      "ticks"
+      "ENTITY",
+      "TICKS"
     ],
     "fields": [
       "PERSPECTIVE"

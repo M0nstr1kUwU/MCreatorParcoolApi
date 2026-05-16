@@ -42,6 +42,22 @@ public final class ParCoolApiClientScheduler {
 		}
 	}
 
+	public static void requestParCoolClientHandshakeBurst() {
+		if (FMLEnvironment.dist != Dist.CLIENT) {
+			return;
+		}
+
+		try {
+			net.minecraft.client.Minecraft minecraft = net.minecraft.client.Minecraft.getInstance();
+
+			if (minecraft != null && minecraft.player != null) {
+				lastHandshakePlayerId = minecraft.player.getUUID();
+				clientHandshakeTicks = 0;
+			}
+		} catch (Throwable ignored) {
+		}
+	}
+
 	@EventBusSubscriber(Dist.CLIENT)
 	private static final class ClientEventHandler {
 		private ClientEventHandler() {
@@ -55,6 +71,16 @@ public final class ParCoolApiClientScheduler {
 					clientHandshakeTicks = 0;
 				}
 			} catch (Throwable ignored) {
+			}
+		}
+
+		@SubscribeEvent
+		public static void onClientLogout(ClientPlayerNetworkEvent.LoggingOut event) {
+			lastHandshakePlayerId = null;
+			clientHandshakeTicks = -1;
+
+			synchronized (TASKS) {
+				TASKS.clear();
 			}
 		}
 
@@ -84,6 +110,7 @@ public final class ParCoolApiClientScheduler {
 				}
 
 				if (clientHandshakeTicks == 0
+						|| clientHandshakeTicks == 5
 						|| clientHandshakeTicks == 20
 						|| clientHandshakeTicks == 40
 						|| clientHandshakeTicks == 80
@@ -103,7 +130,15 @@ public final class ParCoolApiClientScheduler {
 		}
 
 		private static void sendParCoolClientInformation(net.minecraft.client.player.LocalPlayer player) {
+			if (player == null) {
+				return;
+			}
+
 			try {
+				if (!${package}.parcool.ParCoolApiRuntime.isClientInformationPayloadAvailable()) {
+					return;
+				}
+
 				PacketDistributor.sendToServer(
 					new com.alrex.parcool.common.network.payload.ClientInformationPayload(
 						player.getUUID(),

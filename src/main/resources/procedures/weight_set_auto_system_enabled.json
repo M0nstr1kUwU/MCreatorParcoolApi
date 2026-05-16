@@ -4,12 +4,12 @@
   "args0": [
     {
       "type": "input_value",
-      "name": "entity",
+      "name": "ENTITY",
       "check": "Entity"
     },
     {
       "type": "input_value",
-      "name": "enabled",
+      "name": "ENABLED",
       "check": "Boolean"
     }
   ],
@@ -22,12 +22,12 @@
   "mcreator": {
     "toolbox_id": "weight_system",
     "toolbox_init": [
-      "<value name=\"entity\"><block type=\"entity_from_deps\"></block></value>",
-      "<value name=\"enabled\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"ENABLED\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
     ],
     "inputs": [
-      "entity",
-      "enabled"
+      "ENTITY",
+      "ENABLED"
     ]
   }
 }

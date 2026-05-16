@@ -4,7 +4,7 @@
   "args0": [
     {
       "type": "input_value",
-      "name": "entity",
+      "name": "ENTITY",
       "check": "Entity"
     },
     {
@@ -24,10 +24,10 @@
   "mcreator": {
     "toolbox_id": "parcool_api",
     "toolbox_init": [
-      "<value name=\"entity\"><block type=\"entity_from_deps\"></block></value>"
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
     ],
     "inputs": [
-      "entity"
+      "ENTITY"
     ],
     "statements": [
       {
