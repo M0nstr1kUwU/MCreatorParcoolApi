@@ -256,7 +256,7 @@ public final class PartyApiClient {
 
 		@Override
 		public boolean mouseClicked(double mouseX, double mouseY, int button) {
-			int startY = 50;
+			int startY = 60;
 			int rowHeight = 32;
 
 			for (int i = 0; i < MEMBERS.size(); i++) {
@@ -297,9 +297,9 @@ public final class PartyApiClient {
 			}
 
 			graphics.drawCenteredString(this.font, "Party", this.width / 2, 20, 0xFFFFFFFF);
-			graphics.drawCenteredString(this.font, "PvP: " + (pvpEnabled ? "ON" : "OFF"), this.width / 2, 32, pvpEnabled ? 0xFFFF7777 : 0xFF77FF77);
+			graphics.drawCenteredString(this.font, "PvP: " + (pvpEnabled ? "ON" : "OFF"), this.width / 2, 42, pvpEnabled ? 0xFFFF7777 : 0xFF77FF77);
 
-			int startY = 50;
+			int startY = 60;
 			int rowHeight = 32;
 			int x = this.width / 2 - 140;
 			int rowWidth = 280;
