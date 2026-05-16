@@ -1,0 +1,25 @@
+{
+  "type": "casino_slot_has_pair",
+  "message0": "casino slot result %1 has pair",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "RESULT",
+      "check": "String"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 290,
+  "tooltip": "Checks whether slot result has at least a pair.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"RESULT\"><block type=\"text\"><field name=\"TEXT\">1,1,3</field></block></value>"
+    ],
+    "inputs": [
+      "RESULT"
+    ]
+  }
+}

@@ -74,6 +74,14 @@ public final class PartyApiClient {
 		}
 	}
 
+	public static void openPartyInviteScreen(String inviterName) {
+		Minecraft minecraft = Minecraft.getInstance();
+
+		if (minecraft != null) {
+			minecraft.setScreen(new PartyInviteScreen(inviterName == null ? "Unknown" : inviterName));
+		}
+	}
+
 	private static ResourceLocation partyTexture(String fileName) {
 		return ResourceLocation.fromNamespaceAndPath("${modid}", "textures/gui/party/" + fileName);
 	}
@@ -227,6 +235,95 @@ public final class PartyApiClient {
 		}
 	}
 
+
+	private static final class PartyInviteScreen extends Screen {
+		private final String inviterName;
+
+		private PartyInviteScreen(String inviterName) {
+			super(Component.literal("Party Invite"));
+			this.inviterName = inviterName == null ? "Unknown" : inviterName;
+		}
+
+		@Override
+		public boolean isPauseScreen() {
+			return false;
+		}
+
+		@Override
+		public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+			// No blur.
+		}
+
+		protected void renderBlurredBackground(float partialTick) {
+			// No blur.
+		}
+
+		@Override
+		public boolean mouseClicked(double mouseX, double mouseY, int button) {
+			int boxWidth = 220;
+			int boxHeight = 88;
+			int boxX = (this.width - boxWidth) / 2;
+			int boxY = (this.height - boxHeight) / 2;
+
+			int acceptX = boxX + 22;
+			int declineX = boxX + boxWidth - 82;
+			int buttonY = boxY + 58;
+
+			if (mouseX >= acceptX && mouseX <= acceptX + 60 && mouseY >= buttonY && mouseY <= buttonY + 18) {
+				${package}.network.PartyApiNetwork.sendClientAction("accept_invite", "", "");
+				this.minecraft.setScreen(null);
+				return true;
+			}
+
+			if (mouseX >= declineX && mouseX <= declineX + 60 && mouseY >= buttonY && mouseY <= buttonY + 18) {
+				${package}.network.PartyApiNetwork.sendClientAction("decline_invite", "", "");
+				this.minecraft.setScreen(null);
+				return true;
+			}
+
+			return false;
+		}
+
+		@Override
+		public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+			if (keyCode == 256) {
+				${package}.network.PartyApiNetwork.sendClientAction("decline_invite", "", "");
+				this.minecraft.setScreen(null);
+				return true;
+			}
+
+			return super.keyPressed(keyCode, scanCode, modifiers);
+		}
+
+		@Override
+		public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+			int boxWidth = 220;
+			int boxHeight = 88;
+			int boxX = (this.width - boxWidth) / 2;
+			int boxY = (this.height - boxHeight) / 2;
+
+			graphics.fill(0, 0, this.width, this.height, 0x22000000);
+			graphics.fill(boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xCC000000);
+			graphics.fill(boxX, boxY, boxX + boxWidth, boxY + 1, 0xFFE6C75A);
+			graphics.fill(boxX, boxY + boxHeight - 1, boxX + boxWidth, boxY + boxHeight, 0xFFE6C75A);
+			graphics.fill(boxX, boxY, boxX + 1, boxY + boxHeight, 0xFFE6C75A);
+			graphics.fill(boxX + boxWidth - 1, boxY, boxX + boxWidth, boxY + boxHeight, 0xFFE6C75A);
+
+			graphics.drawCenteredString(this.font, "Party Invite", this.width / 2, boxY + 10, 0xFFFFFFFF);
+			graphics.drawCenteredString(this.font, inviterName + " invited you to a party", this.width / 2, boxY + 30, 0xFFDCDCDC);
+
+			int acceptX = boxX + 22;
+			int declineX = boxX + boxWidth - 82;
+			int buttonY = boxY + 58;
+
+			graphics.fill(acceptX, buttonY, acceptX + 60, buttonY + 18, 0xFF2F7D3A);
+			graphics.drawCenteredString(this.font, "Accept", acceptX + 30, buttonY + 5, 0xFFFFFFFF);
+
+			graphics.fill(declineX, buttonY, declineX + 60, buttonY + 18, 0xFF7D2F2F);
+			graphics.drawCenteredString(this.font, "Decline", declineX + 30, buttonY + 5, 0xFFFFFFFF);
+		}
+	}
+
 	private static final class PartyScreen extends Screen {
 		private int scroll = 0;
 
@@ -256,7 +353,7 @@ public final class PartyApiClient {
 
 		@Override
 		public boolean mouseClicked(double mouseX, double mouseY, int button) {
-			int startY = 60;
+			int startY = 50;
 			int rowHeight = 32;
 
 			for (int i = 0; i < MEMBERS.size(); i++) {
@@ -297,9 +394,9 @@ public final class PartyApiClient {
 			}
 
 			graphics.drawCenteredString(this.font, "Party", this.width / 2, 20, 0xFFFFFFFF);
-			graphics.drawCenteredString(this.font, "PvP: " + (pvpEnabled ? "ON" : "OFF"), this.width / 2, 42, pvpEnabled ? 0xFFFF7777 : 0xFF77FF77);
+			graphics.drawCenteredString(this.font, "PvP: " + (pvpEnabled ? "ON" : "OFF"), this.width / 2, 32, pvpEnabled ? 0xFFFF7777 : 0xFF77FF77);
 
-			int startY = 60;
+			int startY = 50;
 			int rowHeight = 32;
 			int x = this.width / 2 - 140;
 			int rowWidth = 280;

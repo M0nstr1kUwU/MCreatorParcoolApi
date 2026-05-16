@@ -1,0 +1,50 @@
+{
+  "type": "casino_card_name",
+  "message0": "casino card name rank %1 suit %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "RANK",
+      "check": "Number"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "SUIT",
+      "options": [
+        [
+          "Spades",
+          "SPADES"
+        ],
+        [
+          "Hearts",
+          "HEARTS"
+        ],
+        [
+          "Diamonds",
+          "DIAMONDS"
+        ],
+        [
+          "Clubs",
+          "CLUBS"
+        ]
+      ]
+    }
+  ],
+  "inputsInline": true,
+  "output": "String",
+  "colour": 290,
+  "tooltip": "Formats card rank and suit into readable card code.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"RANK\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ],
+    "inputs": [
+      "RANK"
+    ],
+    "fields": [
+      "SUIT"
+    ]
+  }
+}

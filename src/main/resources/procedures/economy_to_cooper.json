@@ -1,0 +1,50 @@
+{
+  "type": "economy_to_cooper",
+  "message0": "%1 %2 in cooper",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "AMOUNT",
+      "check": "Number"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "COIN",
+      "options": [
+        [
+          "Cooper",
+          "COOPER"
+        ],
+        [
+          "Iron",
+          "IRON"
+        ],
+        [
+          "Gold",
+          "GOLD"
+        ],
+        [
+          "Platine",
+          "PLATINE"
+        ]
+      ]
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 120,
+  "tooltip": "Converts selected currency amount to Cooper units.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "economy_tools",
+    "toolbox_init": [
+      "<value name=\"AMOUNT\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ],
+    "inputs": [
+      "AMOUNT"
+    ],
+    "fields": [
+      "COIN"
+    ]
+  }
+}

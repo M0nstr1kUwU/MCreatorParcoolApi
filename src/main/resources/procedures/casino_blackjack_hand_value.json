@@ -1,0 +1,25 @@
+{
+  "type": "casino_blackjack_hand_value",
+  "message0": "blackjack hand value of ranks %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "RANKS",
+      "check": "String"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Calculates blackjack hand from comma-separated ranks. Aces are adjusted from 11 to 1 when needed.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"RANKS\"><block type=\"text\"><field name=\"TEXT\">1,13</field></block></value>"
+    ],
+    "inputs": [
+      "RANKS"
+    ]
+  }
+}

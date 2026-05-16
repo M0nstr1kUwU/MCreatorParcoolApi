@@ -1,0 +1,22 @@
+{
+  "type": "party_transfer_leadership",
+  "message0": "transfer party leadership from %1 to %2",
+  "args0": [
+    {"type": "input_value", "name": "ENTITY", "check": "Entity"},
+    {"type": "input_value", "name": "TARGET", "check": "Entity"}
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 260,
+  "tooltip": "Transfers party leadership. The first player must be the current leader.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"TARGET\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": ["ENTITY", "TARGET"]
+  }
+}

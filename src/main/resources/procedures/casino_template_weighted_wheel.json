@@ -1,0 +1,78 @@
+{
+  "type": "casino_template_weighted_wheel",
+  "message0": "casino template weighted wheel: %1 bets %2 %3 weights %4 multipliers %5 send messages %6",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "AMOUNT",
+      "check": "Number"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "COIN",
+      "options": [
+        [
+          "Cooper",
+          "COOPER"
+        ],
+        [
+          "Iron",
+          "IRON"
+        ],
+        [
+          "Gold",
+          "GOLD"
+        ],
+        [
+          "Platine",
+          "PLATINE"
+        ]
+      ]
+    },
+    {
+      "type": "input_value",
+      "name": "WEIGHTS",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "MULTIPLIERS",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "SEND_MESSAGES",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 290,
+  "tooltip": "Ready-to-use weighted wheel. Example weights 70,20,8,2 and multipliers 0,1.5,3,10.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"AMOUNT\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
+      "<value name=\"WEIGHTS\"><block type=\"text\"><field name=\"TEXT\">70,20,8,2</field></block></value>",
+      "<value name=\"MULTIPLIERS\"><block type=\"text\"><field name=\"TEXT\">0,1.5,3,10</field></block></value>",
+      "<value name=\"SEND_MESSAGES\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "AMOUNT",
+      "WEIGHTS",
+      "MULTIPLIERS",
+      "SEND_MESSAGES"
+    ],
+    "fields": [
+      "COIN"
+    ]
+  }
+}

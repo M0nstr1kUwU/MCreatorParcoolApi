@@ -1,0 +1,14 @@
+{
+  "type": "economy_is_enabled",
+  "message0": "is economy enabled",
+  "args0": [],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 120,
+  "tooltip": "Returns true if economy is enabled in server config.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "economy_tools",
+    "inputs": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "economy_set_enabled",
+  "message0": "set economy enabled to %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENABLED",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 120,
+  "tooltip": "Enables or disables economy system in server config.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "economy_tools",
+    "toolbox_init": [
+      "<value name=\"ENABLED\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
+    ],
+    "inputs": [
+      "ENABLED"
+    ]
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "type": "economy_has_bank",
+  "message0": "does %1 have %2 %3 in bank",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "AMOUNT",
+      "check": "Number"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "COIN",
+      "options": [
+        [
+          "Cooper",
+          "COOPER"
+        ],
+        [
+          "Iron",
+          "IRON"
+        ],
+        [
+          "Gold",
+          "GOLD"
+        ],
+        [
+          "Platine",
+          "PLATINE"
+        ]
+      ]
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 120,
+  "tooltip": "Checks whether the player has enough money in bank.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "economy_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"AMOUNT\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "AMOUNT"
+    ],
+    "fields": [
+      "COIN"
+    ]
+  }
+}

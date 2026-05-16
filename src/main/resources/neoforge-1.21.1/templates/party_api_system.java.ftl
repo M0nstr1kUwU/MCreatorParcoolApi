@@ -25,7 +25,10 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
 @EventBusSubscriber(modid = "${modid}")
 public final class PartyApiSystem {
 	private static final String DATA_NAME = "${modid}_party_api_system_v1";
+
 	private static final int MAX_OVERLAY_PINNED = 4;
+	private static final int DEFAULT_MAX_MEMBERS = 4; // fallback, real default comes from PartyApiServerConfig
+	private static final int HARD_MAX_MEMBERS = 200; // fallback, real hard cap comes from PartyApiServerConfig
 
 	private static final Map<UUID, UUID> INVITES = new ConcurrentHashMap<>();
 	private static final Map<UUID, Long> INVITE_TIME = new ConcurrentHashMap<>();
@@ -34,12 +37,36 @@ public final class PartyApiSystem {
 	private PartyApiSystem() {
 	}
 
+	public static boolean isPartySystemEnabled() {
+		PartySavedData data = getSavedData();
+		return data == null || data.partySystemEnabled;
+	}
+
+	public static boolean adminSetPartySystemEnabled(boolean enabled) {
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		data.partySystemEnabled = enabled;
+		data.setDirty();
+
+		if (!enabled) {
+			clearAllOnlinePartyScreens();
+		} else {
+			syncAllOnlineParties();
+		}
+
+		return true;
+	}
+
 	public static boolean createParty(ServerPlayer leader) {
 		return createParty(leader, true);
 	}
 
 	public static boolean createParty(ServerPlayer leader, boolean showSelf) {
-		if (leader == null) {
+		if (leader == null || !isPartySystemEnabled()) {
 			return false;
 		}
 
@@ -52,6 +79,7 @@ public final class PartyApiSystem {
 		PartyData party = new PartyData(UUID.randomUUID(), leader.getUUID());
 		party.members.add(leader.getUUID());
 		party.defaultShowSelf = showSelf;
+		party.maxMembers = PartyApiServerConfig.defaultMaxMembers();
 		party.showSelfByViewer.put(leader.getUUID(), showSelf);
 
 		data.parties.put(party.id, party);
@@ -78,6 +106,34 @@ public final class PartyApiSystem {
 			return false;
 		}
 
+		return disbandPartyInternal(data, party);
+	}
+
+	public static boolean adminDisbandPartyOf(ServerPlayer targetPartyMember) {
+		if (targetPartyMember == null) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		PartyData party = data.getPartyOf(targetPartyMember.getUUID());
+
+		if (party == null) {
+			return false;
+		}
+
+		return disbandPartyInternal(data, party);
+	}
+
+	private static boolean disbandPartyInternal(PartySavedData data, PartyData party) {
+		if (data == null || party == null) {
+			return false;
+		}
+
 		List<UUID> members = new ArrayList<>(party.members);
 		data.parties.remove(party.id);
 		data.setDirty();
@@ -94,7 +150,7 @@ public final class PartyApiSystem {
 	}
 
 	public static boolean invitePlayer(ServerPlayer leader, ServerPlayer invited) {
-		if (leader == null || invited == null || leader.getUUID().equals(invited.getUUID())) {
+		if (leader == null || invited == null || leader.getUUID().equals(invited.getUUID()) || !isPartySystemEnabled()) {
 			return false;
 		}
 
@@ -121,6 +177,13 @@ public final class PartyApiSystem {
 			return false;
 		}
 
+		if (isFull(party)) {
+			leader.displayClientMessage(net.minecraft.network.chat.Component.literal(
+				"Party is full (" + party.members.size() + "/" + party.maxMembers + ")"
+			), false);
+			return false;
+		}
+
 		INVITES.put(invited.getUUID(), party.id);
 		INVITE_TIME.put(invited.getUUID(), System.currentTimeMillis());
 
@@ -128,11 +191,15 @@ public final class PartyApiSystem {
 			"Party invite from " + leader.getGameProfile().getName() + ". Use /party accept"
 		), false);
 
+		if (PartyApiServerConfig.inviteGuiEnabled()) {
+			${package}.network.PartyApiNetwork.openPartyInviteScreen(invited, leader.getGameProfile().getName());
+		}
+
 		return true;
 	}
 
 	public static boolean acceptInvite(ServerPlayer player) {
-		if (player == null) {
+		if (player == null || !isPartySystemEnabled()) {
 			return false;
 		}
 
@@ -153,7 +220,7 @@ public final class PartyApiSystem {
 
 		PartyData party = data.parties.get(partyId);
 
-		if (party == null) {
+		if (party == null || isFull(party)) {
 			return false;
 		}
 
@@ -182,14 +249,7 @@ public final class PartyApiSystem {
 			return false;
 		}
 
-		party.members.remove(player.getUUID());
-		party.pinsByViewer.remove(player.getUUID());
-		party.overlayPositionByViewer.remove(player.getUUID());
-		party.showSelfByViewer.remove(player.getUUID());
-
-		for (LinkedHashSet<UUID> pins : party.pinsByViewer.values()) {
-			pins.remove(player.getUUID());
-		}
+		removeMemberInternal(party, player.getUUID());
 
 		if (party.members.isEmpty()) {
 			data.parties.remove(party.id);
@@ -205,7 +265,7 @@ public final class PartyApiSystem {
 	}
 
 	public static boolean kickPlayer(ServerPlayer actor, ServerPlayer target) {
-		if (actor == null || target == null) {
+		if (actor == null || target == null || !isPartySystemEnabled()) {
 			return false;
 		}
 
@@ -225,14 +285,7 @@ public final class PartyApiSystem {
 			return false;
 		}
 
-		party.members.remove(target.getUUID());
-		party.pinsByViewer.remove(target.getUUID());
-		party.overlayPositionByViewer.remove(target.getUUID());
-		party.showSelfByViewer.remove(target.getUUID());
-
-		for (LinkedHashSet<UUID> pins : party.pinsByViewer.values()) {
-			pins.remove(target.getUUID());
-		}
+		removeMemberInternal(party, target.getUUID());
 
 		if (party.leader.equals(target.getUUID()) && !party.members.isEmpty()) {
 			party.leader = party.members.iterator().next();
@@ -245,8 +298,55 @@ public final class PartyApiSystem {
 		return true;
 	}
 
+	public static boolean adminRemovePlayerFromParty(ServerPlayer target) {
+		if (target == null) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		PartyData party = data.getPartyOf(target.getUUID());
+
+		if (party == null) {
+			return false;
+		}
+
+		removeMemberInternal(party, target.getUUID());
+
+		if (party.members.isEmpty()) {
+			data.parties.remove(party.id);
+		} else if (party.leader.equals(target.getUUID())) {
+			party.leader = party.members.iterator().next();
+		}
+
+		data.setDirty();
+
+		${package}.network.PartyApiNetwork.sendEmptyParty(target);
+		syncParty(party);
+		return true;
+	}
+
+	private static void removeMemberInternal(PartyData party, UUID playerId) {
+		if (party == null || playerId == null) {
+			return;
+		}
+
+		party.members.remove(playerId);
+		party.pinsByViewer.remove(playerId);
+		party.overlayPositionByViewer.remove(playerId);
+		party.showSelfByViewer.remove(playerId);
+
+		for (LinkedHashSet<UUID> pins : party.pinsByViewer.values()) {
+			pins.remove(playerId);
+		}
+	}
+
 	public static boolean setPvp(ServerPlayer actor, boolean enabled) {
-		if (actor == null) {
+		if (actor == null || !isPartySystemEnabled()) {
 			return false;
 		}
 
@@ -269,8 +369,141 @@ public final class PartyApiSystem {
 		return true;
 	}
 
+	public static boolean adminSetPvp(ServerPlayer targetPartyMember, boolean enabled) {
+		if (targetPartyMember == null) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		PartyData party = data.getPartyOf(targetPartyMember.getUUID());
+
+		if (party == null) {
+			return false;
+		}
+
+		party.pvpEnabled = enabled;
+		data.setDirty();
+
+		syncParty(party);
+		return true;
+	}
+
+	public static boolean setPartyMaxMembers(ServerPlayer actor, int maxMembers) {
+		if (actor == null || !isPartySystemEnabled()) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		PartyData party = data.getPartyOf(actor.getUUID());
+
+		if (party == null || !party.leader.equals(actor.getUUID())) {
+			return false;
+		}
+
+		party.maxMembers = clampMaxMembers(maxMembers);
+		data.setDirty();
+
+		syncParty(party);
+		return true;
+	}
+
+	public static boolean adminSetPartyMaxMembers(ServerPlayer targetPartyMember, int maxMembers) {
+		if (targetPartyMember == null) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		PartyData party = data.getPartyOf(targetPartyMember.getUUID());
+
+		if (party == null) {
+			return false;
+		}
+
+		party.maxMembers = clampMaxMembers(maxMembers);
+		data.setDirty();
+
+		syncParty(party);
+		return true;
+	}
+
+	public static int getPartyMaxMembers(ServerPlayer player) {
+		if (player == null) {
+			return 0;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return 0;
+		}
+
+		PartyData party = data.getPartyOf(player.getUUID());
+
+		return party != null ? party.maxMembers : 0;
+	}
+
+	public static boolean isPartyFull(ServerPlayer player) {
+		if (player == null) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		PartyData party = data.getPartyOf(player.getUUID());
+
+		return party != null && isFull(party);
+	}
+
+	public static boolean adminAddPlayerToParty(ServerPlayer targetPartyMember, ServerPlayer playerToAdd, boolean ignoreLimit) {
+		if (targetPartyMember == null || playerToAdd == null) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null || data.getPartyOf(playerToAdd.getUUID()) != null) {
+			return false;
+		}
+
+		PartyData party = data.getPartyOf(targetPartyMember.getUUID());
+
+		if (party == null) {
+			return false;
+		}
+
+		if (!ignoreLimit && isFull(party)) {
+			return false;
+		}
+
+		party.members.add(playerToAdd.getUUID());
+		party.showSelfByViewer.putIfAbsent(playerToAdd.getUUID(), party.defaultShowSelf);
+		data.setDirty();
+
+		syncParty(party);
+		return true;
+	}
+
 	public static boolean setPinned(ServerPlayer viewer, ServerPlayer target, boolean pinned) {
-		if (viewer == null || target == null) {
+		if (viewer == null || target == null || !isPartySystemEnabled()) {
 			return false;
 		}
 
@@ -304,7 +537,7 @@ public final class PartyApiSystem {
 	}
 
 	public static boolean setShowSelf(ServerPlayer viewer, boolean showSelf) {
-		if (viewer == null) {
+		if (viewer == null || !isPartySystemEnabled()) {
 			return false;
 		}
 
@@ -328,7 +561,7 @@ public final class PartyApiSystem {
 	}
 
 	public static boolean setOverlayPosition(ServerPlayer player, String position) {
-		if (player == null) {
+		if (player == null || !isPartySystemEnabled()) {
 			return false;
 		}
 
@@ -368,7 +601,7 @@ public final class PartyApiSystem {
 
 		PartyData party = data.getPartyOf(player.getUUID());
 
-		if (party != null) {
+		if (party != null && isPartySystemEnabled()) {
 			syncParty(party);
 		}
 
@@ -395,7 +628,7 @@ public final class PartyApiSystem {
 
 		PartyData party = data.getPartyOf(player.getUUID());
 
-		if (party != null) {
+		if (party != null && isPartySystemEnabled()) {
 			syncParty(party);
 		}
 
@@ -421,6 +654,42 @@ public final class PartyApiSystem {
 		PartyData party = data.getPartyOf(first.getUUID());
 
 		return party != null && party.members.contains(second.getUUID());
+	}
+
+	public static boolean isPartyPvpEnabled(ServerPlayer player) {
+		if (player == null) {
+			return true;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return true;
+		}
+
+		PartyData party = data.getPartyOf(player.getUUID());
+
+		return party == null || party.pvpEnabled;
+	}
+
+	public static boolean shouldCancelPvpDamage(ServerPlayer attacker, ServerPlayer target) {
+		if (attacker == null || target == null || attacker.getUUID().equals(target.getUUID())) {
+			return false;
+		}
+
+		if (!isPartySystemEnabled()) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		PartyData party = data.getPartyOf(attacker.getUUID());
+
+		return party != null && !party.pvpEnabled && party.members.contains(target.getUUID());
 	}
 
 	public static int getPartySize(ServerPlayer player) {
@@ -460,7 +729,7 @@ public final class PartyApiSystem {
 	}
 
 	public static void openPartyGui(ServerPlayer player) {
-		if (player == null) {
+		if (player == null || !isPartySystemEnabled()) {
 			return;
 		}
 
@@ -479,8 +748,165 @@ public final class PartyApiSystem {
 		${package}.network.PartyApiNetwork.openPartyScreen(player);
 	}
 
+	public static void openPartyGuiForPartyOf(ServerPlayer viewer, ServerPlayer targetPartyMember) {
+		if (viewer == null || targetPartyMember == null) {
+			return;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return;
+		}
+
+		PartyData party = data.getPartyOf(targetPartyMember.getUUID());
+
+		if (party != null) {
+			syncPartyTo(viewer, party);
+		}
+
+		${package}.network.PartyApiNetwork.openPartyScreen(viewer);
+	}
+
+
+	public static boolean declineInvite(ServerPlayer player) {
+		if (player == null) {
+			return false;
+		}
+
+		boolean hadInvite = INVITES.remove(player.getUUID()) != null;
+		INVITE_TIME.remove(player.getUUID());
+		return hadInvite;
+	}
+
+	public static boolean isPartyLeader(ServerPlayer player) {
+		if (player == null) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		PartyData party = data.getPartyOf(player.getUUID());
+
+		return party != null && party.leader.equals(player.getUUID());
+	}
+
+	public static boolean transferLeadership(ServerPlayer actor, ServerPlayer target) {
+		if (actor == null || target == null || !isPartySystemEnabled()) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		PartyData party = data.getPartyOf(actor.getUUID());
+
+		if (party == null || !party.leader.equals(actor.getUUID()) || !party.members.contains(target.getUUID())) {
+			return false;
+		}
+
+		party.leader = target.getUUID();
+		data.setDirty();
+
+		syncParty(party);
+		return true;
+	}
+
+	public static boolean adminTransferLeadership(ServerPlayer targetPartyMember, ServerPlayer newLeader) {
+		if (targetPartyMember == null || newLeader == null) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		PartyData party = data.getPartyOf(targetPartyMember.getUUID());
+
+		if (party == null || !party.members.contains(newLeader.getUUID())) {
+			return false;
+		}
+
+		party.leader = newLeader.getUUID();
+		data.setDirty();
+
+		syncParty(party);
+		return true;
+	}
+
+	public static boolean sendPartyChat(ServerPlayer sender, String message) {
+		if (sender == null || message == null || message.isBlank() || !isPartySystemEnabled()) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		PartyData party = data.getPartyOf(sender.getUUID());
+
+		if (party == null) {
+			return false;
+		}
+
+		net.minecraft.network.chat.Component component = net.minecraft.network.chat.Component.literal(
+			"[Party] <" + sender.getGameProfile().getName() + "> " + message
+		);
+
+		for (UUID memberId : party.members) {
+			ServerPlayer member = getServerPlayer(memberId);
+
+			if (member != null) {
+				member.sendSystemMessage(component);
+			}
+		}
+
+		return true;
+	}
+
+	public static boolean sendMessageToParty(ServerPlayer anchor, String message) {
+		if (anchor == null || message == null || message.isBlank() || !isPartySystemEnabled()) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		PartyData party = data.getPartyOf(anchor.getUUID());
+
+		if (party == null) {
+			return false;
+		}
+
+		net.minecraft.network.chat.Component component = net.minecraft.network.chat.Component.literal(message);
+
+		for (UUID memberId : party.members) {
+			ServerPlayer member = getServerPlayer(memberId);
+
+			if (member != null) {
+				member.sendSystemMessage(component);
+			}
+		}
+
+		return true;
+	}
+
 	public static void handleClientAction(ServerPlayer player, String action, String targetId, String value) {
-		if (player == null || action == null) {
+		if (player == null || action == null || !isPartySystemEnabled()) {
 			return;
 		}
 
@@ -502,6 +928,8 @@ public final class PartyApiSystem {
 			case "show_self_off" -> setShowSelf(player, false);
 			case "pvp_on" -> setPvp(player, true);
 			case "pvp_off" -> setPvp(player, false);
+			case "accept_invite" -> acceptInvite(player);
+			case "decline_invite" -> declineInvite(player);
 			default -> {
 			}
 		}
@@ -525,9 +953,16 @@ public final class PartyApiSystem {
 
 		PartyData party = data.getPartyOf(player.getUUID());
 
-		if (party != null) {
-			syncPartyTo(player, party);
+		if (party == null) {
+			return;
 		}
+
+		if (!data.partySystemEnabled) {
+			${package}.network.PartyApiNetwork.sendEmptyParty(player);
+			return;
+		}
+
+		syncPartyTo(player, party);
 	}
 
 	private static void clearExpiredInvites() {
@@ -536,15 +971,57 @@ public final class PartyApiSystem {
 		for (UUID invited : new ArrayList<>(INVITE_TIME.keySet())) {
 			long time = INVITE_TIME.getOrDefault(invited, 0L);
 
-			if (now - time > INVITE_LIFETIME_MS) {
+			if (now - time > (PartyApiServerConfig.inviteLifetimeSeconds() * 1000L)) {
 				INVITE_TIME.remove(invited);
 				INVITES.remove(invited);
 			}
 		}
 	}
 
+	private static boolean isFull(PartyData party) {
+		return party != null && party.members.size() >= party.maxMembers;
+	}
+
+	private static int clampMaxMembers(int maxMembers) {
+		return Math.max(1, Math.min(PartyApiServerConfig.hardMaxMembers(), maxMembers));
+	}
+
+	private static void clearAllOnlinePartyScreens() {
+		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+
+		if (server == null) {
+			return;
+		}
+
+		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+			${package}.network.PartyApiNetwork.sendEmptyParty(player);
+		}
+	}
+
+	private static void syncAllOnlineParties() {
+		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+
+		if (server == null) {
+			return;
+		}
+
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return;
+		}
+
+		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+			PartyData party = data.getPartyOf(player.getUUID());
+
+			if (party != null) {
+				syncPartyTo(player, party);
+			}
+		}
+	}
+
 	private static void syncParty(PartyData party) {
-		if (party == null) {
+		if (party == null || !isPartySystemEnabled()) {
 			return;
 		}
 
@@ -688,6 +1165,7 @@ public final class PartyApiSystem {
 		private UUID leader;
 		private boolean pvpEnabled = false;
 		private boolean defaultShowSelf = true;
+		private int maxMembers = DEFAULT_MAX_MEMBERS;
 		private final LinkedHashSet<UUID> members = new LinkedHashSet<>();
 		private final Map<UUID, LinkedHashSet<UUID>> pinsByViewer = new ConcurrentHashMap<>();
 		private final Map<UUID, String> overlayPositionByViewer = new ConcurrentHashMap<>();
@@ -700,6 +1178,7 @@ public final class PartyApiSystem {
 	}
 
 	public static final class PartySavedData extends SavedData {
+		private boolean partySystemEnabled = PartyApiServerConfig.defaultPartySystemEnabled();
 		private final Map<UUID, PartyData> parties = new ConcurrentHashMap<>();
 		private final Map<UUID, Map<String, String>> extraStatsByPlayer = new ConcurrentHashMap<>();
 
@@ -720,6 +1199,8 @@ public final class PartyApiSystem {
 		public static PartySavedData load(CompoundTag tag, HolderLookup.Provider provider) {
 			PartySavedData data = new PartySavedData();
 
+			data.partySystemEnabled = !tag.contains("PartySystemEnabled") || tag.getBoolean("PartySystemEnabled");
+
 			ListTag partiesTag = tag.getList("Parties", Tag.TAG_COMPOUND);
 
 			for (int i = 0; i < partiesTag.size(); i++) {
@@ -732,6 +1213,7 @@ public final class PartyApiSystem {
 					PartyData party = new PartyData(id, leader);
 					party.pvpEnabled = partyTag.getBoolean("PvpEnabled");
 					party.defaultShowSelf = !partyTag.contains("DefaultShowSelf") || partyTag.getBoolean("DefaultShowSelf");
+					party.maxMembers = partyTag.contains("MaxMembers") ? clampMaxMembers(partyTag.getInt("MaxMembers")) : PartyApiServerConfig.defaultMaxMembers();
 
 					ListTag membersTag = partyTag.getList("Members", Tag.TAG_STRING);
 					for (int j = 0; j < membersTag.size(); j++) {
@@ -807,6 +1289,8 @@ public final class PartyApiSystem {
 
 		@Override
 		public CompoundTag save(CompoundTag tag, HolderLookup.Provider provider) {
+			tag.putBoolean("PartySystemEnabled", partySystemEnabled);
+
 			ListTag partiesTag = new ListTag();
 
 			for (PartyData party : parties.values()) {
@@ -816,6 +1300,7 @@ public final class PartyApiSystem {
 				partyTag.putString("Leader", party.leader.toString());
 				partyTag.putBoolean("PvpEnabled", party.pvpEnabled);
 				partyTag.putBoolean("DefaultShowSelf", party.defaultShowSelf);
+				partyTag.putInt("MaxMembers", clampMaxMembers(party.maxMembers));
 
 				ListTag membersTag = new ListTag();
 				for (UUID member : party.members) {

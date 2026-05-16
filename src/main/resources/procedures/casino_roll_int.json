@@ -1,0 +1,32 @@
+{
+  "type": "casino_roll_int",
+  "message0": "casino random integer from %1 to %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "MIN",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "MAX",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Returns secure random integer in range.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "inputs": [
+      "MIN",
+      "MAX"
+    ],
+    "toolbox_init": [
+      "<value name=\"MIN\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
+      "<value name=\"MAX\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ]
+  }
+}

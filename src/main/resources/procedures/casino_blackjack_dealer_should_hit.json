@@ -1,0 +1,25 @@
+{
+  "type": "casino_blackjack_dealer_should_hit",
+  "message0": "should blackjack dealer hit with ranks %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "RANKS",
+      "check": "String"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 290,
+  "tooltip": "Returns true if dealer hand value is 16 or lower.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"RANKS\"><block type=\"text\"><field name=\"TEXT\">10,6</field></block></value>"
+    ],
+    "inputs": [
+      "RANKS"
+    ]
+  }
+}

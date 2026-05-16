@@ -1,0 +1,14 @@
+{
+  "type": "casino_card_suit",
+  "message0": "casino draw card suit",
+  "args0": [],
+  "inputsInline": true,
+  "output": "String",
+  "colour": 290,
+  "tooltip": "Draws random card suit: SPADES, HEARTS, DIAMONDS, CLUBS.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "inputs": []
+  }
+}

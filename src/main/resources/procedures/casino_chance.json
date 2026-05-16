@@ -1,0 +1,32 @@
+{
+  "type": "casino_chance",
+  "message0": "casino chance %1 percent apply house edge? %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "PERCENT",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "HOUSE_EDGE",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 290,
+  "tooltip": "Returns true by percent chance, optionally applying casino house edge.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "inputs": [
+      "PERCENT",
+      "HOUSE_EDGE"
+    ],
+    "toolbox_init": [
+      "<value name=\"PERCENT\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
+      "<value name=\"HOUSE_EDGE\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
+    ]
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "type": "economy_transfer_wallet",
+  "message0": "transfer %3 %4 from wallet of %1 to wallet of %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "FROM",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "TO",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "AMOUNT",
+      "check": "Number"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "COIN",
+      "options": [
+        [
+          "Cooper",
+          "COOPER"
+        ],
+        [
+          "Iron",
+          "IRON"
+        ],
+        [
+          "Gold",
+          "GOLD"
+        ],
+        [
+          "Platine",
+          "PLATINE"
+        ]
+      ]
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 120,
+  "tooltip": "Transfers money between players with configured transfer fee.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "economy_tools",
+    "toolbox_init": [
+      "<value name=\"FROM\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"TO\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"AMOUNT\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ],
+    "inputs": [
+      "FROM",
+      "TO",
+      "AMOUNT"
+    ],
+    "fields": [
+      "COIN"
+    ]
+  }
+}

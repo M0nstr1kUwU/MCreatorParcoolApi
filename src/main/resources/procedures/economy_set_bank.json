@@ -1,0 +1,58 @@
+{
+  "type": "economy_set_bank",
+  "message0": "set bank of %1 to %2 %3",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "AMOUNT",
+      "check": "Number"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "COIN",
+      "options": [
+        [
+          "Cooper",
+          "COOPER"
+        ],
+        [
+          "Iron",
+          "IRON"
+        ],
+        [
+          "Gold",
+          "GOLD"
+        ],
+        [
+          "Platine",
+          "PLATINE"
+        ]
+      ]
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 120,
+  "tooltip": "Sets bank balance.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "economy_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"AMOUNT\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "AMOUNT"
+    ],
+    "fields": [
+      "COIN"
+    ]
+  }
+}

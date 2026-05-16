@@ -1,0 +1,14 @@
+{
+  "type": "casino_card_rank",
+  "message0": "casino draw card rank",
+  "args0": [],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Draws random card rank: Ace=1, Jack=11, Queen=12, King=13.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "inputs": []
+  }
+}

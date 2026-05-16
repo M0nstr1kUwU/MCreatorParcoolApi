@@ -1,0 +1,21 @@
+{
+  "type": "party_are_in_same_party",
+  "message0": "are %1 and %2 in same party",
+  "args0": [
+    {"type": "input_value", "name": "ENTITY", "check": "Entity"},
+    {"type": "input_value", "name": "TARGET", "check": "Entity"}
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 260,
+  "tooltip": "Returns true if both players are in the same party.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"TARGET\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": ["ENTITY", "TARGET"]
+  }
+}

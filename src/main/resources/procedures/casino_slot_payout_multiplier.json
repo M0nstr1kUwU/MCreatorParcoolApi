@@ -1,0 +1,46 @@
+{
+  "type": "casino_slot_payout_multiplier",
+  "message0": "slot payout multiplier for result %1 jackpot %2 pair %3 miss %4",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "RESULT",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "JACKPOT",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "PAIR",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "MISS",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Returns jackpot multiplier if all equal, pair multiplier if pair, otherwise miss multiplier.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"RESULT\"><block type=\"text\"><field name=\"TEXT\">1,2,3</field></block></value>",
+      "<value name=\"JACKPOT\"><block type=\"math_number\"><field name=\"NUM\">10</field></block></value>",
+      "<value name=\"PAIR\"><block type=\"math_number\"><field name=\"NUM\">2</field></block></value>",
+      "<value name=\"MISS\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>"
+    ],
+    "inputs": [
+      "RESULT",
+      "JACKPOT",
+      "PAIR",
+      "MISS"
+    ]
+  }
+}

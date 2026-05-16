@@ -1,0 +1,78 @@
+{
+  "type": "casino_template_crash",
+  "message0": "casino template crash: %1 bets %2 %3 cashout x%4 max x%5 send messages %6",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "AMOUNT",
+      "check": "Number"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "COIN",
+      "options": [
+        [
+          "Cooper",
+          "COOPER"
+        ],
+        [
+          "Iron",
+          "IRON"
+        ],
+        [
+          "Gold",
+          "GOLD"
+        ],
+        [
+          "Platine",
+          "PLATINE"
+        ]
+      ]
+    },
+    {
+      "type": "input_value",
+      "name": "CASHOUT",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "MAX",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "SEND_MESSAGES",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 290,
+  "tooltip": "Ready-to-use preselected cashout crash game. Server generates crash multiplier and pays if it reaches cashout.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"AMOUNT\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
+      "<value name=\"CASHOUT\"><block type=\"math_number\"><field name=\"NUM\">2</field></block></value>",
+      "<value name=\"MAX\"><block type=\"math_number\"><field name=\"NUM\">100</field></block></value>",
+      "<value name=\"SEND_MESSAGES\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "AMOUNT",
+      "CASHOUT",
+      "MAX",
+      "SEND_MESSAGES"
+    ],
+    "fields": [
+      "COIN"
+    ]
+  }
+}

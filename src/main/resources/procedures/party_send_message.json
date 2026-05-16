@@ -1,0 +1,22 @@
+{
+  "type": "party_send_message",
+  "message0": "send party message %1 to party of %2",
+  "args0": [
+    {"type": "input_value", "name": "MESSAGE", "check": "String"},
+    {"type": "input_value", "name": "ENTITY", "check": "Entity"}
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 260,
+  "tooltip": "Sends a system message to all online members of the player's party.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"MESSAGE\"><block type=\"text\"><field name=\"TEXT\">Party message</field></block></value>",
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": ["MESSAGE", "ENTITY"]
+  }
+}

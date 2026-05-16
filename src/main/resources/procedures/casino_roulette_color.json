@@ -1,0 +1,25 @@
+{
+  "type": "casino_roulette_color",
+  "message0": "casino roulette color of number %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "NUMBER",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "String",
+  "colour": 290,
+  "tooltip": "Returns GREEN, RED, or BLACK.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "inputs": [
+      "NUMBER"
+    ],
+    "toolbox_init": [
+      "<value name=\"NUMBER\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ]
+  }
+}

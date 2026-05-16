@@ -1,0 +1,114 @@
+{
+  "type": "casino_template_dice_over_under",
+  "message0": "casino template dice: %1 bets %2 %3 on %4 dice %5 sides %6 threshold %7 win x%8 push on equal %9 send messages %10",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "AMOUNT",
+      "check": "Number"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "COIN",
+      "options": [
+        [
+          "Cooper",
+          "COOPER"
+        ],
+        [
+          "Iron",
+          "IRON"
+        ],
+        [
+          "Gold",
+          "GOLD"
+        ],
+        [
+          "Platine",
+          "PLATINE"
+        ]
+      ]
+    },
+    {
+      "type": "field_dropdown",
+      "name": "CHOICE",
+      "options": [
+        [
+          "Over",
+          "OVER"
+        ],
+        [
+          "Under",
+          "UNDER"
+        ]
+      ]
+    },
+    {
+      "type": "input_value",
+      "name": "DICE",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "SIDES",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "THRESHOLD",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "MULTIPLIER",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "PUSH_ON_EQUAL",
+      "check": "Boolean"
+    },
+    {
+      "type": "input_value",
+      "name": "SEND_MESSAGES",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 290,
+  "tooltip": "Ready-to-use over/under dice game. Can return bet on exact threshold.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"AMOUNT\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
+      "<value name=\"DICE\"><block type=\"math_number\"><field name=\"NUM\">2</field></block></value>",
+      "<value name=\"SIDES\"><block type=\"math_number\"><field name=\"NUM\">6</field></block></value>",
+      "<value name=\"THRESHOLD\"><block type=\"math_number\"><field name=\"NUM\">7</field></block></value>",
+      "<value name=\"MULTIPLIER\"><block type=\"math_number\"><field name=\"NUM\">2</field></block></value>",
+      "<value name=\"PUSH_ON_EQUAL\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>",
+      "<value name=\"SEND_MESSAGES\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "AMOUNT",
+      "DICE",
+      "SIDES",
+      "THRESHOLD",
+      "MULTIPLIER",
+      "PUSH_ON_EQUAL",
+      "SEND_MESSAGES"
+    ],
+    "fields": [
+      "COIN",
+      "CHOICE"
+    ]
+  }
+}

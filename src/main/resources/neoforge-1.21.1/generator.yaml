@@ -43,3 +43,30 @@ base_templates:
 
   - template: hitbox_api_bridge.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/hitbox/HitboxApiBridge.java"
+
+  - template: party_api_server_config.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiServerConfig.java"
+
+  - template: party_api_pvp_guard.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiPvpGuard.java"
+
+  - template: party_api_chat_guard.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiChatGuard.java"
+
+  - template: economy_api_server_config.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/economy/EconomyApiServerConfig.java"
+
+  - template: economy_api_system.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/economy/EconomyApiSystem.java"
+
+  - template: economy_api_events.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/economy/EconomyApiEvents.java"
+
+  - template: economy_api_commands.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/economy/EconomyApiCommands.java"
+
+  - template: economy_api_casino.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/economy/EconomyApiCasino.java"
+
+  - template: economy_api_casino_templates.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/economy/EconomyApiCasinoTemplates.java"

@@ -1,0 +1,25 @@
+{
+  "type": "casino_slot_result",
+  "message0": "casino slot result with %1 symbols",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "SYMBOLS",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "String",
+  "colour": 290,
+  "tooltip": "Returns three comma-separated slot symbols.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "inputs": [
+      "SYMBOLS"
+    ],
+    "toolbox_init": [
+      "<value name=\"SYMBOLS\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "type": "casino_crash_cashout_wins",
+  "message0": "crash generated %1 cashout %2 wins",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "GENERATED",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "CASHOUT",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 290,
+  "tooltip": "Returns true if generated crash multiplier reached cashout multiplier.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"GENERATED\"><block type=\"math_number\"><field name=\"NUM\">2</field></block></value>",
+      "<value name=\"CASHOUT\"><block type=\"math_number\"><field name=\"NUM\">1.5</field></block></value>"
+    ],
+    "inputs": [
+      "GENERATED",
+      "CASHOUT"
+    ]
+  }
+}

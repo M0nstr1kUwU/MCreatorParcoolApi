@@ -1,0 +1,65 @@
+{
+  "type": "casino_roulette_is_win",
+  "message0": "roulette bet type %1 choice %2 wins on number %3",
+  "args0": [
+    {
+      "type": "field_dropdown",
+      "name": "BET_TYPE",
+      "options": [
+        [
+          "Straight number",
+          "STRAIGHT"
+        ],
+        [
+          "Color",
+          "COLOR"
+        ],
+        [
+          "Even / odd",
+          "EVEN_ODD"
+        ],
+        [
+          "Low / high",
+          "LOW_HIGH"
+        ],
+        [
+          "Dozen",
+          "DOZEN"
+        ],
+        [
+          "Column",
+          "COLUMN"
+        ]
+      ]
+    },
+    {
+      "type": "input_value",
+      "name": "CHOICE",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "NUMBER",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 290,
+  "tooltip": "Checks roulette win. Choice examples: RED, BLACK, EVEN, ODD, LOW, HIGH, FIRST, SECOND, THIRD, or number for STRAIGHT.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"CHOICE\"><block type=\"text\"><field name=\"TEXT\">RED</field></block></value>",
+      "<value name=\"NUMBER\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ],
+    "inputs": [
+      "CHOICE",
+      "NUMBER"
+    ],
+    "fields": [
+      "BET_TYPE"
+    ]
+  }
+}

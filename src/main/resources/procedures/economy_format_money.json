@@ -1,0 +1,25 @@
+{
+  "type": "economy_format_money",
+  "message0": "format money %1 cooper",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "AMOUNT",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "String",
+  "colour": 120,
+  "tooltip": "Formats Cooper units into Platine/Gold/Iron/Cooper.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "economy_tools",
+    "toolbox_init": [
+      "<value name=\"AMOUNT\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>"
+    ],
+    "inputs": [
+      "AMOUNT"
+    ]
+  }
+}

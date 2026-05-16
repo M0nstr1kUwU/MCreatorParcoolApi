@@ -1,0 +1,14 @@
+{
+  "type": "economy_transfer_fee_percent",
+  "message0": "economy transfer fee percent",
+  "args0": [],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 120,
+  "tooltip": "Returns configured transfer fee percent.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "economy_tools",
+    "inputs": []
+  }
+}

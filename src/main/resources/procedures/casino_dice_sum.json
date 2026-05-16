@@ -1,0 +1,32 @@
+{
+  "type": "casino_dice_sum",
+  "message0": "casino roll %1 dice with %2 sides sum",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "DICE",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "SIDES",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Rolls several dice and returns their sum.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"DICE\"><block type=\"math_number\"><field name=\"NUM\">2</field></block></value>",
+      "<value name=\"SIDES\"><block type=\"math_number\"><field name=\"NUM\">6</field></block></value>"
+    ],
+    "inputs": [
+      "DICE",
+      "SIDES"
+    ]
+  }
+}

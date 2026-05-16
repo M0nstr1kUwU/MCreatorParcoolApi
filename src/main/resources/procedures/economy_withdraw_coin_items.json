@@ -1,0 +1,57 @@
+{
+  "type": "economy_withdraw_coin_items",
+  "message0": "withdraw %3 %2 coin items from bank of %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "COIN",
+      "options": [
+        [
+          "Cooper",
+          "COOPER"
+        ],
+        [
+          "Iron",
+          "IRON"
+        ],
+        [
+          "Gold",
+          "GOLD"
+        ],
+        [
+          "Platine",
+          "PLATINE"
+        ]
+      ]
+    },
+    {
+      "type": "input_value",
+      "name": "AMOUNT_ITEMS",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 120,
+  "tooltip": "Takes money from bank and gives configured coin items to player.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "economy_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"AMOUNT_ITEMS\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "AMOUNT_ITEMS"
+    ],
+    "fields": [
+      "COIN"
+    ]
+  }
+}

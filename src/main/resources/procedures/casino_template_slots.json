@@ -1,0 +1,92 @@
+{
+  "type": "casino_template_slots",
+  "message0": "casino template slots: %1 bets %2 %3 symbols %4 jackpot x%5 pair x%6 miss x%7 send messages %8",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "AMOUNT",
+      "check": "Number"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "COIN",
+      "options": [
+        [
+          "Cooper",
+          "COOPER"
+        ],
+        [
+          "Iron",
+          "IRON"
+        ],
+        [
+          "Gold",
+          "GOLD"
+        ],
+        [
+          "Platine",
+          "PLATINE"
+        ]
+      ]
+    },
+    {
+      "type": "input_value",
+      "name": "SYMBOLS",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "JACKPOT",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "PAIR",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "MISS",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "SEND_MESSAGES",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 290,
+  "tooltip": "Ready-to-use 3-reel slots. Jackpot if all equal, pair if two equal, otherwise miss multiplier.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"AMOUNT\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
+      "<value name=\"SYMBOLS\"><block type=\"math_number\"><field name=\"NUM\">8</field></block></value>",
+      "<value name=\"JACKPOT\"><block type=\"math_number\"><field name=\"NUM\">10</field></block></value>",
+      "<value name=\"PAIR\"><block type=\"math_number\"><field name=\"NUM\">2</field></block></value>",
+      "<value name=\"MISS\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>",
+      "<value name=\"SEND_MESSAGES\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "AMOUNT",
+      "SYMBOLS",
+      "JACKPOT",
+      "PAIR",
+      "MISS",
+      "SEND_MESSAGES"
+    ],
+    "fields": [
+      "COIN"
+    ]
+  }
+}

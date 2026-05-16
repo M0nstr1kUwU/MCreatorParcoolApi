@@ -1,0 +1,64 @@
+{
+  "type": "economy_casino_give_payout",
+  "message0": "give casino payout to %1 bet %2 %3 multiplier %4",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "AMOUNT",
+      "check": "Number"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "COIN",
+      "options": [
+        [
+          "Cooper",
+          "COOPER"
+        ],
+        [
+          "Iron",
+          "IRON"
+        ],
+        [
+          "Gold",
+          "GOLD"
+        ],
+        [
+          "Platine",
+          "PLATINE"
+        ]
+      ]
+    },
+    {
+      "type": "input_value",
+      "name": "MULTIPLIER",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Calculates casino payout with house edge and adds it to player's wallet. Returns payout in Cooper units.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"AMOUNT\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
+      "<value name=\"MULTIPLIER\"><block type=\"math_number\"><field name=\"NUM\">2</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "AMOUNT",
+      "MULTIPLIER"
+    ],
+    "fields": [
+      "COIN"
+    ]
+  }
+}

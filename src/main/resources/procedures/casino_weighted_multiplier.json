@@ -1,0 +1,39 @@
+{
+  "type": "casino_weighted_multiplier",
+  "message0": "weighted multiplier weights %1 multipliers %2 fallback %3",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "WEIGHTS",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "MULTIPLIERS",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "FALLBACK",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Picks weighted random index from weights and returns multiplier at same index.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"WEIGHTS\"><block type=\"text\"><field name=\"TEXT\">70,20,8,2</field></block></value>",
+      "<value name=\"MULTIPLIERS\"><block type=\"text\"><field name=\"TEXT\">0,1.5,3,10</field></block></value>",
+      "<value name=\"FALLBACK\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>"
+    ],
+    "inputs": [
+      "WEIGHTS",
+      "MULTIPLIERS",
+      "FALLBACK"
+    ]
+  }
+}

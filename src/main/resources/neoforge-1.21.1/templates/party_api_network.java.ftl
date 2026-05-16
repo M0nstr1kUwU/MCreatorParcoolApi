@@ -28,23 +28,10 @@ public final class PartyApiNetwork {
 	public static void registerPayloads(RegisterPayloadHandlersEvent event) {
 		PayloadRegistrar registrar = event.registrar(NETWORK_VERSION);
 
-		registrar.playToClient(
-			SyncPartyPayload.TYPE,
-			SyncPartyPayload.STREAM_CODEC,
-			SyncPartyPayload::handleClient
-		);
-
-		registrar.playToClient(
-			OpenPartyScreenPayload.TYPE,
-			OpenPartyScreenPayload.STREAM_CODEC,
-			OpenPartyScreenPayload::handleClient
-		);
-
-		registrar.playToServer(
-			PartyActionPayload.TYPE,
-			PartyActionPayload.STREAM_CODEC,
-			PartyActionPayload::handleServer
-		);
+		registrar.playToClient(SyncPartyPayload.TYPE, SyncPartyPayload.STREAM_CODEC, SyncPartyPayload::handleClient);
+		registrar.playToClient(OpenPartyScreenPayload.TYPE, OpenPartyScreenPayload.STREAM_CODEC, OpenPartyScreenPayload::handleClient);
+		registrar.playToClient(OpenPartyInvitePayload.TYPE, OpenPartyInvitePayload.STREAM_CODEC, OpenPartyInvitePayload::handleClient);
+		registrar.playToServer(PartyActionPayload.TYPE, PartyActionPayload.STREAM_CODEC, PartyActionPayload::handleServer);
 	}
 
 	public static void syncParty(ServerPlayer player, String partyId, String leaderId, boolean pvpEnabled, String overlayPosition, List<MemberSyncData> members) {
@@ -76,6 +63,17 @@ public final class PartyApiNetwork {
 
 		try {
 			PacketDistributor.sendToPlayer(player, OpenPartyScreenPayload.INSTANCE);
+		} catch (Throwable ignored) {
+		}
+	}
+
+	public static void openPartyInviteScreen(ServerPlayer player, String inviterName) {
+		if (player == null) {
+			return;
+		}
+
+		try {
+			PacketDistributor.sendToPlayer(player, new OpenPartyInvitePayload(inviterName == null ? "Unknown" : inviterName));
 		} catch (Throwable ignored) {
 		}
 	}
@@ -157,18 +155,7 @@ public final class PartyApiNetwork {
 							stats.put(buffer.readUtf(), buffer.readUtf());
 						}
 
-						members.add(new MemberSyncData(
-							uuid,
-							name,
-							health,
-							maxHealth,
-							absorption,
-							food,
-							saturation,
-							leader,
-							pinned,
-							stats
-						));
+						members.add(new MemberSyncData(uuid, name, health, maxHealth, absorption, food, saturation, leader, pinned, stats));
 					}
 
 					return new SyncPartyPayload(partyId, leaderId, pvp, position, members);
@@ -239,6 +226,33 @@ public final class PartyApiNetwork {
 		}
 	}
 
+	public record OpenPartyInvitePayload(String inviterName) implements CustomPacketPayload {
+		public static final CustomPacketPayload.Type<OpenPartyInvitePayload> TYPE =
+			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_open_invite"));
+
+		public static final net.minecraft.network.codec.StreamCodec<RegistryFriendlyByteBuf, OpenPartyInvitePayload> STREAM_CODEC =
+			new net.minecraft.network.codec.StreamCodec<>() {
+				@Override
+				public OpenPartyInvitePayload decode(RegistryFriendlyByteBuf buffer) {
+					return new OpenPartyInvitePayload(buffer.readUtf());
+				}
+
+				@Override
+				public void encode(RegistryFriendlyByteBuf buffer, OpenPartyInvitePayload payload) {
+					buffer.writeUtf(payload.inviterName() == null ? "Unknown" : payload.inviterName());
+				}
+			};
+
+		@Override
+		public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
+
+		private static void handleClient(OpenPartyInvitePayload payload, IPayloadContext context) {
+			context.enqueueWork(() -> ${package}.client.PartyApiClient.openPartyInviteScreen(payload.inviterName()));
+		}
+	}
+
 	public record PartyActionPayload(String action, String targetId, String value) implements CustomPacketPayload {
 		public static final CustomPacketPayload.Type<PartyActionPayload> TYPE =
 			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_action"));
@@ -247,11 +261,7 @@ public final class PartyApiNetwork {
 			new net.minecraft.network.codec.StreamCodec<>() {
 				@Override
 				public PartyActionPayload decode(RegistryFriendlyByteBuf buffer) {
-					return new PartyActionPayload(
-						buffer.readUtf(),
-						buffer.readUtf(),
-						buffer.readUtf()
-					);
+					return new PartyActionPayload(buffer.readUtf(), buffer.readUtf(), buffer.readUtf());
 				}
 
 				@Override
@@ -270,12 +280,7 @@ public final class PartyApiNetwork {
 		private static void handleServer(PartyActionPayload payload, IPayloadContext context) {
 			context.enqueueWork(() -> {
 				if (context.player() instanceof ServerPlayer serverPlayer) {
-					${package}.party.PartyApiSystem.handleClientAction(
-						serverPlayer,
-						payload.action(),
-						payload.targetId(),
-						payload.value()
-					);
+					${package}.party.PartyApiSystem.handleClientAction(serverPlayer, payload.action(), payload.targetId(), payload.value());
 				}
 			});
 		}

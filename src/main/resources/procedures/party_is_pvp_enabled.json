@@ -1,0 +1,17 @@
+{
+  "type": "party_is_pvp_enabled",
+  "message0": "is party PvP enabled for %1",
+  "args0": [
+    {"type": "input_value", "name": "ENTITY", "check": "Entity"}
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 260,
+  "tooltip": "Returns true if party PvP is enabled, or if the player is not in a party.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": ["<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"],
+    "inputs": ["ENTITY"]
+  }
+}

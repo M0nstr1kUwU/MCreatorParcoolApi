@@ -1,0 +1,39 @@
+{
+  "type": "casino_csv_string_at",
+  "message0": "text from csv %1 at index %2 fallback %3",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "CSV",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "INDEX",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "FALLBACK",
+      "check": "String"
+    }
+  ],
+  "inputsInline": true,
+  "output": "String",
+  "colour": 290,
+  "tooltip": "Gets text from comma-separated values by zero-based index.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"CSV\"><block type=\"text\"><field name=\"TEXT\">COMMON,RARE,EPIC</field></block></value>",
+      "<value name=\"INDEX\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>",
+      "<value name=\"FALLBACK\"><block type=\"text\"><field name=\"TEXT\">NONE</field></block></value>"
+    ],
+    "inputs": [
+      "CSV",
+      "INDEX",
+      "FALLBACK"
+    ]
+  }
+}

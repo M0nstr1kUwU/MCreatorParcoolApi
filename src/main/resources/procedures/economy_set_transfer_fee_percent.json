@@ -1,0 +1,26 @@
+{
+  "type": "economy_set_transfer_fee_percent",
+  "message0": "set economy transfer fee percent to %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "PERCENT",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 120,
+  "tooltip": "Sets transfer fee percent in server config.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "economy_tools",
+    "toolbox_init": [
+      "<value name=\"PERCENT\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>"
+    ],
+    "inputs": [
+      "PERCENT"
+    ]
+  }
+}

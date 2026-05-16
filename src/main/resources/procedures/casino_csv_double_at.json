@@ -1,0 +1,39 @@
+{
+  "type": "casino_csv_double_at",
+  "message0": "number from csv %1 at index %2 fallback %3",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "CSV",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "INDEX",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "FALLBACK",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Gets a number from comma-separated values by zero-based index.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"CSV\"><block type=\"text\"><field name=\"TEXT\">0,2,5,10</field></block></value>",
+      "<value name=\"INDEX\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>",
+      "<value name=\"FALLBACK\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>"
+    ],
+    "inputs": [
+      "CSV",
+      "INDEX",
+      "FALLBACK"
+    ]
+  }
+}

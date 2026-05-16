@@ -1,0 +1,13 @@
+{
+  "type": "party_is_system_enabled",
+  "message0": "is server party system enabled",
+  "args0": [],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 260,
+  "tooltip": "Returns true if party tools are enabled for normal players.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "type": "casino_crash_multiplier",
+  "message0": "casino crash generated multiplier max %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "MAX",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Generates crash-game multiplier using house edge and maximum cap.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"MAX\"><block type=\"math_number\"><field name=\"NUM\">100</field></block></value>"
+    ],
+    "inputs": [
+      "MAX"
+    ]
+  }
+}

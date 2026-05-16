@@ -1,0 +1,39 @@
+{
+  "type": "casino_payout_by_multiplier",
+  "message0": "casino payout for bet %1 cooper multiplier %2 apply house edge? %3",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "BET",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "MULTIPLIER",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "HOUSE_EDGE",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Calculates payout by multiplier in Cooper units.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "inputs": [
+      "BET",
+      "MULTIPLIER",
+      "HOUSE_EDGE"
+    ],
+    "toolbox_init": [
+      "<value name=\"BET\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
+      "<value name=\"MULTIPLIER\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
+      "<value name=\"HOUSE_EDGE\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "type": "casino_blackjack_card_value",
+  "message0": "blackjack value of card rank %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "RANK",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Returns blackjack value: Ace=11, face cards=10.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"RANK\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ],
+    "inputs": [
+      "RANK"
+    ]
+  }
+}

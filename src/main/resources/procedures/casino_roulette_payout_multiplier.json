@@ -1,0 +1,48 @@
+{
+  "type": "casino_roulette_payout_multiplier",
+  "message0": "roulette payout multiplier for bet type %1",
+  "args0": [
+    {
+      "type": "field_dropdown",
+      "name": "BET_TYPE",
+      "options": [
+        [
+          "Straight number",
+          "STRAIGHT"
+        ],
+        [
+          "Color",
+          "COLOR"
+        ],
+        [
+          "Even / odd",
+          "EVEN_ODD"
+        ],
+        [
+          "Low / high",
+          "LOW_HIGH"
+        ],
+        [
+          "Dozen",
+          "DOZEN"
+        ],
+        [
+          "Column",
+          "COLUMN"
+        ]
+      ]
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Returns common roulette payout multiplier: straight=36, dozen/column=3, color/even/odd/low/high=2.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "inputs": [],
+    "fields": [
+      "BET_TYPE"
+    ]
+  }
+}

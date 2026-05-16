@@ -1,0 +1,25 @@
+{
+  "type": "casino_weighted_index",
+  "message0": "casino weighted random index from weights %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "WEIGHTS",
+      "check": "String"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Returns random index based on comma-separated weights, e.g. 50,30,15,5.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "inputs": [
+      "WEIGHTS"
+    ],
+    "toolbox_init": [
+      "<value name=\"WEIGHTS\"><block type=\"text\"><field name=\"TEXT\">50,30,20</field></block></value>"
+    ]
+  }
+}

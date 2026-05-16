@@ -1,0 +1,25 @@
+{
+  "type": "casino_slot_all_equal",
+  "message0": "casino slot result %1 all equal",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "RESULT",
+      "check": "String"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 290,
+  "tooltip": "Checks if slot result has three equal symbols.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "inputs": [
+      "RESULT"
+    ],
+    "toolbox_init": [
+      "<value name=\"RESULT\"><block type=\"text\"><field name=\"TEXT\">50,30,20</field></block></value>"
+    ]
+  }
+}

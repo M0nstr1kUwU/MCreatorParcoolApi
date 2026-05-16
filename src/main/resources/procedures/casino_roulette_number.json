@@ -1,0 +1,14 @@
+{
+  "type": "casino_roulette_number",
+  "message0": "casino roulette number",
+  "args0": [],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 290,
+  "tooltip": "Returns roulette number 0-36.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "inputs": []
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "type": "casino_coin_flip",
+  "message0": "casino coin flip heads?",
+  "args0": [],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 290,
+  "tooltip": "Returns true for heads and false for tails.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "inputs": []
+  }
+}

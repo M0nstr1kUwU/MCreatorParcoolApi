@@ -1,0 +1,25 @@
+{
+  "type": "casino_blackjack_is_bust",
+  "message0": "is blackjack hand ranks %1 bust",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "RANKS",
+      "check": "String"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 290,
+  "tooltip": "Returns true if blackjack hand value is above 21.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "casino_tools",
+    "toolbox_init": [
+      "<value name=\"RANKS\"><block type=\"text\"><field name=\"TEXT\">10,12,5</field></block></value>"
+    ],
+    "inputs": [
+      "RANKS"
+    ]
+  }
+}
