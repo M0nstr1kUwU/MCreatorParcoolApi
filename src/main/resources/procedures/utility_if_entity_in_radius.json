@@ -1,6 +1,6 @@
 {
   "type": "utility_if_entity_in_radius",
-  "message0": "if entity %1 is within radius %2 from x %3 y %4 z %5 do %6 %7",
+  "message0": "if entity %1 is with in radius %2 from x %3 y %4 z %5 do %6 %7",
   "args0": [
     {
       "type": "input_value",

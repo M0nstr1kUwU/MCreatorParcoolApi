@@ -216,71 +216,74 @@ public final class ParCoolApiWeightSystem {
 	}
 
 	public static void setMaxCarryWeight(ServerPlayer player, double maxWeight) {
-		if (player == null) {
-			return;
-		}
+    	if (player == null) {
+    		return;
+    	}
 
-		ensureLoadedFromSavedData();
+    	ensureLoadedFromSavedData();
 
-		UUID uuid = player.getUUID();
-		double safeMaxWeight = sanitizeMaxCarryWeight(maxWeight);
+    	UUID uuid = player.getUUID();
+    	double safeMaxWeight = sanitizeMaxCarryWeight(maxWeight);
 
-		PLAYER_MAX_WEIGHTS.put(uuid, safeMaxWeight);
+    	PLAYER_MAX_WEIGHTS.put(uuid, safeMaxWeight);
 
-		ParCoolApiWeightSavedData data = getSavedData();
+    	ParCoolApiWeightSavedData data = getSavedData();
 
-		if (data != null) {
-			data.playerMaxWeights.put(uuid, safeMaxWeight);
-			data.setDirty();
-		}
+    	if (data != null) {
+    		data.playerMaxWeights.put(uuid, safeMaxWeight);
+    		data.setDirty();
+    	}
 
-		player.getPersistentData().putDouble(LEGACY_TAG_MAX_CARRY_WEIGHT, safeMaxWeight);
-		updatePlayerWeightState(player);
-	}
+    	player.getPersistentData().putDouble("ParCoolApiWeight_MaxCarryWeight", safeMaxWeight);
+
+    	updatePlayerWeightState(player);
+    }
 
 	public static double getMaxCarryWeight(Player player) {
-		if (player == null) {
-			return defaultMaxCarryWeight;
-		}
+    	if (player == null) {
+    		return defaultMaxCarryWeight;
+    	}
 
-		ensureLoadedFromSavedData();
+    	ensureLoadedFromSavedData();
 
-		UUID uuid = player.getUUID();
+    	UUID uuid = player.getUUID();
 
-		if (PLAYER_MAX_WEIGHTS.containsKey(uuid)) {
-			return sanitizeMaxCarryWeight(PLAYER_MAX_WEIGHTS.get(uuid));
-		}
+    	if (PLAYER_MAX_WEIGHTS.containsKey(uuid)) {
+    		return sanitizeMaxCarryWeight(PLAYER_MAX_WEIGHTS.get(uuid));
+    	}
 
-		ParCoolApiWeightSavedData data = getSavedData();
+    	ParCoolApiWeightSavedData data = getSavedData();
 
-		if (data != null && data.playerMaxWeights.containsKey(uuid)) {
-			double stored = sanitizeMaxCarryWeight(data.playerMaxWeights.get(uuid));
-			PLAYER_MAX_WEIGHTS.put(uuid, stored);
-			return stored;
-		}
+    	if (data != null && data.playerMaxWeights.containsKey(uuid)) {
+    		double stored = sanitizeMaxCarryWeight(data.playerMaxWeights.get(uuid));
+    		PLAYER_MAX_WEIGHTS.put(uuid, stored);
+    		player.getPersistentData().putDouble("ParCoolApiWeight_MaxCarryWeight", stored);
+    		return stored;
+    	}
 
-		if (player.getPersistentData().contains(LEGACY_TAG_MAX_CARRY_WEIGHT)) {
-			double migrated = sanitizeMaxCarryWeight(player.getPersistentData().getDouble(LEGACY_TAG_MAX_CARRY_WEIGHT));
-			PLAYER_MAX_WEIGHTS.put(uuid, migrated);
+    	if (player.getPersistentData().contains("ParCoolApiWeight_MaxCarryWeight")) {
+    		double migrated = sanitizeMaxCarryWeight(player.getPersistentData().getDouble("ParCoolApiWeight_MaxCarryWeight"));
+    		PLAYER_MAX_WEIGHTS.put(uuid, migrated);
 
-			if (data != null) {
-				data.playerMaxWeights.put(uuid, migrated);
-				data.setDirty();
-			}
+    		if (data != null) {
+    			data.playerMaxWeights.put(uuid, migrated);
+    			data.setDirty();
+    		}
 
-			return migrated;
-		}
+    		return migrated;
+    	}
 
-		double fallback = sanitizeMaxCarryWeight(defaultMaxCarryWeight);
-		PLAYER_MAX_WEIGHTS.put(uuid, fallback);
+    	double fallback = sanitizeMaxCarryWeight(defaultMaxCarryWeight);
+    	PLAYER_MAX_WEIGHTS.put(uuid, fallback);
+    	player.getPersistentData().putDouble("ParCoolApiWeight_MaxCarryWeight", fallback);
 
-		if (data != null) {
-			data.playerMaxWeights.put(uuid, fallback);
-			data.setDirty();
-		}
+    	if (data != null) {
+    		data.playerMaxWeights.put(uuid, fallback);
+    		data.setDirty();
+    	}
 
-		return fallback;
-	}
+    	return fallback;
+    }
 
 	public static void setDefaultMaxCarryWeight(double maxWeight) {
 		ensureLoadedFromSavedData();
@@ -533,37 +536,43 @@ public final class ParCoolApiWeightSystem {
 	}
 
 	private static void applyParCoolWeightRestriction(ServerPlayer player, int status) {
-		if (status <= 1) {
-			clearParCoolWeightRestriction(player);
-			return;
-		}
+    	if (player == null) {
+    		return;
+    	}
 
-		try {
-			if (status >= 4) {
-				${package}.parcool.ParCoolApiMovementBridge.disableAllMovements(player);
-				return;
-			}
+    	try {
+    		if (status >= 4) {
+    			${package}.parcool.ParCoolApiMovementBridge.disableAllMovements(player);
+    			return;
+    		}
 
-			if (status >= 3) {
-				${package}.parcool.ParCoolApiMovementBridge.disableSprint(player);
-				${package}.parcool.ParCoolApiMovementBridge.disableJump(player);
-				${package}.parcool.ParCoolApiMovementBridge.disableWallRun(player);
-				return;
-			}
+    		if (status >= 3) {
+    			${package}.parcool.ParCoolApiMovementBridge.disableSprint(player);
+    			${package}.parcool.ParCoolApiMovementBridge.disableJump(player);
+    			${package}.parcool.ParCoolApiMovementBridge.disableWallRun(player);
+    			return;
+    		}
 
-			if (status >= 2) {
-				${package}.parcool.ParCoolApiMovementBridge.disableSprint(player);
-			}
-		} catch (Throwable ignored) {
-		}
-	}
+    		if (status >= 2) {
+    			${package}.parcool.ParCoolApiMovementBridge.disableSprint(player);
+    			return;
+    		}
+
+    		clearParCoolWeightRestriction(player);
+    	} catch (Throwable ignored) {
+    	}
+    }
 
 	private static void clearParCoolWeightRestriction(ServerPlayer player) {
-		try {
-			${package}.parcool.ParCoolApiMovementBridge.enableAllMovements(player);
-		} catch (Throwable ignored) {
-		}
-	}
+    	if (player == null) {
+    		return;
+    	}
+
+    	try {
+    		${package}.parcool.ParCoolApiMovementBridge.enableAllMovements(player);
+    	} catch (Throwable ignored) {
+    	}
+    }
 
 	@SubscribeEvent
 	public static void onPlayerTick(PlayerTickEvent.Post event) {
