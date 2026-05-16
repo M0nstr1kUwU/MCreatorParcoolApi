@@ -2,17 +2,32 @@
   "type": "parcool_consume_stamina",
   "message0": "consume %1 ParCool stamina from %2",
   "args0": [
-    { "type": "input_value", "name": "VALUE", "check": "Number" },
-    { "type": "input_value", "name": "ENTITY", "check": "Entity" }
+    {
+      "type": "input_value",
+      "name": "VALUE",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
   ],
   "inputsInline": true,
   "previousStatement": null,
   "nextStatement": null,
   "colour": 220,
-  "tooltip": "Consume ParCool stamina.",
+  "tooltip": "Consumes ParCool stamina from the player and synchronizes the change in multiplayer.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "parcool_api",
-    "inputs": ["VALUE", "ENTITY"]
+    "toolbox_init": [
+      "<value name=\"VALUE\"><block type=\"math_number\"><field name=\"NUM\">100</field></block></value>",
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "VALUE",
+      "ENTITY"
+    ]
   }
 }

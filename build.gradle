@@ -9,7 +9,7 @@ ext {
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 tasks.jar {
-    archiveFileName.set("parcoolapi.zip")
+    archiveFileName.set("parcool-api.zip")
 }
 
 tasks.register('runMCreatorWithPlugin', JavaExec) {

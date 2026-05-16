@@ -1,0 +1,32 @@
+{
+  "type": "weight_get_player_load_percent",
+  "message0": "carry load percent of %1 rounded to %2 decimals",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "DECIMALS",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 125,
+  "tooltip": "Returns carry load percentage rounded to the selected number of decimal places. 100 means exactly at max carry weight.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "weight_system",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"DECIMALS\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "DECIMALS"
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "type": "utility_if_entity_in_radius",
+  "message0": "if entity %1 is with in radius %2 from x %3 y %4 z %5 do %6 %7",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "RADIUS",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "X",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "Y",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "Z",
+      "check": "Number"
+    },
+    {
+      "type": "input_dummy"
+    },
+    {
+      "type": "input_statement",
+      "name": "DO"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 210,
+  "tooltip": "Runs nested blocks if the entity is inside the selected radius from the point.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "other_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"RADIUS\"><block type=\"math_number\"><field name=\"NUM\">5</field></block></value>",
+      "<value name=\"X\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>",
+      "<value name=\"Y\"><block type=\"math_number\"><field name=\"NUM\">64</field></block></value>",
+      "<value name=\"Z\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "RADIUS",
+      "X",
+      "Y",
+      "Z"
+    ],
+    "statements": [
+      {
+        "name": "DO"
+      }
+    ]
+  }
+}

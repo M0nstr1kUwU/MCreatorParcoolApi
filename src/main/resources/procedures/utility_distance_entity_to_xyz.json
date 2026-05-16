@@ -1,0 +1,46 @@
+{
+  "type": "utility_distance_entity_to_xyz",
+  "message0": "distance from entity %1 to x %2 y %3 z %4",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "X",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "Y",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "Z",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 210,
+  "tooltip": "Returns distance from entity position to selected coordinates.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "other_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"X\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>",
+      "<value name=\"Y\"><block type=\"math_number\"><field name=\"NUM\">64</field></block></value>",
+      "<value name=\"Z\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "X",
+      "Y",
+      "Z"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "type": "utility_count_item_in_inventory",
+  "message0": "count item %1 in inventory of %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ITEM",
+      "check": "MCItem"
+    },
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 45,
+  "tooltip": "Counts how many items of the selected type the player has in inventory, armor, and offhand slots.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "other_tools",
+    "toolbox_init": [
+      "<value name=\"ITEM\"><block type=\"itemstack_to_mcitem\"></block></value>",
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ITEM",
+      "ENTITY"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "ParCool item enchantments stripped",
+  "dependencies_provided": [
+    {
+      "name": "itemstack",
+      "type": "itemstack"
+    }
+  ]
+}

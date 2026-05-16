@@ -1,0 +1,40 @@
+{
+  "type": "utility_remove_item_amount_from_inventory",
+  "message0": "remove item %1 amount %2 from inventory of %3",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ITEM",
+      "check": "MCItem"
+    },
+    {
+      "type": "input_value",
+      "name": "AMOUNT",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 45,
+  "tooltip": "Removes up to the selected amount of the item type from the player's inventory.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "other_tools",
+    "toolbox_init": [
+      "<value name=\"ITEM\"><block type=\"itemstack_to_mcitem\"></block></value>",
+      "<value name=\"AMOUNT\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ITEM",
+      "AMOUNT",
+      "ENTITY"
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "parcool_force_sync_permissions",
+  "message0": "force sync ParCool permissions to %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 220,
+  "tooltip": "Forces ParCool server limitations/permissions to be sent to the selected server player. Useful after player login or when ParCool abilities appear disabled in multiplayer.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "parcool_api",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ENTITY"
+    ]
+  }
+}

@@ -1,11 +1,12 @@
-name: ParCool
-description: Adds support for ParCool stamina and actions
+name: ParCool API
+
 neoforge-1.21.1:
   required_when_enabled: true
   gradle: |
     repositories {
-      maven { url = "https://www.cursemaven.com" }
+      maven { url "https://cursemaven.com" }
     }
+
     dependencies {
-      implementation "curse.maven:parcool-482378:5862895"
+      implementation "curse.maven:parcool-482378:7760593"
     }

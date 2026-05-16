@@ -1,0 +1,24 @@
+{
+  "type": "party_set_player_stat",
+  "message0": "set party overlay stat %1 of %2 to %3",
+  "args0": [
+    { "type": "input_value", "name": "KEY", "check": "String" },
+    { "type": "input_value", "name": "ENTITY", "check": "Entity" },
+    { "type": "input_value", "name": "VALUE", "check": "String" }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 260,
+  "tooltip": "Adds or updates custom stat shown in party GUI/overlay.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"KEY\"><block type=\"text\"><field name=\"TEXT\">Armor</field></block></value>",
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"VALUE\"><block type=\"text\"><field name=\"TEXT\">0</field></block></value>"
+    ],
+    "inputs": ["KEY", "ENTITY", "VALUE"]
+  }
+}

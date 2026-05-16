@@ -1,0 +1,54 @@
+{
+  "type": "parcool_switch_camera_perspective_after_wait",
+  "message0": "switch camera perspective of %1 to %2 after %3 client ticks",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "field_dropdown",
+      "name": "PERSPECTIVE",
+      "options": [
+        [
+          "first person",
+          "FIRST_PERSON"
+        ],
+        [
+          "third person back",
+          "THIRD_PERSON_BACK"
+        ],
+        [
+          "third person front",
+          "THIRD_PERSON_FRONT"
+        ]
+      ]
+    },
+    {
+      "type": "input_value",
+      "name": "TICKS",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 220,
+  "tooltip": "Requests a delayed client-side camera perspective switch for the selected server player.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "camera",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"TICKS\"><block type=\"math_number\"><field name=\"NUM\">20</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "TICKS"
+    ],
+    "fields": [
+      "PERSPECTIVE"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "ParCool camera perspective requested",
+  "dependencies_provided": [
+    {
+      "name": "entity",
+      "type": "entity"
+    },
+    {
+      "name": "world",
+      "type": "world"
+    },
+    {
+      "name": "perspective_id",
+      "type": "number"
+    }
+  ]
+}

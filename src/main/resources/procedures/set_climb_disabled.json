@@ -1,0 +1,29 @@
+{
+  "type": "set_climb_disabled",
+  "message0": "set climb disabled for %1 to %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "VALUE",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 220,
+  "tooltip": "Enable/disable climbing (vault/climb) for player.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "parcool_api",
+    "inputs": [
+      "ENTITY",
+      "VALUE"
+    ]
+  }
+}

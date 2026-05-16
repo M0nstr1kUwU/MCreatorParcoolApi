@@ -1,9 +1,17 @@
 {
-  "type": "parcool_set_stamina_recovery_attribute",
-  "message0": "Set ParCool stamina recovery of %1 to %2",
+  "type": "parcool_set_stamina_recovery",
+  "message0": "set ParCool stamina recovery of %1 to %2",
   "args0": [
-    { "type": "input_value", "name": "ENTITY", "check": "Entity" },
-    { "type": "input_value", "name": "VALUE", "check": "Number" }
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "VALUE",
+      "check": "Number"
+    }
   ],
   "inputsInline": true,
   "previousStatement": null,
@@ -13,6 +21,13 @@
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "parcool_api",
-    "inputs": ["ENTITY", "VALUE"]
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"VALUE\"><block type=\"math_number\"><field name=\"NUM\">20</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "VALUE"
+    ]
   }
 }

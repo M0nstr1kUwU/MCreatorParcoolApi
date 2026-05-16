@@ -1,0 +1,45 @@
+base_templates:
+  - template: parcool_api_runtime.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiRuntime.java"
+
+  - template: parcool_api_bridge_events.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/events/ParCoolApiBridgeEvents.java"
+
+  - template: parcool_api_movement_bridge.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiMovementBridge.java"
+
+  - template: parcool_api_stamina_bridge.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiStaminaBridge.java"
+
+  - template: parcool_api_weight_system.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/weight/ParCoolApiWeightSystem.java"
+
+  - template: parcool_api_camera_network.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/network/ParCoolApiCameraNetwork.java"
+
+  - template: parcool_api_client_scheduler.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/client/ParCoolApiClientScheduler.java"
+
+  - template: parcool_api_stamina_monitor.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiStaminaMonitor.java"
+
+  - template: parcool_api_vanilla_jump_bridge.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiVanillaJumpBridge.java"
+
+  - template: parcool_api_weight_network.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/network/ParCoolApiWeightNetwork.java"
+
+  - template: party_api_system.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiSystem.java"
+
+  - template: party_api_network.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/network/PartyApiNetwork.java"
+
+  - template: party_api_client.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/client/PartyApiClient.java"
+
+  - template: party_api_commands.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiCommands.java"
+
+  - template: hitbox_api_bridge.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/hitbox/HitboxApiBridge.java"

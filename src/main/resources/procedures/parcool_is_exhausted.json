@@ -2,15 +2,24 @@
   "type": "parcool_is_exhausted",
   "message0": "is ParCool stamina of %1 exhausted",
   "args0": [
-    { "type": "input_value", "name": "ENTITY", "check": "Entity" }
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
   ],
   "inputsInline": true,
-  "output": "Logic",
+  "output": "Boolean",
   "colour": 220,
-  "tooltip": "Check whether ParCool stamina is exhausted.",
+  "tooltip": "Checks whether the player's ParCool stamina is exhausted.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "parcool_api",
-    "inputs": ["ENTITY"]
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ENTITY"
+    ]
   }
 }

@@ -1,0 +1,24 @@
+{
+  "type": "hitbox_set_centered_size",
+  "message0": "set hitbox of %1 to width %2 height %3",
+  "args0": [
+    { "type": "input_value", "name": "ENTITY", "check": "Entity" },
+    { "type": "input_value", "name": "WIDTH", "check": "Number" },
+    { "type": "input_value", "name": "HEIGHT", "check": "Number" }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 20,
+  "tooltip": "Sets current centered bounding box of entity. May be temporary for entities that refresh their dimensions.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "hitbox_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"WIDTH\"><block type=\"math_number\"><field name=\"NUM\">0.6</field></block></value>",
+      "<value name=\"HEIGHT\"><block type=\"math_number\"><field name=\"NUM\">1.8</field></block></value>"
+    ],
+    "inputs": ["ENTITY", "WIDTH", "HEIGHT"]
+  }
+}

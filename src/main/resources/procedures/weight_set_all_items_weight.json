@@ -1,0 +1,26 @@
+{
+  "type": "weight_set_all_items_weight",
+  "message0": "set weight of all registered items to %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "WEIGHT",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 125,
+  "tooltip": "Sets the base unit weight for all registered items. Run this once before overriding specific item weights.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "weight_system",
+    "toolbox_init": [
+      "<value name=\"WEIGHT\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ],
+    "inputs": [
+      "WEIGHT"
+    ]
+  }
+}

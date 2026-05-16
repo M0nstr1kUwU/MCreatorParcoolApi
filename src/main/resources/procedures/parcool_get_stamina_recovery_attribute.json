@@ -2,15 +2,24 @@
   "type": "parcool_get_stamina_recovery_attribute",
   "message0": "ParCool stamina recovery attribute of %1",
   "args0": [
-    { "type": "input_value", "name": "ENTITY", "check": "Entity" }
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
   ],
   "inputsInline": true,
   "output": "Number",
   "colour": 220,
-  "tooltip": "Get current STAMINA_RECOVERY attribute value.",
+  "tooltip": "Gets the current ParCool STAMINA_RECOVERY attribute value.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "parcool_api",
-    "inputs": ["ENTITY"]
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ENTITY"
+    ]
   }
 }

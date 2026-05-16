@@ -1,0 +1,25 @@
+{
+  "type": "weight_get_item_stack_weight",
+  "message0": "stack weight of item %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ITEM",
+      "check": "MCItem"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 125,
+  "tooltip": "Returns the total weight of the given item stack: unit weight multiplied by stack count.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "weight_system",
+    "toolbox_init": [
+      "<value name=\"ITEM\"><block type=\"itemstack_to_mcitem\"></block></value>"
+    ],
+    "inputs": [
+      "ITEM"
+    ]
+  }
+}

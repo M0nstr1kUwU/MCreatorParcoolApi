@@ -1,0 +1,22 @@
+{
+  "type": "party_add_player",
+  "message0": "add player %1 to party of %2",
+  "args0": [
+    { "type": "input_value", "name": "TARGET", "check": "Entity" },
+    { "type": "input_value", "name": "LEADER", "check": "Entity" }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 260,
+  "tooltip": "Invites and immediately adds target player to leader's party.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"TARGET\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"LEADER\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": ["TARGET", "LEADER"]
+  }
+}
