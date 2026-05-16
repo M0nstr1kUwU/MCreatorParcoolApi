@@ -184,7 +184,7 @@ public final class PartyApiClient {
 
 		int barX = x + 4;
 		int hpY = y + 11;
-		int foodY = y + 16;
+		int foodY = y + 15;
 		int barWidth = width - 8;
 
 		float hpRatio = member.maxHealth() <= 0 ? 0.0F : Math.max(0.0F, Math.min(1.0F, member.health() / member.maxHealth()));
@@ -256,7 +256,7 @@ public final class PartyApiClient {
 
 		@Override
 		public boolean mouseClicked(double mouseX, double mouseY, int button) {
-			int startY = 40;
+			int startY = 50;
 			int rowHeight = 32;
 
 			for (int i = 0; i < MEMBERS.size(); i++) {
@@ -296,10 +296,10 @@ public final class PartyApiClient {
 				graphics.fill(0, 0, this.width, this.height, 0x22000000);
 			}
 
-			graphics.drawCenteredString(this.font, "Party", this.width / 2, 10, 0xFFFFFFFF);
-			graphics.drawCenteredString(this.font, "PvP: " + (pvpEnabled ? "ON" : "OFF"), this.width / 2, 22, pvpEnabled ? 0xFFFF7777 : 0xFF77FF77);
+			graphics.drawCenteredString(this.font, "Party", this.width / 2, 20, 0xFFFFFFFF);
+			graphics.drawCenteredString(this.font, "PvP: " + (pvpEnabled ? "ON" : "OFF"), this.width / 2, 32, pvpEnabled ? 0xFFFF7777 : 0xFF77FF77);
 
-			int startY = 40;
+			int startY = 50;
 			int rowHeight = 32;
 			int x = this.width / 2 - 140;
 			int rowWidth = 280;
@@ -329,7 +329,7 @@ public final class PartyApiClient {
 
 				int barX = x + 8;
 				int hpY = y + 17;
-				int foodY = y + 23;
+				int foodY = y + 22;
 				int barWidth = 90;
 
 				int hpWidth = (int) (barWidth * hpRatio);

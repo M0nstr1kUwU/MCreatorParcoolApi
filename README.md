@@ -259,6 +259,7 @@ Commands:
 /party leave
 /party kick <player>
 /party pvp <true|false>
+/party showself <true|false>
 /party pin <player>
 /party unpin <player>
 /party position <position>

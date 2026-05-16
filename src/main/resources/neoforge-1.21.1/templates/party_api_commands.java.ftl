@@ -85,6 +85,17 @@ public final class PartyApiCommands {
 						})
 					)
 				)
+				.then(Commands.literal("showself")
+					.then(Commands.argument("enabled", BoolArgumentType.bool())
+						.executes(ctx -> {
+							ServerPlayer player = ctx.getSource().getPlayerOrException();
+							boolean enabled = BoolArgumentType.getBool(ctx, "enabled");
+							boolean ok = PartyApiSystem.setShowSelf(player, enabled);
+							ctx.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal(ok ? (enabled ? "You will see yourself in party UI" : "You will not see yourself in party UI") : "You are not in party"), false);
+							return ok ? 1 : 0;
+						})
+					)
+				)
 				.then(Commands.literal("pin")
 					.then(Commands.argument("player", EntityArgument.player())
 						.executes(ctx -> {
