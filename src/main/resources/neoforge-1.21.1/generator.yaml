@@ -22,3 +22,9 @@ base_templates:
 
   - template: parcool_api_stamina_monitor.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiStaminaMonitor.java"
+
+  - template: parcool_api_vanilla_jump_bridge.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/parcool/ParCoolApiVanillaJumpBridge.java"
+
+  - template: parcool_api_weight_network.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/network/ParCoolApiWeightNetwork.java"

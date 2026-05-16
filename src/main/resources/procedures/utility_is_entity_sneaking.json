@@ -1,0 +1,25 @@
+{
+  "type": "utility_is_entity_sneaking",
+  "message0": "is entity %1 sneaking",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 210,
+  "tooltip": "Returns true if the entity is crouching/sneaking. Safe on server.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "other_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ENTITY"
+    ]
+  }
+}

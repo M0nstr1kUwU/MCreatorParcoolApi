@@ -1,0 +1,33 @@
+{
+  "type": "parcool_set_vanilla_jump_disabled",
+  "message0": "set vanilla jump disabled for %1 to %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "ENABLED",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 220,
+  "tooltip": "Disables or enables vanilla jumping for the selected server player.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "parcool_api",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"ENABLED\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "ENABLED"
+    ]
+  }
+}
