@@ -184,7 +184,7 @@ party_enabled=%s
 default_show_self=%s
 
 # Absolute overlay coordinates.
-# Default y=74 is about 50px above the old left-center placement.
+# Default y=58 is about 50px above the old left-center placement.
 default_overlay_x=%d
 default_overlay_y=%d
 
@@ -319,7 +319,7 @@ asset_gui_button_unpin="%s"
 		public int inviteCooldownSeconds = 120;
 		public boolean inviteGuiEnabled = true;
 		public int defaultMaxMembers = 4;
-		public int hardMaxMembers = 200;
+		public int hardMaxMembers = 8;
 		public int adminPermissionLevel = 2;
 		public boolean pvpProtectionEnabled = true;
 		public boolean partyChatEnabled = true;

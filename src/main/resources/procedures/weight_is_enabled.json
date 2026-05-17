@@ -3,13 +3,13 @@
   "message0": "is weight system enabled",
   "args0": [],
   "inputsInline": true,
-  "output": "Boolean",
   "colour": 35,
-  "tooltip": "Returns true if the weight system is enabled in server config.",
+  "tooltip": "Weight system config block.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "weight_tools",
     "toolbox_init": [],
     "inputs": []
-  }
+  },
+  "output": "Boolean"
 }

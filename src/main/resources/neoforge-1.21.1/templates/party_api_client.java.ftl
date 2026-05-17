@@ -485,7 +485,7 @@ public final class PartyApiClient {
 			addRenderableWidget(Button.builder(Component.literal("Show self: OFF"), b -> ${package}.network.PartyApiNetwork.sendClientAction("show_self_off", "", "")).bounds(145, 52, 120, 20).build());
 			addRenderableWidget(Button.builder(Component.literal("PvP: ON"), b -> ${package}.network.PartyApiNetwork.sendClientAction("pvp_on", "", "")).bounds(20, 78, 120, 20).build());
 			addRenderableWidget(Button.builder(Component.literal("PvP: OFF"), b -> ${package}.network.PartyApiNetwork.sendClientAction("pvp_off", "", "")).bounds(145, 78, 120, 20).build());
-			addRenderableWidget(Button.builder(Component.literal("Reset overlay position"), b -> ${package}.network.PartyApiNetwork.sendClientAction("position_xy", "", "8,74")).bounds(20, 104, 180, 20).build());
+			addRenderableWidget(Button.builder(Component.literal("Reset overlay position"), b -> ${package}.network.PartyApiNetwork.sendClientAction("position_xy", "", "8,58")).bounds(20, 104, 180, 20).build());
 		}
 
 		@Override

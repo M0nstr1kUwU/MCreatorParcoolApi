@@ -173,7 +173,7 @@ Regenerate code
 party_enabled=true
 default_show_self=false
 default_overlay_x=8
-default_overlay_y=74
+default_overlay_y=58
 overlay_nickname_font_scale_percent=80
 invite_cooldown_seconds=120
 invite_gui_enabled=true
@@ -676,7 +676,7 @@ Overlay рисуется поверх игры. По умолчанию:
 
 ```text
 x = 8
-y = 74
+y = 58
 ```
 
 То есть слева, но примерно на 50 пикселей выше старого положения.
@@ -1751,7 +1751,7 @@ Trigger: Player joins world
 set max carry weight player to 100
 set weight auto enabled player true
 set party show self player false
-set party overlay position player x 8 y 74
+set party overlay position player x 8 y 58
 ```
 
 ### 18.2. Инициализация весов предметов

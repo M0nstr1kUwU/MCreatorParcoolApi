@@ -11,8 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -26,8 +27,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
 @EventBusSubscriber(modid = "${modid}")
 public final class PartyApiSystem {
 	private static final String DATA_NAME = "${modid}_party_api_system_v1";
-
-	private static final int MAX_OVERLAY_PINNED = 4;
+	private static final int MAX_OVERLAY_PINNED = 5;
 	private static final Map<UUID, InviteData> INVITES = new ConcurrentHashMap<>();
 
 	private PartyApiSystem() {
@@ -69,6 +69,7 @@ public final class PartyApiSystem {
 		party.defaultShowSelf = showSelf;
 		party.maxMembers = PartyApiServerConfig.defaultMaxMembers();
 		party.showSelfByViewer.put(leader.getUUID(), showSelf);
+		party.overlayPositionByViewer.put(leader.getUUID(), "CUSTOM");
 		party.overlayXByViewer.put(leader.getUUID(), PartyApiServerConfig.defaultOverlayX());
 		party.overlayYByViewer.put(leader.getUUID(), PartyApiServerConfig.defaultOverlayY());
 
@@ -155,24 +156,25 @@ public final class PartyApiSystem {
 		}
 
 		if (data.getPartyOf(invited.getUUID()) != null) {
+			leader.displayClientMessage(Component.literal("Player is already in a party."), false);
 			return false;
 		}
 
 		if (isFull(party)) {
-			leader.displayClientMessage(net.minecraft.network.chat.Component.literal("Party is full (" + party.members.size() + "/" + party.maxMembers + ")"), false);
+			leader.displayClientMessage(Component.literal("Party is full (" + party.members.size() + "/" + party.maxMembers + ")"), false);
 			return false;
 		}
 
 		InviteData current = INVITES.get(invited.getUUID());
 
 		if (current != null && current.partyId.equals(party.id) && !current.isExpired()) {
-			leader.displayClientMessage(net.minecraft.network.chat.Component.literal("Invite is already pending. Revoke it first or wait until it expires."), false);
+			leader.displayClientMessage(Component.literal("Invite is already pending. Revoke it first or wait until it expires."), false);
 			return false;
 		}
 
 		INVITES.put(invited.getUUID(), new InviteData(party.id, leader.getUUID(), invited.getUUID(), System.currentTimeMillis()));
 
-		invited.displayClientMessage(net.minecraft.network.chat.Component.literal("Party invite from " + leader.getGameProfile().getName() + ". Use /party accept"), false);
+		invited.displayClientMessage(Component.literal("Party invite from " + leader.getGameProfile().getName() + ". Use /party accept"), false);
 
 		if (PartyApiServerConfig.inviteGuiEnabled()) {
 			${package}.network.PartyApiNetwork.openPartyInviteScreen(invited, leader.getGameProfile().getName());
@@ -201,8 +203,8 @@ public final class PartyApiSystem {
 		}
 
 		INVITES.remove(invited.getUUID());
-		actor.displayClientMessage(net.minecraft.network.chat.Component.literal("Invite revoked for " + invited.getGameProfile().getName()), false);
-		invited.displayClientMessage(net.minecraft.network.chat.Component.literal("Party invite was revoked."), false);
+		actor.displayClientMessage(Component.literal("Invite revoked for " + invited.getGameProfile().getName()), false);
+		invited.displayClientMessage(Component.literal("Party invite was revoked."), false);
 
 		syncParty(party);
 		return true;
@@ -235,10 +237,11 @@ public final class PartyApiSystem {
 
 		party.members.add(player.getUUID());
 		party.showSelfByViewer.putIfAbsent(player.getUUID(), party.defaultShowSelf);
+		party.overlayPositionByViewer.putIfAbsent(player.getUUID(), "CUSTOM");
 		party.overlayXByViewer.putIfAbsent(player.getUUID(), PartyApiServerConfig.defaultOverlayX());
 		party.overlayYByViewer.putIfAbsent(player.getUUID(), PartyApiServerConfig.defaultOverlayY());
-		data.setDirty();
 
+		data.setDirty();
 		syncParty(party);
 		return true;
 	}
@@ -277,7 +280,6 @@ public final class PartyApiSystem {
 		}
 
 		data.setDirty();
-
 		${package}.network.PartyApiNetwork.sendEmptyParty(player);
 		syncParty(party);
 		return true;
@@ -309,9 +311,8 @@ public final class PartyApiSystem {
 		}
 
 		data.setDirty();
-
 		${package}.network.PartyApiNetwork.sendEmptyParty(target);
-		target.displayClientMessage(net.minecraft.network.chat.Component.literal("You were kicked from party."), false);
+		target.displayClientMessage(Component.literal("You were kicked from party."), false);
 		syncParty(party);
 		return true;
 	}
@@ -342,7 +343,6 @@ public final class PartyApiSystem {
 		}
 
 		data.setDirty();
-
 		${package}.network.PartyApiNetwork.sendEmptyParty(target);
 		syncParty(party);
 		return true;
@@ -377,7 +377,6 @@ public final class PartyApiSystem {
 
 		party.pvpEnabled = enabled;
 		data.setDirty();
-
 		syncParty(party);
 		return true;
 	}
@@ -392,7 +391,6 @@ public final class PartyApiSystem {
 
 		party.pvpEnabled = enabled;
 		data.setDirty();
-
 		syncParty(party);
 		return true;
 	}
@@ -407,7 +405,6 @@ public final class PartyApiSystem {
 
 		party.maxMembers = clampMaxMembers(maxMembers);
 		data.setDirty();
-
 		syncParty(party);
 		return true;
 	}
@@ -422,7 +419,6 @@ public final class PartyApiSystem {
 
 		party.maxMembers = clampMaxMembers(maxMembers);
 		data.setDirty();
-
 		syncParty(party);
 		return true;
 	}
@@ -462,10 +458,11 @@ public final class PartyApiSystem {
 
 		party.members.add(playerToAdd.getUUID());
 		party.showSelfByViewer.putIfAbsent(playerToAdd.getUUID(), party.defaultShowSelf);
+		party.overlayPositionByViewer.putIfAbsent(playerToAdd.getUUID(), "CUSTOM");
 		party.overlayXByViewer.putIfAbsent(playerToAdd.getUUID(), PartyApiServerConfig.defaultOverlayX());
 		party.overlayYByViewer.putIfAbsent(playerToAdd.getUUID(), PartyApiServerConfig.defaultOverlayY());
-		data.setDirty();
 
+		data.setDirty();
 		syncParty(party);
 		return true;
 	}
@@ -488,6 +485,7 @@ public final class PartyApiSystem {
 			if (!pins.contains(target.getUUID()) && pins.size() >= MAX_OVERLAY_PINNED) {
 				return false;
 			}
+
 			pins.add(target.getUUID());
 		} else {
 			pins.remove(target.getUUID());
@@ -512,7 +510,6 @@ public final class PartyApiSystem {
 
 		party.showSelfByViewer.put(viewer.getUUID(), showSelf);
 		data.setDirty();
-
 		syncPartyTo(viewer, party);
 		return true;
 	}
@@ -571,13 +568,36 @@ public final class PartyApiSystem {
 		party.overlayYByViewer.put(player.getUUID(), y);
 		party.overlayPositionByViewer.put(player.getUUID(), "CUSTOM");
 		data.setDirty();
-
 		syncPartyTo(player, party);
 		return true;
 	}
 
 	public static boolean resetOverlayPosition(ServerPlayer player) {
 		return setOverlayPosition(player, PartyApiServerConfig.defaultOverlayX(), PartyApiServerConfig.defaultOverlayY());
+	}
+
+	public static boolean initializeOverlayLayout(ServerPlayer viewer, boolean showSelf, int x, int y) {
+		if (viewer == null || !isPartySystemEnabled()) {
+			return false;
+		}
+
+		PartySavedData data = getSavedData();
+		PartyData party = data != null ? data.getPartyOf(viewer.getUUID()) : null;
+
+		if (party == null) {
+			return false;
+		}
+
+		party.showSelfByViewer.put(viewer.getUUID(), showSelf);
+		party.overlayXByViewer.put(viewer.getUUID(), x);
+		party.overlayYByViewer.put(viewer.getUUID(), y);
+		party.overlayPositionByViewer.put(viewer.getUUID(), "CUSTOM");
+		party.overlayElementPositionsByViewer.computeIfAbsent(viewer.getUUID(), key -> new ConcurrentHashMap<>());
+		party.customOverlayEntriesByViewer.computeIfAbsent(viewer.getUUID(), key -> new ConcurrentHashMap<>());
+
+		data.setDirty();
+		syncPartyTo(viewer, party);
+		return true;
 	}
 
 	public static boolean setOverlayElementPosition(ServerPlayer viewer, String elementId, int x, int y) {
@@ -595,7 +615,6 @@ public final class PartyApiSystem {
 		Map<String, OverlayElementPosition> positions = party.overlayElementPositionsByViewer.computeIfAbsent(viewer.getUUID(), id -> new ConcurrentHashMap<>());
 		positions.put(elementId.trim(), new OverlayElementPosition(x, y));
 		data.setDirty();
-
 		syncPartyTo(viewer, party);
 		return true;
 	}
@@ -623,7 +642,6 @@ public final class PartyApiSystem {
 		Map<String, CustomOverlayEntry> entries = party.customOverlayEntriesByViewer.computeIfAbsent(viewer.getUUID(), key -> new ConcurrentHashMap<>());
 		entries.put(id.trim(), new CustomOverlayEntry(id.trim(), type, label == null ? "" : label, value == null ? "" : value, max == null ? "" : max, x, y, Math.max(1, width), Math.max(1, height), texture == null ? "" : texture));
 		data.setDirty();
-
 		syncPartyTo(viewer, party);
 		return true;
 	}
@@ -655,7 +673,6 @@ public final class PartyApiSystem {
 
 		Map<String, String> stats = data.extraStatsByPlayer.computeIfAbsent(player.getUUID(), id -> new LinkedHashMap<>());
 		stats.put(key.trim(), value == null ? "" : value);
-
 		data.setDirty();
 
 		PartyData party = data.getPartyOf(player.getUUID());
@@ -706,14 +723,12 @@ public final class PartyApiSystem {
 
 		PartySavedData data = getSavedData();
 		PartyData party = data != null ? data.getPartyOf(first.getUUID()) : null;
-
 		return party != null && party.members.contains(second.getUUID());
 	}
 
 	public static boolean isPartyPvpEnabled(ServerPlayer player) {
 		PartySavedData data = getSavedData();
 		PartyData party = player != null && data != null ? data.getPartyOf(player.getUUID()) : null;
-
 		return party == null || party.pvpEnabled;
 	}
 
@@ -762,7 +777,6 @@ public final class PartyApiSystem {
 
 		party.leader = target.getUUID();
 		data.setDirty();
-
 		syncParty(party);
 		return true;
 	}
@@ -777,7 +791,6 @@ public final class PartyApiSystem {
 
 		party.leader = newLeader.getUUID();
 		data.setDirty();
-
 		syncParty(party);
 		return true;
 	}
@@ -794,7 +807,7 @@ public final class PartyApiSystem {
 			return false;
 		}
 
-		net.minecraft.network.chat.Component component = net.minecraft.network.chat.Component.literal("[Party] <" + sender.getGameProfile().getName() + "> " + message);
+		Component component = Component.literal("[Party] <" + sender.getGameProfile().getName() + "> " + message);
 
 		for (UUID memberId : party.members) {
 			ServerPlayer member = getServerPlayer(memberId);
@@ -807,7 +820,7 @@ public final class PartyApiSystem {
 		return true;
 	}
 
-	public static boolean sendPartyChatStyled(ServerPlayer sender, net.minecraft.network.chat.Component message) {
+	public static boolean sendPartyChatStyled(ServerPlayer sender, Component message) {
 		return sendPartyChat(sender, message == null ? "" : message.getString());
 	}
 
@@ -823,7 +836,7 @@ public final class PartyApiSystem {
 			return false;
 		}
 
-		net.minecraft.network.chat.Component component = net.minecraft.network.chat.Component.literal(message);
+		Component component = Component.literal(message);
 
 		for (UUID memberId : party.members) {
 			ServerPlayer member = getServerPlayer(memberId);
@@ -873,6 +886,7 @@ public final class PartyApiSystem {
 		}
 
 		syncPartyTo(player);
+		${package}.network.PartyApiNetwork.sendOnlinePlayerList(player, buildOnlinePlayerList(player));
 		${package}.network.PartyApiNetwork.openPartyScreen(player, "ADMIN");
 	}
 
@@ -892,7 +906,17 @@ public final class PartyApiSystem {
 	}
 
 	public static void handleClientAction(ServerPlayer player, String action, String targetId, String value) {
-		if (player == null || action == null || !isPartySystemEnabled()) {
+		if (player == null || action == null) {
+			return;
+		}
+
+		boolean adminAction = action.startsWith("admin_");
+
+		if (!isPartySystemEnabled() && !adminAction) {
+			return;
+		}
+
+		if (adminAction && !player.hasPermissions(PartyApiServerConfig.adminPermissionLevel())) {
 			return;
 		}
 
@@ -939,6 +963,69 @@ public final class PartyApiSystem {
 			case "open_invite" -> openInviteGui(player);
 			case "open_settings" -> openSettingsGui(player);
 			case "open_admin" -> openAdminGui(player);
+
+			case "admin_enable" -> {
+				adminSetPartySystemEnabled(true);
+				openAdminGui(player);
+			}
+			case "admin_disable" -> {
+				adminSetPartySystemEnabled(false);
+				openAdminGui(player);
+			}
+			case "admin_refresh" -> openAdminGui(player);
+			case "admin_view" -> {
+				if (target != null) {
+					openPartyGuiForPartyOf(player, target);
+				}
+			}
+			case "admin_remove" -> {
+				if (target != null) {
+					adminRemovePlayerFromParty(target);
+					openAdminGui(player);
+				}
+			}
+			case "admin_disband" -> {
+				if (target != null) {
+					adminDisbandPartyOf(target);
+					openAdminGui(player);
+				}
+			}
+			case "admin_pvp_on" -> {
+				if (target != null) {
+					adminSetPvp(target, true);
+					openAdminGui(player);
+				}
+			}
+			case "admin_pvp_off" -> {
+				if (target != null) {
+					adminSetPvp(target, false);
+					openAdminGui(player);
+				}
+			}
+			case "admin_limit_4" -> {
+				if (target != null) {
+					adminSetPartyMaxMembers(target, 4);
+					openAdminGui(player);
+				}
+			}
+			case "admin_limit_8" -> {
+				if (target != null) {
+					adminSetPartyMaxMembers(target, 8);
+					openAdminGui(player);
+				}
+			}
+			case "admin_limit_16" -> {
+				if (target != null) {
+					adminSetPartyMaxMembers(target, 16);
+					openAdminGui(player);
+				}
+			}
+			case "admin_limit_custom" -> {
+				if (target != null) {
+					adminSetPartyMaxMembers(target, parseInt(value, PartyApiServerConfig.defaultMaxMembers()));
+					openAdminGui(player);
+				}
+			}
 			default -> {
 			}
 		}
@@ -1309,10 +1396,12 @@ public final class PartyApiSystem {
 					UUID player = UUID.fromString(st.getString("Player"));
 					Map<String, String> stats = new LinkedHashMap<>();
 					ListTag values = st.getList("Values", Tag.TAG_COMPOUND);
+
 					for (int j = 0; j < values.size(); j++) {
 						CompoundTag vt = values.getCompound(j);
 						stats.put(vt.getString("Key"), vt.getString("Value"));
 					}
+
 					data.extraStatsByPlayer.put(player, stats);
 				} catch (Throwable ignored) {
 				}
@@ -1360,12 +1449,14 @@ public final class PartyApiSystem {
 				CompoundTag st = new CompoundTag();
 				st.putString("Player", entry.getKey().toString());
 				ListTag values = new ListTag();
+
 				for (Map.Entry<String, String> stat : entry.getValue().entrySet()) {
 					CompoundTag vt = new CompoundTag();
 					vt.putString("Key", stat.getKey());
 					vt.putString("Value", stat.getValue());
 					values.add(vt);
 				}
+
 				st.put("Values", values);
 				statsTag.add(st);
 			}
@@ -1374,8 +1465,8 @@ public final class PartyApiSystem {
 			return tag;
 		}
 
-		private static int clampStatic(int v, int min, int max) {
-			return Math.max(min, Math.min(max, v));
+		private static int clampStatic(int value, int min, int max) {
+			return Math.max(min, Math.min(max, value));
 		}
 	}
 }

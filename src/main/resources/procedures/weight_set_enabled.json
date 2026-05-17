@@ -9,10 +9,8 @@
     }
   ],
   "inputsInline": true,
-  "previousStatement": null,
-  "nextStatement": null,
   "colour": 35,
-  "tooltip": "Enables or disables the whole weight system on server config.",
+  "tooltip": "Weight system config block.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "weight_tools",
@@ -22,5 +20,7 @@
     "inputs": [
       "ENABLED"
     ]
-  }
+  },
+  "previousStatement": null,
+  "nextStatement": null
 }

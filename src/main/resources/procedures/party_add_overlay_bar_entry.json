@@ -55,7 +55,7 @@
   ],
   "inputsInline": false,
   "colour": 260,
-  "tooltip": "Party GUI / overlay helper block.",
+  "tooltip": "Party GUI / overlay server-side helper block.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "party_tools",
