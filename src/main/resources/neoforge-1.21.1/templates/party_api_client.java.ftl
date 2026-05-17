@@ -26,7 +26,7 @@ public final class PartyApiClient {
 	private static boolean pvpEnabled = false;
 	private static String overlayPosition = "CUSTOM";
 	private static int overlayX = 8;
-	private static int overlayY = 74;
+	private static int overlayY = 58;
 	private static int nicknameScalePercent = 80;
 	private static boolean showSelf = false;
 	private static boolean isAdmin = false;
@@ -344,11 +344,11 @@ public final class PartyApiClient {
 		@Override
 		public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
 			scroll = Math.max(0, scroll - (int) Math.signum(deltaY));
-			rebuildWidgets();
+			rebuildPartyWidgets();
 			return true;
 		}
 
-		private void rebuildWidgets() {
+		private void rebuildPartyWidgets() {
 			clearWidgets();
 			init();
 		}

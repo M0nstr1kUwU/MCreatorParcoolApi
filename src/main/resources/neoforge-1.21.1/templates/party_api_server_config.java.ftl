@@ -50,6 +50,9 @@ public final class PartyApiServerConfig {
 					case "default_max_members" -> c.defaultMaxMembers = clamp(parseInt(v, c.defaultMaxMembers), 1, c.hardMaxMembers);
 					case "hard_max_members" -> c.hardMaxMembers = clamp(parseInt(v, c.hardMaxMembers), 1, 200);
 					case "admin_permission_level" -> c.adminPermissionLevel = clamp(parseInt(v, c.adminPermissionLevel), 1, 4);
+					case "pvp_protection_enabled" -> c.pvpProtectionEnabled = parseBool(v, c.pvpProtectionEnabled);
+					case "party_chat_enabled" -> c.partyChatEnabled = parseBool(v, c.partyChatEnabled);
+					case "party_chat_prefix" -> c.partyChatPrefix = v;
 
 					case "asset_overlay_panel" -> c.assetOverlayPanel = v;
 					case "asset_overlay_member_frame" -> c.assetOverlayMemberFrame = v;
@@ -147,6 +150,18 @@ public final class PartyApiServerConfig {
 		return get().adminPermissionLevel;
 	}
 
+	public static boolean pvpProtectionEnabled() {
+		return get().pvpProtectionEnabled;
+	}
+
+	public static boolean partyChatEnabled() {
+		return get().partyChatEnabled;
+	}
+
+	public static String partyChatPrefix() {
+		return get().partyChatPrefix;
+	}
+
 	private static boolean save(Config c) {
 		try {
 			write(c);
@@ -185,6 +200,11 @@ default_max_members=%d
 hard_max_members=%d
 admin_permission_level=%d
 
+# Guards used by PartyApiPvpGuard / PartyApiChatGuard.
+pvp_protection_enabled=%s
+party_chat_enabled=%s
+party_chat_prefix="%s"
+
 # Optional assets. Empty string = fallback rendering.
 # Place in assets/<modid>/textures/gui/party/
 asset_overlay_panel="%s"
@@ -217,6 +237,9 @@ asset_gui_button_unpin="%s"
 			c.defaultMaxMembers,
 			c.hardMaxMembers,
 			c.adminPermissionLevel,
+			c.pvpProtectionEnabled,
+			c.partyChatEnabled,
+			c.partyChatPrefix,
 			c.assetOverlayPanel,
 			c.assetOverlayMemberFrame,
 			c.assetOverlayHpBarEmpty,
@@ -291,13 +314,16 @@ asset_gui_button_unpin="%s"
 		public boolean partyEnabled = true;
 		public boolean defaultShowSelf = false;
 		public int defaultOverlayX = 8;
-		public int defaultOverlayY = 74;
+		public int defaultOverlayY = 58;
 		public int overlayNicknameFontScalePercent = 80;
 		public int inviteCooldownSeconds = 120;
 		public boolean inviteGuiEnabled = true;
 		public int defaultMaxMembers = 4;
 		public int hardMaxMembers = 200;
 		public int adminPermissionLevel = 2;
+		public boolean pvpProtectionEnabled = true;
+		public boolean partyChatEnabled = true;
+		public String partyChatPrefix = "!p ";
 
 		public String assetOverlayPanel = "";
 		public String assetOverlayMemberFrame = "";
