@@ -1,0 +1,32 @@
+{
+  "type": "attribute_get_value",
+  "message0": "final attribute %2 of %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "ATTRIBUTE_ID",
+      "check": "String"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 230,
+  "tooltip": "Gets final attribute value after modifiers.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "attribute_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"ATTRIBUTE_ID\"><block type=\"text\"><field name=\"TEXT\">minecraft:movement_speed</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "ATTRIBUTE_ID"
+    ]
+  }
+}

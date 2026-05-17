@@ -1,0 +1,25 @@
+{
+  "type": "hitbox_has_persistent",
+  "message0": "does %1 have persistent hitbox",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 20,
+  "tooltip": "Returns true if entity has saved persistent hitbox.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "hitbox_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ENTITY"
+    ]
+  }
+}

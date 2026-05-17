@@ -1,0 +1,47 @@
+{
+  "type": "weight_set_punishment_stage",
+  "message0": "set weight punishment stage %1 percent %2 disable jump %3 darkness %4",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "STAGE",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "PERCENT",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "DISABLE_JUMP",
+      "check": "Boolean"
+    },
+    {
+      "type": "input_value",
+      "name": "DARKNESS",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": false,
+  "colour": 35,
+  "tooltip": "Configures punishment stage 1-4.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "weight_tools",
+    "toolbox_init": [
+      "<value name=\"STAGE\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
+      "<value name=\"PERCENT\"><block type=\"math_number\"><field name=\"NUM\">75</field></block></value>",
+      "<value name=\"DISABLE_JUMP\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>",
+      "<value name=\"DARKNESS\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>"
+    ],
+    "inputs": [
+      "STAGE",
+      "PERCENT",
+      "DISABLE_JUMP",
+      "DARKNESS"
+    ]
+  },
+  "previousStatement": null,
+  "nextStatement": null
+}

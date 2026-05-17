@@ -1,6 +1,6 @@
 {
   "type": "party_set_show_self",
-  "message0": "set party show self for %1 to %2",
+  "message0": "set party show self of %1 to %2",
   "args0": [
     {
       "type": "input_value",
@@ -9,25 +9,25 @@
     },
     {
       "type": "input_value",
-      "name": "ENABLED",
+      "name": "VALUE",
       "check": "Boolean"
     }
   ],
-  "inputsInline": true,
-  "previousStatement": null,
-  "nextStatement": null,
+  "inputsInline": false,
   "colour": 260,
-  "tooltip": "Controls whether the selected player sees themselves in their party overlay and party GUI.",
+  "tooltip": "Sets whether player sees self in own party overlay.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "party_tools",
     "toolbox_init": [
       "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
-      "<value name=\"ENABLED\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>"
+      "<value name=\"VALUE\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>"
     ],
     "inputs": [
       "ENTITY",
-      "ENABLED"
+      "VALUE"
     ]
-  }
+  },
+  "previousStatement": null,
+  "nextStatement": null
 }

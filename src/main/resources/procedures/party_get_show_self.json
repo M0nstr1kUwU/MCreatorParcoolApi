@@ -1,0 +1,25 @@
+{
+  "type": "party_get_show_self",
+  "message0": "party show self of %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": false,
+  "colour": 260,
+  "tooltip": "Gets show-self setting.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ENTITY"
+    ]
+  },
+  "output": "Boolean"
+}

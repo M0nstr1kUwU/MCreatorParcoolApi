@@ -1,0 +1,89 @@
+{
+  "type": "message_send_styled_nearby",
+  "message0": "send styled message near %1 radius %2 text %3 color %4 bold %5 italic %6 underline %7 strikethrough %8 obfuscated %9 actionbar %10",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "RADIUS",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "TEXT",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "COLOR",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "BOLD",
+      "check": "Boolean"
+    },
+    {
+      "type": "input_value",
+      "name": "ITALIC",
+      "check": "Boolean"
+    },
+    {
+      "type": "input_value",
+      "name": "UNDERLINE",
+      "check": "Boolean"
+    },
+    {
+      "type": "input_value",
+      "name": "STRIKETHROUGH",
+      "check": "Boolean"
+    },
+    {
+      "type": "input_value",
+      "name": "OBFUSCATED",
+      "check": "Boolean"
+    },
+    {
+      "type": "input_value",
+      "name": "ACTIONBAR",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": false,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 160,
+  "tooltip": "Sends a styled message to players near selected entity.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "other_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"RADIUS\"><block type=\"math_number\"><field name=\"NUM\">16</field></block></value>",
+      "<value name=\"TEXT\"><block type=\"text\"><field name=\"TEXT\">Nearby message</field></block></value>",
+      "<value name=\"COLOR\"><block type=\"text\"><field name=\"TEXT\">#AAAAAA</field></block></value>",
+      "<value name=\"BOLD\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>",
+      "<value name=\"ITALIC\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>",
+      "<value name=\"UNDERLINE\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>",
+      "<value name=\"STRIKETHROUGH\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>",
+      "<value name=\"OBFUSCATED\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>",
+      "<value name=\"ACTIONBAR\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "RADIUS",
+      "TEXT",
+      "COLOR",
+      "BOLD",
+      "ITALIC",
+      "UNDERLINE",
+      "STRIKETHROUGH",
+      "OBFUSCATED",
+      "ACTIONBAR"
+    ]
+  }
+}

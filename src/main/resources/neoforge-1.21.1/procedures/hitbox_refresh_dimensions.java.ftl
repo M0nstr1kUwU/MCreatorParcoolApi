@@ -1,5 +1,3 @@
 <#if input$ENTITY??>
-if (${input$ENTITY} != null) {
-	${package}.hitbox.HitboxApiBridge.refreshDimensions(${input$ENTITY});
-}
+${package}.hitbox.HitboxApiBridge.refresh(${input$ENTITY});
 </#if>

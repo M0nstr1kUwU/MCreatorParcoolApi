@@ -1,0 +1,75 @@
+{
+  "type": "message_send_styled_to_party",
+  "message0": "send styled party message from %1 text %2 color %3 bold %4 italic %5 underline %6 strikethrough %7 obfuscated %8",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "TEXT",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "COLOR",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "BOLD",
+      "check": "Boolean"
+    },
+    {
+      "type": "input_value",
+      "name": "ITALIC",
+      "check": "Boolean"
+    },
+    {
+      "type": "input_value",
+      "name": "UNDERLINE",
+      "check": "Boolean"
+    },
+    {
+      "type": "input_value",
+      "name": "STRIKETHROUGH",
+      "check": "Boolean"
+    },
+    {
+      "type": "input_value",
+      "name": "OBFUSCATED",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": false,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 160,
+  "tooltip": "Sends a styled message to the sender's party.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "other_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"TEXT\"><block type=\"text\"><field name=\"TEXT\">Party message</field></block></value>",
+      "<value name=\"COLOR\"><block type=\"text\"><field name=\"TEXT\">#55FFFF</field></block></value>",
+      "<value name=\"BOLD\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>",
+      "<value name=\"ITALIC\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>",
+      "<value name=\"UNDERLINE\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>",
+      "<value name=\"STRIKETHROUGH\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>",
+      "<value name=\"OBFUSCATED\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "TEXT",
+      "COLOR",
+      "BOLD",
+      "ITALIC",
+      "UNDERLINE",
+      "STRIKETHROUGH",
+      "OBFUSCATED"
+    ]
+  }
+}

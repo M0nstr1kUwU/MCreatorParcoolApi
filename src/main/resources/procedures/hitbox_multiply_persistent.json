@@ -1,0 +1,40 @@
+{
+  "type": "hitbox_multiply_persistent",
+  "message0": "multiply persistent hitbox of %1 width x%2 height x%3",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "WIDTH_MULTIPLIER",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "HEIGHT_MULTIPLIER",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 20,
+  "tooltip": "Creates persistent hitbox by multiplying current width and height.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "hitbox_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"WIDTH_MULTIPLIER\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
+      "<value name=\"HEIGHT_MULTIPLIER\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "WIDTH_MULTIPLIER",
+      "HEIGHT_MULTIPLIER"
+    ]
+  }
+}

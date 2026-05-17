@@ -70,3 +70,21 @@ base_templates:
 
   - template: economy_api_casino_templates.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/economy/EconomyApiCasinoTemplates.java"
+
+  - template: message_api_helper.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/message/MessageApiHelper.java"
+
+  - template: hitbox_api_bridge.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/hitbox/HitboxApiBridge.java"
+
+  - template: attribute_api_bridge.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/attributes/AttributeApiBridge.java"
+
+  - template: attribute_api_modbus.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/attributes/AttributeApiModBus.java"
+
+  - template: party_api_server_config.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiServerConfig.java"
+
+  - template: parcool_api_weight_config.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/weight/ParCoolApiWeightConfig.java"

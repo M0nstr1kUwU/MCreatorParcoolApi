@@ -1,0 +1,47 @@
+{
+  "type": "party_set_overlay_element_position",
+  "message0": "set party overlay element %2 of %1 to x %3 y %4",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "ELEMENT_ID",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "X",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "Y",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": false,
+  "colour": 260,
+  "tooltip": "Sets position of one overlay element id.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"ELEMENT_ID\"><block type=\"text\"><field name=\"TEXT\">hp_bar</field></block></value>",
+      "<value name=\"X\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>",
+      "<value name=\"Y\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "ELEMENT_ID",
+      "X",
+      "Y"
+    ]
+  },
+  "previousStatement": null,
+  "nextStatement": null
+}

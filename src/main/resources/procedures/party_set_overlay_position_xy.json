@@ -1,0 +1,40 @@
+{
+  "type": "party_set_overlay_position_xy",
+  "message0": "set party overlay position of %1 to x %2 y %3",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "X",
+      "check": "Number"
+    },
+    {
+      "type": "input_value",
+      "name": "Y",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": false,
+  "colour": 260,
+  "tooltip": "Sets absolute overlay x/y for this player.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"X\"><block type=\"math_number\"><field name=\"NUM\">8</field></block></value>",
+      "<value name=\"Y\"><block type=\"math_number\"><field name=\"NUM\">74</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "X",
+      "Y"
+    ]
+  },
+  "previousStatement": null,
+  "nextStatement": null
+}

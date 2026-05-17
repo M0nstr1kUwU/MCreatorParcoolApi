@@ -1,0 +1,26 @@
+{
+  "type": "weight_use_default_punishments",
+  "message0": "set weight default punishments enabled to %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENABLED",
+      "check": "Boolean"
+    }
+  ],
+  "inputsInline": false,
+  "colour": 35,
+  "tooltip": "If false, default punishments are disabled.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "weight_tools",
+    "toolbox_init": [
+      "<value name=\"ENABLED\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
+    ],
+    "inputs": [
+      "ENABLED"
+    ]
+  },
+  "previousStatement": null,
+  "nextStatement": null
+}

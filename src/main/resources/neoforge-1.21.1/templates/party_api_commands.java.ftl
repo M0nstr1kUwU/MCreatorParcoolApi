@@ -229,7 +229,6 @@ public final class PartyApiCommands {
 							ServerPlayer player = ctx.getSource().getPlayerOrException();
 							String message = StringArgumentType.getString(ctx, "message");
 							boolean ok = PartyApiSystem.sendPartyChat(player, message);
-							ctx.getSource().sendSuccess(() -> Component.literal(ok ? "Party message sent" : "You are not in party"), false);
 							return ok ? 1 : 0;
 						})
 					)

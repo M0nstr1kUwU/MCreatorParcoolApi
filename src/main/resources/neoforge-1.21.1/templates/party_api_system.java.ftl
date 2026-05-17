@@ -875,6 +875,40 @@ public final class PartyApiSystem {
 		return true;
 	}
 
+	public static boolean sendPartyChatStyled(ServerPlayer sender, net.minecraft.network.chat.Component message) {
+    	if (sender == null || message == null || !isPartySystemEnabled()) {
+    		return false;
+    	}
+
+    	PartySavedData data = getSavedData();
+
+    	if (data == null) {
+    		return false;
+    	}
+
+    	PartyData party = data.getPartyOf(sender.getUUID());
+
+    	if (party == null) {
+    		return false;
+    	}
+
+    	net.minecraft.network.chat.MutableComponent finalMessage = net.minecraft.network.chat.Component.literal("[Party] ")
+    		.withStyle(style -> style.withColor(net.minecraft.ChatFormatting.AQUA))
+    		.append(net.minecraft.network.chat.Component.literal(sender.getGameProfile().getName() + ": ")
+    			.withStyle(style -> style.withColor(net.minecraft.ChatFormatting.GRAY)))
+    		.append(message);
+
+    	for (java.util.UUID memberId : party.members) {
+    		ServerPlayer member = getServerPlayer(memberId);
+
+    		if (member != null) {
+    			member.displayClientMessage(finalMessage, false);
+    		}
+    	}
+
+    	return true;
+    }
+
 	public static boolean sendMessageToParty(ServerPlayer anchor, String message) {
 		if (anchor == null || message == null || message.isBlank() || !isPartySystemEnabled()) {
 			return false;

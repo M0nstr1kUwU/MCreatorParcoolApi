@@ -1,0 +1,26 @@
+{
+  "type": "party_clear_overlay_custom_entries",
+  "message0": "clear custom party overlay entries of %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": false,
+  "colour": 260,
+  "tooltip": "Clears custom overlay entries.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ENTITY"
+    ]
+  },
+  "previousStatement": null,
+  "nextStatement": null
+}

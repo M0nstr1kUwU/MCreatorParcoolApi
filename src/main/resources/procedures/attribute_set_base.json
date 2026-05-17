@@ -1,0 +1,40 @@
+{
+  "type": "attribute_set_base",
+  "message0": "set base attribute %2 of %1 to %3",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "ATTRIBUTE_ID",
+      "check": "String"
+    },
+    {
+      "type": "input_value",
+      "name": "VALUE",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": true,
+  "previousStatement": null,
+  "nextStatement": null,
+  "colour": 230,
+  "tooltip": "Sets base attribute value by registry id.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "attribute_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"ATTRIBUTE_ID\"><block type=\"text\"><field name=\"TEXT\">minecraft:movement_speed</field></block></value>",
+      "<value name=\"VALUE\"><block type=\"math_number\"><field name=\"NUM\">0.1</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "ATTRIBUTE_ID",
+      "VALUE"
+    ]
+  }
+}

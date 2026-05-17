@@ -1,0 +1,32 @@
+{
+  "type": "attribute_has",
+  "message0": "does %1 have attribute %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "ATTRIBUTE_ID",
+      "check": "String"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Boolean",
+  "colour": 230,
+  "tooltip": "Checks whether living entity has selected attribute.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "attribute_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"ATTRIBUTE_ID\"><block type=\"text\"><field name=\"TEXT\">minecraft:scale</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "ATTRIBUTE_ID"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "type": "hitbox_get_z_size",
+  "message0": "bounding box z size of %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 20,
+  "tooltip": "Returns current AABB Z size.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "hitbox_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ENTITY"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "type": "hitbox_get_persistent_width",
+  "message0": "persistent hitbox width of %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 20,
+  "tooltip": "Returns saved persistent hitbox width or 0.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "hitbox_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ENTITY"
+    ]
+  }
+}

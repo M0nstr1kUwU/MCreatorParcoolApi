@@ -1,0 +1,25 @@
+{
+  "type": "entity_prop_get_air",
+  "message0": "air supply of %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": true,
+  "output": "Number",
+  "colour": 200,
+  "tooltip": "Entity/player property getter.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "entity_property_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ENTITY"
+    ]
+  }
+}

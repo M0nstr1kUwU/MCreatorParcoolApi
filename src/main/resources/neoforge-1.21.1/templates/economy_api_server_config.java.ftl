@@ -291,7 +291,7 @@ public final class EconomyApiServerConfig {
 		public double transferFeePercent = 10.0D;
 		public double casinoHouseEdgePercent = 5.0D;
 
-		public long casinoMinBetCooper = 1L;
+		public long casinoMinBetCooper = 100L;
 		public long casinoMaxBetCooper = 1_000_000L;
 
 		public String coinItemCooper = "minecraft:copper_coin_item";

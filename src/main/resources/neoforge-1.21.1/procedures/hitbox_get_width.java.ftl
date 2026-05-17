@@ -1,5 +1,5 @@
 <#if input$ENTITY??>
-(${input$ENTITY} != null ? ${package}.hitbox.HitboxApiBridge.getWidth(${input$ENTITY}) : 0)
+${package}.hitbox.HitboxApiBridge.getWidth(${input$ENTITY})
 <#else>
 0
 </#if>
