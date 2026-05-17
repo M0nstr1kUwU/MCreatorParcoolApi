@@ -55,13 +55,13 @@
   ],
   "inputsInline": false,
   "colour": 260,
-  "tooltip": "Adds custom bar entry.",
+  "tooltip": "Party GUI / overlay helper block.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "party_tools",
     "toolbox_init": [
       "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
-      "<value name=\"ID\"><block type=\"text\"><field name=\"TEXT\">stamina</field></block></value>",
+      "<value name=\"ID\"><block type=\"text\"><field name=\"TEXT\">custom_bar</field></block></value>",
       "<value name=\"LABEL\"><block type=\"text\"><field name=\"TEXT\">Stamina</field></block></value>",
       "<value name=\"CURRENT\"><block type=\"math_number\"><field name=\"NUM\">50</field></block></value>",
       "<value name=\"MAX\"><block type=\"math_number\"><field name=\"NUM\">100</field></block></value>",

@@ -23,9 +23,9 @@
       "check": "Boolean"
     }
   ],
-  "inputsInline": false,
+  "inputsInline": true,
   "colour": 35,
-  "tooltip": "Configures punishment stage 1-4.",
+  "tooltip": "Weight config block.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "weight_tools",

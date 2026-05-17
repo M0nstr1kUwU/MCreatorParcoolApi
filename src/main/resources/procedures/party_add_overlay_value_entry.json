@@ -50,13 +50,13 @@
   ],
   "inputsInline": false,
   "colour": 260,
-  "tooltip": "Adds custom text/value entry.",
+  "tooltip": "Party GUI / overlay helper block.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "party_tools",
     "toolbox_init": [
       "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
-      "<value name=\"ID\"><block type=\"text\"><field name=\"TEXT\">coins</field></block></value>",
+      "<value name=\"ID\"><block type=\"text\"><field name=\"TEXT\">custom_value</field></block></value>",
       "<value name=\"LABEL\"><block type=\"text\"><field name=\"TEXT\">Coins</field></block></value>",
       "<value name=\"VALUE\"><block type=\"text\"><field name=\"TEXT\">100</field></block></value>",
       "<value name=\"X\"><block type=\"math_number\"><field name=\"NUM\">0</field></block></value>",

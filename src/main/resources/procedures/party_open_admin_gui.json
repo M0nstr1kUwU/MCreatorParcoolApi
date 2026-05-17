@@ -1,6 +1,6 @@
 {
-  "type": "party_clear_overlay_custom_entries",
-  "message0": "clear custom party overlay entries of %1",
+  "type": "party_open_admin_gui",
+  "message0": "open party admin GUI for %1",
   "args0": [
     {
       "type": "input_value",

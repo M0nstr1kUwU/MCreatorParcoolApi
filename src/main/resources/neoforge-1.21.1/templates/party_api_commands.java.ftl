@@ -16,8 +16,6 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 @EventBusSubscriber(modid = "${modid}")
 public final class PartyApiCommands {
-	private static final int ADMIN_PERMISSION_LEVEL = 2;
-
 	private PartyApiCommands() {
 	}
 
@@ -36,10 +34,7 @@ public final class PartyApiCommands {
 			Commands.literal("party")
 				.then(Commands.literal("create")
 					.executes(ctx -> {
-						if (!ensureEnabled(ctx.getSource())) {
-							return 0;
-						}
-
+						if (!ensureEnabled(ctx.getSource())) return 0;
 						ServerPlayer player = ctx.getSource().getPlayerOrException();
 						boolean ok = PartyApiSystem.createParty(player);
 						ctx.getSource().sendSuccess(() -> Component.literal(ok ? "Party created" : "Could not create party"), false);
@@ -57,10 +52,7 @@ public final class PartyApiCommands {
 				.then(Commands.literal("invite")
 					.then(Commands.argument("player", EntityArgument.player())
 						.executes(ctx -> {
-							if (!ensureEnabled(ctx.getSource())) {
-								return 0;
-							}
-
+							if (!ensureEnabled(ctx.getSource())) return 0;
 							ServerPlayer actor = ctx.getSource().getPlayerOrException();
 							ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
 							boolean ok = PartyApiSystem.invitePlayer(actor, target);
@@ -69,15 +61,32 @@ public final class PartyApiCommands {
 						})
 					)
 				)
+				.then(Commands.literal("revoke")
+					.then(Commands.argument("player", EntityArgument.player())
+						.executes(ctx -> {
+							if (!ensureEnabled(ctx.getSource())) return 0;
+							ServerPlayer actor = ctx.getSource().getPlayerOrException();
+							ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+							boolean ok = PartyApiSystem.revokeInvite(actor, target);
+							ctx.getSource().sendSuccess(() -> Component.literal(ok ? "Invite revoked" : "Could not revoke invite"), false);
+							return ok ? 1 : 0;
+						})
+					)
+				)
 				.then(Commands.literal("accept")
 					.executes(ctx -> {
-						if (!ensureEnabled(ctx.getSource())) {
-							return 0;
-						}
-
+						if (!ensureEnabled(ctx.getSource())) return 0;
 						ServerPlayer player = ctx.getSource().getPlayerOrException();
 						boolean ok = PartyApiSystem.acceptInvite(player);
 						ctx.getSource().sendSuccess(() -> Component.literal(ok ? "Joined party" : "No invite found or party is full"), false);
+						return ok ? 1 : 0;
+					})
+				)
+				.then(Commands.literal("decline")
+					.executes(ctx -> {
+						ServerPlayer player = ctx.getSource().getPlayerOrException();
+						boolean ok = PartyApiSystem.declineInvite(player);
+						ctx.getSource().sendSuccess(() -> Component.literal(ok ? "Invite declined" : "No invite found"), false);
 						return ok ? 1 : 0;
 					})
 				)
@@ -92,10 +101,7 @@ public final class PartyApiCommands {
 				.then(Commands.literal("kick")
 					.then(Commands.argument("player", EntityArgument.player())
 						.executes(ctx -> {
-							if (!ensureEnabled(ctx.getSource())) {
-								return 0;
-							}
-
+							if (!ensureEnabled(ctx.getSource())) return 0;
 							ServerPlayer actor = ctx.getSource().getPlayerOrException();
 							ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
 							boolean ok = PartyApiSystem.kickPlayer(actor, target);
@@ -107,10 +113,7 @@ public final class PartyApiCommands {
 				.then(Commands.literal("transfer")
 					.then(Commands.argument("player", EntityArgument.player())
 						.executes(ctx -> {
-							if (!ensureEnabled(ctx.getSource())) {
-								return 0;
-							}
-
+							if (!ensureEnabled(ctx.getSource())) return 0;
 							ServerPlayer actor = ctx.getSource().getPlayerOrException();
 							ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
 							boolean ok = PartyApiSystem.transferLeadership(actor, target);
@@ -122,10 +125,7 @@ public final class PartyApiCommands {
 				.then(Commands.literal("pvp")
 					.then(Commands.argument("enabled", BoolArgumentType.bool())
 						.executes(ctx -> {
-							if (!ensureEnabled(ctx.getSource())) {
-								return 0;
-							}
-
+							if (!ensureEnabled(ctx.getSource())) return 0;
 							ServerPlayer player = ctx.getSource().getPlayerOrException();
 							boolean enabled = BoolArgumentType.getBool(ctx, "enabled");
 							boolean ok = PartyApiSystem.setPvp(player, enabled);
@@ -137,10 +137,7 @@ public final class PartyApiCommands {
 				.then(Commands.literal("limit")
 					.then(Commands.argument("size", IntegerArgumentType.integer(1, 200))
 						.executes(ctx -> {
-							if (!ensureEnabled(ctx.getSource())) {
-								return 0;
-							}
-
+							if (!ensureEnabled(ctx.getSource())) return 0;
 							ServerPlayer player = ctx.getSource().getPlayerOrException();
 							int size = IntegerArgumentType.getInteger(ctx, "size");
 							boolean ok = PartyApiSystem.setPartyMaxMembers(player, size);
@@ -152,10 +149,7 @@ public final class PartyApiCommands {
 				.then(Commands.literal("showself")
 					.then(Commands.argument("enabled", BoolArgumentType.bool())
 						.executes(ctx -> {
-							if (!ensureEnabled(ctx.getSource())) {
-								return 0;
-							}
-
+							if (!ensureEnabled(ctx.getSource())) return 0;
 							ServerPlayer player = ctx.getSource().getPlayerOrException();
 							boolean enabled = BoolArgumentType.getBool(ctx, "enabled");
 							boolean ok = PartyApiSystem.setShowSelf(player, enabled);
@@ -167,10 +161,7 @@ public final class PartyApiCommands {
 				.then(Commands.literal("pin")
 					.then(Commands.argument("player", EntityArgument.player())
 						.executes(ctx -> {
-							if (!ensureEnabled(ctx.getSource())) {
-								return 0;
-							}
-
+							if (!ensureEnabled(ctx.getSource())) return 0;
 							ServerPlayer actor = ctx.getSource().getPlayerOrException();
 							ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
 							boolean ok = PartyApiSystem.setPinned(actor, target, true);
@@ -182,10 +173,7 @@ public final class PartyApiCommands {
 				.then(Commands.literal("unpin")
 					.then(Commands.argument("player", EntityArgument.player())
 						.executes(ctx -> {
-							if (!ensureEnabled(ctx.getSource())) {
-								return 0;
-							}
-
+							if (!ensureEnabled(ctx.getSource())) return 0;
 							ServerPlayer actor = ctx.getSource().getPlayerOrException();
 							ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
 							boolean ok = PartyApiSystem.setPinned(actor, target, false);
@@ -195,37 +183,43 @@ public final class PartyApiCommands {
 					)
 				)
 				.then(Commands.literal("position")
-					.then(Commands.argument("position", StringArgumentType.word())
-						.executes(ctx -> {
-							if (!ensureEnabled(ctx.getSource())) {
-								return 0;
-							}
-
-							ServerPlayer player = ctx.getSource().getPlayerOrException();
-							boolean ok = PartyApiSystem.setOverlayPosition(player, StringArgumentType.getString(ctx, "position"));
-							ctx.getSource().sendSuccess(() -> Component.literal(ok ? "Overlay position changed" : "Could not change position"), false);
-							return ok ? 1 : 0;
-						})
+					.then(Commands.argument("x", IntegerArgumentType.integer())
+						.then(Commands.argument("y", IntegerArgumentType.integer())
+							.executes(ctx -> {
+								if (!ensureEnabled(ctx.getSource())) return 0;
+								ServerPlayer player = ctx.getSource().getPlayerOrException();
+								boolean ok = PartyApiSystem.setOverlayPosition(player, IntegerArgumentType.getInteger(ctx, "x"), IntegerArgumentType.getInteger(ctx, "y"));
+								ctx.getSource().sendSuccess(() -> Component.literal(ok ? "Overlay position changed" : "Could not change position"), false);
+								return ok ? 1 : 0;
+							})
+						)
 					)
 				)
 				.then(Commands.literal("gui")
 					.executes(ctx -> {
-						if (!ensureEnabled(ctx.getSource())) {
-							return 0;
-						}
-
-						ServerPlayer player = ctx.getSource().getPlayerOrException();
-						PartyApiSystem.openPartyGui(player);
+						if (!ensureEnabled(ctx.getSource())) return 0;
+						PartyApiSystem.openPartyMainGui(ctx.getSource().getPlayerOrException());
+						return 1;
+					})
+				)
+				.then(Commands.literal("invitegui")
+					.executes(ctx -> {
+						if (!ensureEnabled(ctx.getSource())) return 0;
+						PartyApiSystem.openInviteGui(ctx.getSource().getPlayerOrException());
+						return 1;
+					})
+				)
+				.then(Commands.literal("settingsgui")
+					.executes(ctx -> {
+						if (!ensureEnabled(ctx.getSource())) return 0;
+						PartyApiSystem.openSettingsGui(ctx.getSource().getPlayerOrException());
 						return 1;
 					})
 				)
 				.then(Commands.literal("chat")
 					.then(Commands.argument("message", StringArgumentType.greedyString())
 						.executes(ctx -> {
-							if (!ensureEnabled(ctx.getSource())) {
-								return 0;
-							}
-
+							if (!ensureEnabled(ctx.getSource())) return 0;
 							ServerPlayer player = ctx.getSource().getPlayerOrException();
 							String message = StringArgumentType.getString(ctx, "message");
 							boolean ok = PartyApiSystem.sendPartyChat(player, message);
@@ -233,7 +227,6 @@ public final class PartyApiCommands {
 						})
 					)
 				)
-
 				.then(Commands.literal("info")
 					.executes(ctx -> {
 						ServerPlayer player = ctx.getSource().getPlayerOrException();
@@ -263,38 +256,12 @@ public final class PartyApiCommands {
 							return 1;
 						})
 					)
-					.then(Commands.literal("transfer")
-						.then(Commands.argument("party_member", EntityArgument.player())
-							.then(Commands.argument("new_leader", EntityArgument.player())
-								.executes(ctx -> {
-									ServerPlayer partyMember = EntityArgument.getPlayer(ctx, "party_member");
-									ServerPlayer newLeader = EntityArgument.getPlayer(ctx, "new_leader");
-									boolean ok = PartyApiSystem.adminTransferLeadership(partyMember, newLeader);
-									ctx.getSource().sendSuccess(() -> Component.literal(ok ? "Party leadership transferred" : "Could not transfer leadership"), false);
-									return ok ? 1 : 0;
-								})
-							)
-						)
-					)
 					.then(Commands.literal("gui")
 						.then(Commands.argument("player", EntityArgument.player())
 							.executes(ctx -> {
 								ServerPlayer admin = ctx.getSource().getPlayerOrException();
 								ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
 								PartyApiSystem.openPartyGuiForPartyOf(admin, target);
-								ctx.getSource().sendSuccess(() -> Component.literal("Opened party GUI for " + target.getGameProfile().getName() + "'s party"), false);
-								return 1;
-							})
-						)
-					)
-					.then(Commands.literal("info")
-						.then(Commands.argument("player", EntityArgument.player())
-							.executes(ctx -> {
-								ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
-								int size = PartyApiSystem.getPartySize(target);
-								int online = PartyApiSystem.getOnlinePartySize(target);
-								int limit = PartyApiSystem.getPartyMaxMembers(target);
-								ctx.getSource().sendSuccess(() -> Component.literal("Target party: " + size + "/" + limit + " members, online: " + online + ", system: " + (PartyApiSystem.isPartySystemEnabled() ? "enabled" : "disabled")), false);
 								return 1;
 							})
 						)
@@ -332,7 +299,7 @@ public final class PartyApiCommands {
 									ServerPlayer partyMember = EntityArgument.getPlayer(ctx, "party_member");
 									ServerPlayer target = EntityArgument.getPlayer(ctx, "target");
 									boolean ok = PartyApiSystem.adminAddPlayerToParty(partyMember, target, false);
-									ctx.getSource().sendSuccess(() -> Component.literal(ok ? "Player added to target party" : "Could not add player: target may already be in party or party is full"), false);
+									ctx.getSource().sendSuccess(() -> Component.literal(ok ? "Player added to target party" : "Could not add player"), false);
 									return ok ? 1 : 0;
 								})
 							)
@@ -345,7 +312,7 @@ public final class PartyApiCommands {
 									ServerPlayer partyMember = EntityArgument.getPlayer(ctx, "party_member");
 									ServerPlayer target = EntityArgument.getPlayer(ctx, "target");
 									boolean ok = PartyApiSystem.adminAddPlayerToParty(partyMember, target, true);
-									ctx.getSource().sendSuccess(() -> Component.literal(ok ? "Player force-added to target party" : "Could not force-add player: target may already be in party"), false);
+									ctx.getSource().sendSuccess(() -> Component.literal(ok ? "Player force-added to target party" : "Could not force-add player"), false);
 									return ok ? 1 : 0;
 								})
 							)

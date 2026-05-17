@@ -2,9 +2,9 @@
   "type": "weight_is_enabled",
   "message0": "is weight system enabled",
   "args0": [],
-  "inputsInline": false,
+  "inputsInline": true,
   "colour": 35,
-  "tooltip": "Returns weight config enabled.",
+  "tooltip": "Weight config block.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "weight_tools",

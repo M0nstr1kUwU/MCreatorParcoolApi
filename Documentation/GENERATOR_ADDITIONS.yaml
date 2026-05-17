@@ -1,5 +1,17 @@
   - template: party_api_server_config.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiServerConfig.java"
 
+  - template: party_api_system.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiSystem.java"
+
+  - template: party_api_network.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/network/PartyApiNetwork.java"
+
+  - template: party_api_client.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/client/PartyApiClient.java"
+
+  - template: party_api_commands.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiCommands.java"
+
   - template: parcool_api_weight_config.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/weight/ParCoolApiWeightConfig.java"

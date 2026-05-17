@@ -20,7 +20,7 @@
   ],
   "inputsInline": false,
   "colour": 260,
-  "tooltip": "Sets absolute overlay x/y for this player.",
+  "tooltip": "Party GUI / overlay helper block.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "party_tools",

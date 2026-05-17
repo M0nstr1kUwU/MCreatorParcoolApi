@@ -15,7 +15,7 @@
   ],
   "inputsInline": false,
   "colour": 260,
-  "tooltip": "Sets whether player sees self in own party overlay.",
+  "tooltip": "Party GUI / overlay helper block.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "party_tools",

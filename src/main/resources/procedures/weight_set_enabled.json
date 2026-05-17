@@ -8,9 +8,9 @@
       "check": "Boolean"
     }
   ],
-  "inputsInline": false,
+  "inputsInline": true,
   "colour": 35,
-  "tooltip": "Enables/disables weight system config.",
+  "tooltip": "Weight config block.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "weight_tools",

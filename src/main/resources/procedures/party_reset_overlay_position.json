@@ -10,7 +10,7 @@
   ],
   "inputsInline": false,
   "colour": 260,
-  "tooltip": "Resets overlay to server config defaults.",
+  "tooltip": "Party GUI / overlay helper block.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "party_tools",

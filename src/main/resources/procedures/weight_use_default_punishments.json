@@ -8,9 +8,9 @@
       "check": "Boolean"
     }
   ],
-  "inputsInline": false,
+  "inputsInline": true,
   "colour": 35,
-  "tooltip": "If false, default punishments are disabled.",
+  "tooltip": "Weight config block.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "weight_tools",

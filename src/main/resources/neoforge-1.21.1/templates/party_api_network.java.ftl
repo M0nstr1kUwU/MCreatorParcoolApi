@@ -19,7 +19,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 @EventBusSubscriber(modid = "${modid}", bus = EventBusSubscriber.Bus.MOD)
 public final class PartyApiNetwork {
-	private static final String NETWORK_VERSION = "1";
+	private static final String NETWORK_VERSION = "2";
 
 	private PartyApiNetwork() {
 	}
@@ -31,16 +31,17 @@ public final class PartyApiNetwork {
 		registrar.playToClient(SyncPartyPayload.TYPE, SyncPartyPayload.STREAM_CODEC, SyncPartyPayload::handleClient);
 		registrar.playToClient(OpenPartyScreenPayload.TYPE, OpenPartyScreenPayload.STREAM_CODEC, OpenPartyScreenPayload::handleClient);
 		registrar.playToClient(OpenPartyInvitePayload.TYPE, OpenPartyInvitePayload.STREAM_CODEC, OpenPartyInvitePayload::handleClient);
+		registrar.playToClient(OnlinePlayerListPayload.TYPE, OnlinePlayerListPayload.STREAM_CODEC, OnlinePlayerListPayload::handleClient);
 		registrar.playToServer(PartyActionPayload.TYPE, PartyActionPayload.STREAM_CODEC, PartyActionPayload::handleServer);
 	}
 
-	public static void syncParty(ServerPlayer player, String partyId, String leaderId, boolean pvpEnabled, String overlayPosition, List<MemberSyncData> members) {
+	public static void syncParty(ServerPlayer player, String partyId, String leaderId, boolean pvpEnabled, String overlayPosition, int overlayX, int overlayY, int nicknameScalePercent, boolean showSelf, boolean admin, List<MemberSyncData> members, List<OverlayElementPositionSyncData> elementPositions, List<CustomOverlayEntrySyncData> customEntries) {
 		if (player == null) {
 			return;
 		}
 
 		try {
-			PacketDistributor.sendToPlayer(player, new SyncPartyPayload(partyId, leaderId, pvpEnabled, overlayPosition, members));
+			PacketDistributor.sendToPlayer(player, new SyncPartyPayload(partyId, leaderId, pvpEnabled, overlayPosition, overlayX, overlayY, nicknameScalePercent, showSelf, admin, members, elementPositions, customEntries));
 		} catch (Throwable ignored) {
 		}
 	}
@@ -51,18 +52,22 @@ public final class PartyApiNetwork {
 		}
 
 		try {
-			PacketDistributor.sendToPlayer(player, new SyncPartyPayload("", "", false, "LEFT_CENTER", List.of()));
+			PacketDistributor.sendToPlayer(player, new SyncPartyPayload("", "", false, "CUSTOM", 8, 74, 80, false, false, List.of(), List.of(), List.of()));
 		} catch (Throwable ignored) {
 		}
 	}
 
 	public static void openPartyScreen(ServerPlayer player) {
+		openPartyScreen(player, "MAIN");
+	}
+
+	public static void openPartyScreen(ServerPlayer player, String screen) {
 		if (player == null) {
 			return;
 		}
 
 		try {
-			PacketDistributor.sendToPlayer(player, OpenPartyScreenPayload.INSTANCE);
+			PacketDistributor.sendToPlayer(player, new OpenPartyScreenPayload(screen == null ? "MAIN" : screen));
 		} catch (Throwable ignored) {
 		}
 	}
@@ -78,29 +83,25 @@ public final class PartyApiNetwork {
 		}
 	}
 
-	public static void sendClientAction(String action, String targetId, String value) {
+	public static void sendOnlinePlayerList(ServerPlayer player, List<OnlinePlayerSyncData> players) {
+		if (player == null) {
+			return;
+		}
+
 		try {
-			PacketDistributor.sendToServer(new PartyActionPayload(
-				action == null ? "" : action,
-				targetId == null ? "" : targetId,
-				value == null ? "" : value
-			));
+			PacketDistributor.sendToPlayer(player, new OnlinePlayerListPayload(players == null ? List.of() : players));
 		} catch (Throwable ignored) {
 		}
 	}
 
-	public record MemberSyncData(
-		String uuid,
-		String name,
-		float health,
-		float maxHealth,
-		float absorption,
-		int food,
-		float saturation,
-		boolean leader,
-		boolean pinned,
-		Map<String, String> stats
-	) {
+	public static void sendClientAction(String action, String targetId, String value) {
+		try {
+			PacketDistributor.sendToServer(new PartyActionPayload(action == null ? "" : action, targetId == null ? "" : targetId, value == null ? "" : value));
+		} catch (Throwable ignored) {
+		}
+	}
+
+	public record MemberSyncData(String uuid, String name, float health, float maxHealth, float absorption, int food, float saturation, boolean leader, boolean pinned, Map<String, String> stats) {
 		public MemberSyncData {
 			uuid = uuid == null ? "" : uuid;
 			name = name == null ? "" : name;
@@ -113,15 +114,48 @@ public final class PartyApiNetwork {
 		}
 	}
 
+	public record OverlayElementPositionSyncData(String id, int x, int y) {
+		public OverlayElementPositionSyncData {
+			id = id == null ? "" : id;
+		}
+	}
+
+	public record CustomOverlayEntrySyncData(String id, String type, String label, String value, String max, int x, int y, int width, int height, String texture) {
+		public CustomOverlayEntrySyncData {
+			id = id == null ? "" : id;
+			type = type == null ? "VALUE" : type;
+			label = label == null ? "" : label;
+			value = value == null ? "" : value;
+			max = max == null ? "" : max;
+			width = Math.max(1, width);
+			height = Math.max(1, height);
+			texture = texture == null ? "" : texture;
+		}
+	}
+
+	public record OnlinePlayerSyncData(String uuid, String name, boolean inMyParty, boolean pendingInvite) {
+		public OnlinePlayerSyncData {
+			uuid = uuid == null ? "" : uuid;
+			name = name == null ? "" : name;
+		}
+	}
+
 	public record SyncPartyPayload(
 		String partyId,
 		String leaderId,
 		boolean pvpEnabled,
 		String overlayPosition,
-		List<MemberSyncData> members
+		int overlayX,
+		int overlayY,
+		int nicknameScalePercent,
+		boolean showSelf,
+		boolean admin,
+		List<MemberSyncData> members,
+		List<OverlayElementPositionSyncData> elementPositions,
+		List<CustomOverlayEntrySyncData> customEntries
 	) implements CustomPacketPayload {
 		public static final CustomPacketPayload.Type<SyncPartyPayload> TYPE =
-			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_sync"));
+			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_sync_v2"));
 
 		public static final net.minecraft.network.codec.StreamCodec<RegistryFriendlyByteBuf, SyncPartyPayload> STREAM_CODEC =
 			new net.minecraft.network.codec.StreamCodec<>() {
@@ -131,6 +165,11 @@ public final class PartyApiNetwork {
 					String leaderId = buffer.readUtf();
 					boolean pvp = buffer.readBoolean();
 					String position = buffer.readUtf();
+					int x = buffer.readInt();
+					int y = buffer.readInt();
+					int nicknameScale = buffer.readInt();
+					boolean showSelf = buffer.readBoolean();
+					boolean admin = buffer.readBoolean();
 
 					int memberCount = Math.max(0, buffer.readInt());
 					List<MemberSyncData> members = new ArrayList<>();
@@ -138,13 +177,11 @@ public final class PartyApiNetwork {
 					for (int i = 0; i < memberCount; i++) {
 						String uuid = buffer.readUtf();
 						String name = buffer.readUtf();
-
 						float health = buffer.readFloat();
 						float maxHealth = buffer.readFloat();
 						float absorption = buffer.readFloat();
 						int food = buffer.readInt();
 						float saturation = buffer.readFloat();
-
 						boolean leader = buffer.readBoolean();
 						boolean pinned = buffer.readBoolean();
 
@@ -158,7 +195,24 @@ public final class PartyApiNetwork {
 						members.add(new MemberSyncData(uuid, name, health, maxHealth, absorption, food, saturation, leader, pinned, stats));
 					}
 
-					return new SyncPartyPayload(partyId, leaderId, pvp, position, members);
+					int elementCount = Math.max(0, buffer.readInt());
+					List<OverlayElementPositionSyncData> elementPositions = new ArrayList<>();
+
+					for (int i = 0; i < elementCount; i++) {
+						elementPositions.add(new OverlayElementPositionSyncData(buffer.readUtf(), buffer.readInt(), buffer.readInt()));
+					}
+
+					int customCount = Math.max(0, buffer.readInt());
+					List<CustomOverlayEntrySyncData> customEntries = new ArrayList<>();
+
+					for (int i = 0; i < customCount; i++) {
+						customEntries.add(new CustomOverlayEntrySyncData(
+							buffer.readUtf(), buffer.readUtf(), buffer.readUtf(), buffer.readUtf(), buffer.readUtf(),
+							buffer.readInt(), buffer.readInt(), buffer.readInt(), buffer.readInt(), buffer.readUtf()
+						));
+					}
+
+					return new SyncPartyPayload(partyId, leaderId, pvp, position, x, y, nicknameScale, showSelf, admin, members, elementPositions, customEntries);
 				}
 
 				@Override
@@ -166,33 +220,57 @@ public final class PartyApiNetwork {
 					buffer.writeUtf(payload.partyId() == null ? "" : payload.partyId());
 					buffer.writeUtf(payload.leaderId() == null ? "" : payload.leaderId());
 					buffer.writeBoolean(payload.pvpEnabled());
-					buffer.writeUtf(payload.overlayPosition() == null ? "LEFT_CENTER" : payload.overlayPosition());
+					buffer.writeUtf(payload.overlayPosition() == null ? "CUSTOM" : payload.overlayPosition());
+					buffer.writeInt(payload.overlayX());
+					buffer.writeInt(payload.overlayY());
+					buffer.writeInt(payload.nicknameScalePercent());
+					buffer.writeBoolean(payload.showSelf());
+					buffer.writeBoolean(payload.admin());
 
 					List<MemberSyncData> members = payload.members() == null ? List.of() : payload.members();
-
 					buffer.writeInt(members.size());
 
 					for (MemberSyncData member : members) {
 						buffer.writeUtf(member.uuid());
 						buffer.writeUtf(member.name());
-
 						buffer.writeFloat(member.health());
 						buffer.writeFloat(member.maxHealth());
 						buffer.writeFloat(member.absorption());
 						buffer.writeInt(member.food());
 						buffer.writeFloat(member.saturation());
-
 						buffer.writeBoolean(member.leader());
 						buffer.writeBoolean(member.pinned());
 
 						Map<String, String> stats = member.stats() == null ? Map.of() : member.stats();
-
 						buffer.writeInt(stats.size());
 
 						for (Map.Entry<String, String> stat : stats.entrySet()) {
 							buffer.writeUtf(stat.getKey() == null ? "" : stat.getKey());
 							buffer.writeUtf(stat.getValue() == null ? "" : stat.getValue());
 						}
+					}
+
+					List<OverlayElementPositionSyncData> positions = payload.elementPositions() == null ? List.of() : payload.elementPositions();
+					buffer.writeInt(positions.size());
+					for (OverlayElementPositionSyncData pos : positions) {
+						buffer.writeUtf(pos.id());
+						buffer.writeInt(pos.x());
+						buffer.writeInt(pos.y());
+					}
+
+					List<CustomOverlayEntrySyncData> entries = payload.customEntries() == null ? List.of() : payload.customEntries();
+					buffer.writeInt(entries.size());
+					for (CustomOverlayEntrySyncData entry : entries) {
+						buffer.writeUtf(entry.id());
+						buffer.writeUtf(entry.type());
+						buffer.writeUtf(entry.label());
+						buffer.writeUtf(entry.value());
+						buffer.writeUtf(entry.max());
+						buffer.writeInt(entry.x());
+						buffer.writeInt(entry.y());
+						buffer.writeInt(entry.width());
+						buffer.writeInt(entry.height());
+						buffer.writeUtf(entry.texture());
 					}
 				}
 			};
@@ -207,14 +285,22 @@ public final class PartyApiNetwork {
 		}
 	}
 
-	public enum OpenPartyScreenPayload implements CustomPacketPayload {
-		INSTANCE;
-
+	public record OpenPartyScreenPayload(String screen) implements CustomPacketPayload {
 		public static final CustomPacketPayload.Type<OpenPartyScreenPayload> TYPE =
-			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_open_screen"));
+			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_open_screen_v2"));
 
 		public static final net.minecraft.network.codec.StreamCodec<RegistryFriendlyByteBuf, OpenPartyScreenPayload> STREAM_CODEC =
-			net.minecraft.network.codec.StreamCodec.unit(INSTANCE);
+			new net.minecraft.network.codec.StreamCodec<>() {
+				@Override
+				public OpenPartyScreenPayload decode(RegistryFriendlyByteBuf buffer) {
+					return new OpenPartyScreenPayload(buffer.readUtf());
+				}
+
+				@Override
+				public void encode(RegistryFriendlyByteBuf buffer, OpenPartyScreenPayload payload) {
+					buffer.writeUtf(payload.screen() == null ? "MAIN" : payload.screen());
+				}
+			};
 
 		@Override
 		public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
@@ -222,7 +308,7 @@ public final class PartyApiNetwork {
 		}
 
 		private static void handleClient(OpenPartyScreenPayload payload, IPayloadContext context) {
-			context.enqueueWork(${package}.client.PartyApiClient::openPartyScreen);
+			context.enqueueWork(() -> ${package}.client.PartyApiClient.openPartyScreen(payload.screen()));
 		}
 	}
 
@@ -250,6 +336,48 @@ public final class PartyApiNetwork {
 
 		private static void handleClient(OpenPartyInvitePayload payload, IPayloadContext context) {
 			context.enqueueWork(() -> ${package}.client.PartyApiClient.openPartyInviteScreen(payload.inviterName()));
+		}
+	}
+
+	public record OnlinePlayerListPayload(List<OnlinePlayerSyncData> players) implements CustomPacketPayload {
+		public static final CustomPacketPayload.Type<OnlinePlayerListPayload> TYPE =
+			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_online_players"));
+
+		public static final net.minecraft.network.codec.StreamCodec<RegistryFriendlyByteBuf, OnlinePlayerListPayload> STREAM_CODEC =
+			new net.minecraft.network.codec.StreamCodec<>() {
+				@Override
+				public OnlinePlayerListPayload decode(RegistryFriendlyByteBuf buffer) {
+					int count = Math.max(0, buffer.readInt());
+					List<OnlinePlayerSyncData> players = new ArrayList<>();
+
+					for (int i = 0; i < count; i++) {
+						players.add(new OnlinePlayerSyncData(buffer.readUtf(), buffer.readUtf(), buffer.readBoolean(), buffer.readBoolean()));
+					}
+
+					return new OnlinePlayerListPayload(players);
+				}
+
+				@Override
+				public void encode(RegistryFriendlyByteBuf buffer, OnlinePlayerListPayload payload) {
+					List<OnlinePlayerSyncData> players = payload.players() == null ? List.of() : payload.players();
+					buffer.writeInt(players.size());
+
+					for (OnlinePlayerSyncData player : players) {
+						buffer.writeUtf(player.uuid());
+						buffer.writeUtf(player.name());
+						buffer.writeBoolean(player.inMyParty());
+						buffer.writeBoolean(player.pendingInvite());
+					}
+				}
+			};
+
+		@Override
+		public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
+
+		private static void handleClient(OnlinePlayerListPayload payload, IPayloadContext context) {
+			context.enqueueWork(() -> ${package}.client.PartyApiClient.acceptOnlinePlayers(payload.players()));
 		}
 	}
 
