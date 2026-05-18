@@ -611,9 +611,6 @@ public final class PartyApiClient {
 				}
 
 				renderSmallBar(graphics, barX, y + 24, barW, 4, foodRatio, 0xFF2B1B0B, 0xFFC9823A);
-
-				graphics.drawString(this.font, Math.round(member.health()) + "/" + Math.round(member.maxHealth()), barX + barW + 6, y + 14, 0xFFCCCCCC, false);
-				graphics.drawString(this.font, member.food() + "/20", barX + barW + 6, y + 23, 0xFFCCCCCC, false);
 			}
 
 			renderScrollBar(graphics, x + rowWidth + 6, startY, Math.max(24, this.height - startY - 30), MEMBERS.size(), Math.max(1, (this.height - startY - 30) / rowHeight), scroll);
@@ -687,7 +684,7 @@ public final class PartyApiClient {
 		public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 			drawScreenBackground(graphics, GUI_INVITE_BACKGROUND, this.width, this.height);
 			drawTexture(graphics, GUI_SEARCH, 16, 38, 180, 20, 180, 20);
-			graphics.drawCenteredString(this.font, "Invite Players", this.width / 2, 20, 0xFFFFFFFF);
+			graphics.drawCenteredString(this.font, "Invite Players", (this.width / 2) + 50, 20, 0xFFFFFFFF);
 
 			String filter = search == null ? "" : search.getValue().toLowerCase(Locale.ROOT);
 			int row = 0;
@@ -735,7 +732,7 @@ public final class PartyApiClient {
 		@Override
 		public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 			drawScreenBackground(graphics, GUI_SETTINGS_BACKGROUND, this.width, this.height);
-			graphics.drawCenteredString(this.font, "Party Settings", this.width / 2, 20, 0xFFFFFFFF);
+			graphics.drawCenteredString(this.font, "Party Settings", (this.width / 2) + 50, 20, 0xFFFFFFFF);
 			graphics.drawString(this.font, "Show self: " + showSelf, 20, 136, 0xFFFFFFFF, false);
 			graphics.drawString(this.font, "Overlay: x=" + overlayX + " y=" + overlayY, 20, 150, 0xFFFFFFFF, false);
 			renderRenderables(graphics, mouseX, mouseY, partialTick);
@@ -849,7 +846,7 @@ public final class PartyApiClient {
 		public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 			drawScreenBackground(graphics, GUI_ADMIN_BACKGROUND, this.width, this.height);
 			drawTexture(graphics, GUI_SEARCH, 16, 62, 200, 20, 200, 20);
-			graphics.drawCenteredString(this.font, "Party Admin", this.width / 2, 20, 0xFFFFFFFF);
+			graphics.drawCenteredString(this.font, "Party Admin", (this.width / 2) + 50, 20, 0xFFFFFFFF);
 
 			List<${package}.network.PartyApiNetwork.OnlinePlayerSyncData> rows = filteredAdminPlayers();
 			String lastPartyId = null;
@@ -943,7 +940,7 @@ public final class PartyApiClient {
 				graphics.fill(boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xCC000000);
 			}
 
-			graphics.drawCenteredString(this.font, "Party Invite", this.width / 2, boxY + 10, 0xFFFFFFFF);
+			graphics.drawCenteredString(this.font, "Party Invite", (this.width / 2) + 50, boxY + 10, 0xFFFFFFFF);
 			graphics.drawCenteredString(this.font, inviterName + " invited you to a party", this.width / 2, boxY + 30, 0xFFDCDCDC);
 
 			for (Renderable renderable : this.renderables) {
