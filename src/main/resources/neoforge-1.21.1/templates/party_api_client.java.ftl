@@ -2,7 +2,6 @@ package ${package}.client;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -11,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -39,17 +39,38 @@ public final class PartyApiClient {
 
 	private static final Map<ResourceLocation, Boolean> TEXTURE_EXISTS_CACHE = new HashMap<>();
 
+	// Overlay assets.
 	private static final ResourceLocation OVERLAY_MEMBER_FRAME = partyTexture("overlay_member_frame.png");
+	private static final ResourceLocation OVERLAY_MEMBER_FRAME_LEADER = partyTexture("overlay_member_frame_leader.png");
 	private static final ResourceLocation OVERLAY_HP_EMPTY = partyTexture("overlay_hp_empty.png");
 	private static final ResourceLocation OVERLAY_HP_FULL = partyTexture("overlay_hp_full.png");
 	private static final ResourceLocation OVERLAY_ABSORPTION = partyTexture("overlay_absorption.png");
 	private static final ResourceLocation OVERLAY_FOOD_EMPTY = partyTexture("overlay_food_empty.png");
 	private static final ResourceLocation OVERLAY_FOOD_FULL = partyTexture("overlay_food_full.png");
+	private static final ResourceLocation OVERLAY_CUSTOM_BAR_EMPTY = partyTexture("overlay_custom_bar_empty.png");
+	private static final ResourceLocation OVERLAY_CUSTOM_BAR_FULL = partyTexture("overlay_custom_bar_full.png");
+	private static final ResourceLocation OVERLAY_VALUE_FRAME = partyTexture("overlay_value_frame.png");
 
+	// Screen backgrounds.
 	private static final ResourceLocation GUI_BACKGROUND = partyTexture("gui_background.png");
+	private static final ResourceLocation GUI_MAIN_BACKGROUND = partyTexture("gui_main_background.png");
+	private static final ResourceLocation GUI_INVITE_BACKGROUND = partyTexture("gui_invite_background.png");
+	private static final ResourceLocation GUI_SETTINGS_BACKGROUND = partyTexture("gui_settings_background.png");
+	private static final ResourceLocation GUI_ADMIN_BACKGROUND = partyTexture("gui_admin_background.png");
+	private static final ResourceLocation GUI_INVITE_POPUP_BACKGROUND = partyTexture("gui_invite_popup_background.png");
+
+	// Rows / fields.
 	private static final ResourceLocation GUI_MEMBER_FRAME = partyTexture("gui_member_frame.png");
+	private static final ResourceLocation GUI_ONLINE_PLAYER_ROW = partyTexture("gui_online_player_row.png");
+	private static final ResourceLocation GUI_ADMIN_PLAYER_ROW = partyTexture("gui_admin_player_row.png");
+	private static final ResourceLocation GUI_SEARCH = partyTexture("gui_search.png");
+	private static final ResourceLocation GUI_SCROLLBAR_TRACK = partyTexture("gui_scrollbar_track.png");
+	private static final ResourceLocation GUI_SCROLLBAR_THUMB = partyTexture("gui_scrollbar_thumb.png");
+
+	// Generic buttons.
 	private static final ResourceLocation GUI_BUTTON = partyTexture("gui_button.png");
 	private static final ResourceLocation GUI_BUTTON_HOVER = partyTexture("gui_button_hover.png");
+	private static final ResourceLocation GUI_BUTTON_DISABLED = partyTexture("gui_button_disabled.png");
 
 	private PartyApiClient() {
 	}
@@ -121,6 +142,18 @@ public final class PartyApiClient {
 		return ResourceLocation.fromNamespaceAndPath("${modid}", "textures/gui/party/" + fileName);
 	}
 
+	private static ResourceLocation buttonTexture(String id) {
+		return partyTexture("button_" + id + ".png");
+	}
+
+	private static ResourceLocation buttonHoverTexture(String id) {
+		return partyTexture("button_" + id + "_hover.png");
+	}
+
+	private static ResourceLocation buttonDisabledTexture(String id) {
+		return partyTexture("button_" + id + "_disabled.png");
+	}
+
 	private static boolean textureExists(ResourceLocation location) {
 		try {
 			if (TEXTURE_EXISTS_CACHE.containsKey(location)) {
@@ -164,6 +197,37 @@ public final class PartyApiClient {
 		}
 	}
 
+	private static boolean drawScreenBackground(GuiGraphics graphics, ResourceLocation specificTexture, int screenWidth, int screenHeight) {
+		// Background textures are authored as 320x180 and stretched to the current scaled GUI size.
+		// This keeps one predictable asset size while still supporting different screen resolutions.
+		if (drawTexture(graphics, specificTexture, 0, 0, screenWidth, screenHeight, 320, 180)) {
+			return true;
+		}
+
+		if (drawTexture(graphics, GUI_BACKGROUND, 0, 0, screenWidth, screenHeight, 320, 180)) {
+			return true;
+		}
+
+		graphics.fill(0, 0, screenWidth, screenHeight, 0xAA050507);
+		return false;
+	}
+
+	private static boolean drawButtonTexture(GuiGraphics graphics, ResourceLocation texture, int x, int y, int width, int height) {
+		return drawTexture(graphics, texture, x, y, width, height, width, height);
+	}
+
+	private static float parseFloat(String value, float fallback) {
+		try {
+			return Float.parseFloat(value);
+		} catch (Throwable ignored) {
+			return fallback;
+		}
+	}
+
+	private static int clampWidthByRatio(int width, float ratio) {
+		return Math.max(0, Math.min(width, Math.round(width * Math.max(0.0F, Math.min(1.0F, ratio)))));
+	}
+
 	private static void renderOverlay(GuiGraphics graphics) {
 		Minecraft minecraft = Minecraft.getInstance();
 
@@ -195,7 +259,8 @@ public final class PartyApiClient {
 	}
 
 	private static void renderOverlayMember(GuiGraphics graphics, Minecraft minecraft, ${package}.network.PartyApiNetwork.MemberSyncData member, int x, int y, int width) {
-		boolean customFrame = drawTexture(graphics, OVERLAY_MEMBER_FRAME, x, y, width, 19, 96, 19);
+		ResourceLocation frame = member.leader() && textureExists(OVERLAY_MEMBER_FRAME_LEADER) ? OVERLAY_MEMBER_FRAME_LEADER : OVERLAY_MEMBER_FRAME;
+		boolean customFrame = drawTexture(graphics, frame, x, y, width, 19, 96, 19);
 
 		if (!customFrame) {
 			int background = 0x78000000;
@@ -230,16 +295,16 @@ public final class PartyApiClient {
 
 		int barX = x + 4;
 		int hpY = y + 11;
-		int foodY = y + 15; // restored: not pressed directly into HP bar
+		int foodY = y + 15;
 		int barWidth = width - 8;
 
 		float hpRatio = member.maxHealth() <= 0 ? 0.0F : Math.max(0.0F, Math.min(1.0F, member.health() / member.maxHealth()));
 		float absorptionRatio = member.maxHealth() <= 0 ? 0.0F : Math.max(0.0F, Math.min(1.0F, member.absorption() / member.maxHealth()));
 		float foodRatio = Math.max(0.0F, Math.min(1.0F, member.food() / 20.0F));
 
-		int hpWidth = (int) (barWidth * hpRatio);
-		int absorptionWidth = (int) (barWidth * absorptionRatio);
-		int foodWidth = (int) (barWidth * foodRatio);
+		int hpWidth = clampWidthByRatio(barWidth, hpRatio);
+		int absorptionWidth = clampWidthByRatio(barWidth, absorptionRatio);
+		int foodWidth = clampWidthByRatio(barWidth, foodRatio);
 
 		if (!drawTexture(graphics, OVERLAY_HP_EMPTY, barX, hpY, barWidth, 3, 88, 3)) {
 			graphics.fill(barX, hpY, barX + barWidth, hpY + 3, 0xFF321010);
@@ -274,26 +339,111 @@ public final class PartyApiClient {
 			float max = Math.max(1.0F, parseFloat(entry.max(), 1.0F));
 			int w = entry.width();
 			int h = entry.height();
+			int fill = clampWidthByRatio(w, current / max);
 
-			graphics.fill(x, y, x + w, y + h, 0xAA222222);
-			graphics.fill(x, y, x + Math.max(0, Math.min(w, Math.round(w * (current / max)))), y + h, 0xFF55AAFF);
+			if (!drawTexture(graphics, OVERLAY_CUSTOM_BAR_EMPTY, x, y, w, h, w, h)) {
+				graphics.fill(x, y, x + w, y + h, 0xAA222222);
+			}
+
+			if (!drawTexturePart(graphics, OVERLAY_CUSTOM_BAR_FULL, x, y, fill, h, w, h)) {
+				graphics.fill(x, y, x + fill, y + h, 0xFF55AAFF);
+			}
+
 			graphics.drawString(minecraft.font, entry.label(), x, y - 9, 0xFFFFFFFF, false);
 		} else {
+			int textWidth = minecraft.font.width(entry.label() + ": " + entry.value());
+			drawTexture(graphics, OVERLAY_VALUE_FRAME, x - 2, y - 2, Math.max(entry.width(), textWidth + 4), Math.max(entry.height(), 12), Math.max(entry.width(), textWidth + 4), Math.max(entry.height(), 12));
 			graphics.drawString(minecraft.font, entry.label() + ": " + entry.value(), x, y, 0xFFFFFFFF, false);
 		}
 	}
 
+
+	private static void renderScrollBar(GuiGraphics graphics, int x, int y, int height, int totalRows, int visibleRows, int scroll) {
+		if (totalRows <= visibleRows || height <= 0) {
+			return;
+		}
+
+		if (!drawTexture(graphics, GUI_SCROLLBAR_TRACK, x, y, 6, height, 6, 120)) {
+			graphics.fill(x, y, x + 6, y + height, 0x66000000);
+		}
+
+		int thumbHeight = Math.max(12, Math.min(height, Math.round(height * (visibleRows / (float) totalRows))));
+		int maxScroll = Math.max(1, totalRows - visibleRows);
+		int thumbY = y + Math.round((height - thumbHeight) * (Math.max(0, Math.min(maxScroll, scroll)) / (float) maxScroll));
+
+		if (!drawTexture(graphics, GUI_SCROLLBAR_THUMB, x, thumbY, 6, thumbHeight, 6, 20)) {
+			graphics.fill(x, thumbY, x + 6, thumbY + thumbHeight, 0xFFAAAAAA);
+		}
+	}
+
 	private static void renderSmallBar(GuiGraphics graphics, int x, int y, int width, int height, float ratio, int emptyColor, int fillColor) {
-		int w = Math.max(0, Math.min(width, Math.round(width * ratio)));
+		int w = clampWidthByRatio(width, ratio);
 		graphics.fill(x, y, x + width, y + height, emptyColor);
 		graphics.fill(x, y, x + w, y + height, fillColor);
 	}
 
-	private static float parseFloat(String value, float fallback) {
-		try {
-			return Float.parseFloat(value);
-		} catch (Throwable ignored) {
-			return fallback;
+	private static Button apiButton(String id, String text, int x, int y, int width, int height, Button.OnPress onPress) {
+		return apiButton(id, text, x, y, width, height, onPress, true);
+	}
+
+	private static Button apiButton(String id, String text, int x, int y, int width, int height, Button.OnPress onPress, boolean active) {
+		TexturedButton button = new TexturedButton(
+			x, y, width, height,
+			Component.literal(text),
+			onPress,
+			buttonTexture(id),
+			buttonHoverTexture(id),
+			buttonDisabledTexture(id)
+		);
+		button.active = active;
+		return button;
+	}
+
+	private static final class TexturedButton extends Button {
+		private final ResourceLocation normalTexture;
+		private final ResourceLocation hoverTexture;
+		private final ResourceLocation disabledTexture;
+
+		private TexturedButton(int x, int y, int width, int height, Component message, Button.OnPress onPress, ResourceLocation normalTexture, ResourceLocation hoverTexture, ResourceLocation disabledTexture) {
+			super(x, y, width, height, message, onPress, DEFAULT_NARRATION);
+			this.normalTexture = normalTexture;
+			this.hoverTexture = hoverTexture;
+			this.disabledTexture = disabledTexture;
+		}
+
+		@Override
+		protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+			ResourceLocation selected = this.active
+				? (this.isHovered() && textureExists(this.hoverTexture) ? this.hoverTexture : this.normalTexture)
+				: (textureExists(this.disabledTexture) ? this.disabledTexture : this.normalTexture);
+
+			boolean drawn = drawButtonTexture(graphics, selected, this.getX(), this.getY(), this.width, this.height);
+
+			if (!drawn) {
+				ResourceLocation generic = this.active
+					? (this.isHovered() && textureExists(GUI_BUTTON_HOVER) ? GUI_BUTTON_HOVER : GUI_BUTTON)
+					: (textureExists(GUI_BUTTON_DISABLED) ? GUI_BUTTON_DISABLED : GUI_BUTTON);
+
+				drawn = drawButtonTexture(graphics, generic, this.getX(), this.getY(), this.width, this.height);
+			}
+
+			if (!drawn) {
+				super.renderWidget(graphics, mouseX, mouseY, partialTick);
+				return;
+			}
+
+			Minecraft minecraft = Minecraft.getInstance();
+			int color = this.active ? (this.isHovered() ? 0xFFFFFFA0 : 0xFFFFFFFF) : 0xFF888888;
+
+			if (minecraft != null) {
+				graphics.drawCenteredString(
+					minecraft.font,
+					this.getMessage(),
+					this.getX() + this.width / 2,
+					this.getY() + (this.height - 8) / 2,
+					color
+				);
+			}
 		}
 	}
 
@@ -309,16 +459,23 @@ public final class PartyApiClient {
 
 		@Override
 		public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-			graphics.fill(0, 0, this.width, this.height, 0x22000000);
+			// Intentionally empty: every party screen draws its own texture-aware background
+			// before widgets, so row textures stay behind buttons.
+		}
+
+		protected void renderRenderables(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+			for (Renderable renderable : this.renderables) {
+				renderable.render(graphics, mouseX, mouseY, partialTick);
+			}
 		}
 
 		protected void drawTopButtons() {
-			addRenderableWidget(Button.builder(Component.literal("Main"), b -> ${package}.network.PartyApiNetwork.sendClientAction("open_main", "", "")).bounds(8, 8, 54, 20).build());
-			addRenderableWidget(Button.builder(Component.literal("Invite"), b -> ${package}.network.PartyApiNetwork.sendClientAction("open_invite", "", "")).bounds(66, 8, 58, 20).build());
-			addRenderableWidget(Button.builder(Component.literal("Settings"), b -> ${package}.network.PartyApiNetwork.sendClientAction("open_settings", "", "")).bounds(128, 8, 72, 20).build());
+			addRenderableWidget(apiButton("tab_main", "Main", 8, 8, 54, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("open_main", "", "")));
+			addRenderableWidget(apiButton("tab_invite", "Invite", 66, 8, 58, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("open_invite", "", "")));
+			addRenderableWidget(apiButton("tab_settings", "Settings", 128, 8, 72, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("open_settings", "", "")));
 
 			if (isAdmin) {
-				addRenderableWidget(Button.builder(Component.literal("Admin"), b -> ${package}.network.PartyApiNetwork.sendClientAction("open_admin", "", "")).bounds(204, 8, 58, 20).build());
+				addRenderableWidget(apiButton("tab_admin", "Admin", 204, 8, 58, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("open_admin", "", "")));
 			}
 		}
 	}
@@ -350,8 +507,8 @@ public final class PartyApiClient {
 				int pinX = x + rowWidth - 104;
 				int kickX = x + rowWidth - 52;
 
-				addRenderableWidget(Button.builder(Component.literal(member.pinned() ? "Unpin" : "Pin"), b -> ${package}.network.PartyApiNetwork.sendClientAction(member.pinned() ? "unpin" : "pin", member.uuid(), "")).bounds(pinX, y + 8, 48, 18).build());
-				addRenderableWidget(Button.builder(Component.literal("Kick"), b -> ${package}.network.PartyApiNetwork.sendClientAction("kick", member.uuid(), "")).bounds(kickX, y + 8, 48, 18).build());
+				addRenderableWidget(apiButton(member.pinned() ? "unpin" : "pin", member.pinned() ? "Unpin" : "Pin", pinX, y + 8, 48, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction(member.pinned() ? "unpin" : "pin", member.uuid(), "")));
+				addRenderableWidget(apiButton("kick", "Kick", kickX, y + 8, 48, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("kick", member.uuid(), "")));
 			}
 		}
 
@@ -369,12 +526,13 @@ public final class PartyApiClient {
 
 		@Override
 		public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-			super.render(graphics, mouseX, mouseY, partialTick);
+			drawScreenBackground(graphics, GUI_MAIN_BACKGROUND, this.width, this.height);
 			graphics.drawCenteredString(this.font, "Party", this.width / 2, 20, 0xFFFFFFFF);
 			graphics.drawCenteredString(this.font, "PvP: " + (pvpEnabled ? "ON" : "OFF"), this.width / 2, 34, pvpEnabled ? 0xFFFF7777 : 0xFF77FF77);
 
 			if (MEMBERS.isEmpty()) {
 				graphics.drawCenteredString(this.font, "No online party members", this.width / 2, 58, 0xFFFFFFFF);
+				renderRenderables(graphics, mouseX, mouseY, partialTick);
 				return;
 			}
 
@@ -426,6 +584,9 @@ public final class PartyApiClient {
 				graphics.drawString(this.font, Math.round(member.health()) + "/" + Math.round(member.maxHealth()), barX + barW + 6, y + 14, 0xFFCCCCCC, false);
 				graphics.drawString(this.font, member.food() + "/20", barX + barW + 6, y + 23, 0xFFCCCCCC, false);
 			}
+
+			renderScrollBar(graphics, x + rowWidth + 6, startY, Math.max(24, this.height - startY - 30), MEMBERS.size(), Math.max(1, (this.height - startY - 30) / rowHeight), scroll);
+			renderRenderables(graphics, mouseX, mouseY, partialTick);
 		}
 	}
 
@@ -472,11 +633,13 @@ public final class PartyApiClient {
 				if (y >= 64 && y < this.height - 24) {
 					String label = player.pendingInvite() ? "Revoke" : (player.inMyParty() ? "In party" : "Invite");
 					String action = player.pendingInvite() ? "revoke_invite" : "invite";
-					addRenderableWidget(Button.builder(Component.literal(label), b -> {
+					String buttonId = player.pendingInvite() ? "revoke" : (player.inMyParty() ? "in_party" : "invite");
+
+					addRenderableWidget(apiButton(buttonId, label, this.width - 96, y - 4, 78, 20, b -> {
 						if (!player.inMyParty()) {
 							${package}.network.PartyApiNetwork.sendClientAction(action, player.uuid(), "");
 						}
-					}).bounds(this.width - 96, y - 4, 78, 20).build());
+					}, !player.inMyParty()));
 				}
 				row++;
 			}
@@ -491,7 +654,8 @@ public final class PartyApiClient {
 
 		@Override
 		public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-			super.render(graphics, mouseX, mouseY, partialTick);
+			drawScreenBackground(graphics, GUI_INVITE_BACKGROUND, this.width, this.height);
+			drawTexture(graphics, GUI_SEARCH, 16, 38, 180, 20, 180, 20);
 			graphics.drawCenteredString(this.font, "Invite Players", this.width / 2, 20, 0xFFFFFFFF);
 
 			String filter = search == null ? "" : search.getValue().toLowerCase(Locale.ROOT);
@@ -505,6 +669,10 @@ public final class PartyApiClient {
 				int y = 70 + (row - scroll) * 24;
 
 				if (y >= 64 && y < this.height - 24) {
+					if (!drawTexture(graphics, GUI_ONLINE_PLAYER_ROW, 14, y - 5, this.width - 28, 22, 300, 22)) {
+						graphics.fill(14, y - 5, this.width - 14, y + 17, player.inMyParty() ? 0x55222222 : 0x77000000);
+					}
+
 					String status = player.inMyParty() ? "already in your party" : (player.inAnyParty() ? "in another party" : "online");
 					graphics.drawString(this.font, player.name(), 20, y, player.inMyParty() ? 0xFFAAAAAA : 0xFFFFFFFF, false);
 					graphics.drawString(this.font, status, 150, y, 0xFF999999, false);
@@ -512,6 +680,9 @@ public final class PartyApiClient {
 
 				row++;
 			}
+
+			renderScrollBar(graphics, this.width - 10, 70, Math.max(24, this.height - 94), row, Math.max(1, (this.height - 94) / 24), scroll);
+			renderRenderables(graphics, mouseX, mouseY, partialTick);
 		}
 	}
 
@@ -523,19 +694,20 @@ public final class PartyApiClient {
 		@Override
 		protected void init() {
 			drawTopButtons();
-			addRenderableWidget(Button.builder(Component.literal("Show self: ON"), b -> ${package}.network.PartyApiNetwork.sendClientAction("show_self_on", "", "")).bounds(20, 52, 120, 20).build());
-			addRenderableWidget(Button.builder(Component.literal("Show self: OFF"), b -> ${package}.network.PartyApiNetwork.sendClientAction("show_self_off", "", "")).bounds(145, 52, 120, 20).build());
-			addRenderableWidget(Button.builder(Component.literal("PvP: ON"), b -> ${package}.network.PartyApiNetwork.sendClientAction("pvp_on", "", "")).bounds(20, 78, 120, 20).build());
-			addRenderableWidget(Button.builder(Component.literal("PvP: OFF"), b -> ${package}.network.PartyApiNetwork.sendClientAction("pvp_off", "", "")).bounds(145, 78, 120, 20).build());
-			addRenderableWidget(Button.builder(Component.literal("Reset overlay position"), b -> ${package}.network.PartyApiNetwork.sendClientAction("position_xy", "", "8,58")).bounds(20, 104, 180, 20).build());
+			addRenderableWidget(apiButton("show_self_on", "Show self: ON", 20, 52, 120, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("show_self_on", "", "")));
+			addRenderableWidget(apiButton("show_self_off", "Show self: OFF", 145, 52, 120, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("show_self_off", "", "")));
+			addRenderableWidget(apiButton("pvp_on", "PvP: ON", 20, 78, 120, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("pvp_on", "", "")));
+			addRenderableWidget(apiButton("pvp_off", "PvP: OFF", 145, 78, 120, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("pvp_off", "", "")));
+			addRenderableWidget(apiButton("reset_position", "Reset overlay position", 20, 104, 180, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("position_xy", "", "8,58")));
 		}
 
 		@Override
 		public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-			super.render(graphics, mouseX, mouseY, partialTick);
+			drawScreenBackground(graphics, GUI_SETTINGS_BACKGROUND, this.width, this.height);
 			graphics.drawCenteredString(this.font, "Party Settings", this.width / 2, 20, 0xFFFFFFFF);
 			graphics.drawString(this.font, "Show self: " + showSelf, 20, 136, 0xFFFFFFFF, false);
 			graphics.drawString(this.font, "Overlay: x=" + overlayX + " y=" + overlayY, 20, 150, 0xFFFFFFFF, false);
+			renderRenderables(graphics, mouseX, mouseY, partialTick);
 		}
 	}
 
@@ -551,9 +723,9 @@ public final class PartyApiClient {
 		protected void init() {
 			drawTopButtons();
 
-			addRenderableWidget(Button.builder(Component.literal("System ON"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_enable", "", "")).bounds(16, 36, 80, 20).build());
-			addRenderableWidget(Button.builder(Component.literal("System OFF"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_disable", "", "")).bounds(100, 36, 86, 20).build());
-			addRenderableWidget(Button.builder(Component.literal("Refresh"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_refresh", "", "")).bounds(190, 36, 70, 20).build());
+			addRenderableWidget(apiButton("admin_system_on", "System ON", 16, 36, 80, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_enable", "", "")));
+			addRenderableWidget(apiButton("admin_system_off", "System OFF", 100, 36, 86, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_disable", "", "")));
+			addRenderableWidget(apiButton("admin_refresh", "Refresh", 190, 36, 70, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_refresh", "", "")));
 
 			search = new EditBox(this.font, 16, 62, 200, 20, Component.literal("Search"));
 			search.setHint(Component.literal("Search player / party leader"));
@@ -568,9 +740,9 @@ public final class PartyApiClient {
 			clearWidgets();
 			drawTopButtons();
 
-			addRenderableWidget(Button.builder(Component.literal("System ON"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_enable", "", "")).bounds(16, 36, 80, 20).build());
-			addRenderableWidget(Button.builder(Component.literal("System OFF"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_disable", "", "")).bounds(100, 36, 86, 20).build());
-			addRenderableWidget(Button.builder(Component.literal("Refresh"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_refresh", "", "")).bounds(190, 36, 70, 20).build());
+			addRenderableWidget(apiButton("admin_system_on", "System ON", 16, 36, 80, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_enable", "", "")));
+			addRenderableWidget(apiButton("admin_system_off", "System OFF", 100, 36, 86, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_disable", "", "")));
+			addRenderableWidget(apiButton("admin_refresh", "Refresh", 190, 36, 70, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_refresh", "", "")));
 
 			search = new EditBox(this.font, 16, 62, 200, 20, Component.literal("Search"));
 			search.setValue(oldFilter);
@@ -624,14 +796,14 @@ public final class PartyApiClient {
 				var player = rows.get(i);
 				int right = this.width - 16;
 
-				addRenderableWidget(Button.builder(Component.literal("View"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_view", player.uuid(), "")).bounds(right - 314, y + 14, 46, 18).build());
-				addRenderableWidget(Button.builder(Component.literal("Remove"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_remove", player.uuid(), "")).bounds(right - 264, y + 14, 60, 18).build());
-				addRenderableWidget(Button.builder(Component.literal("Disband"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_disband", player.uuid(), "")).bounds(right - 200, y + 14, 64, 18).build());
-				addRenderableWidget(Button.builder(Component.literal("PvP ON"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_pvp_on", player.uuid(), "")).bounds(right - 132, y + 4, 62, 18).build());
-				addRenderableWidget(Button.builder(Component.literal("PvP OFF"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_pvp_off", player.uuid(), "")).bounds(right - 66, y + 4, 62, 18).build());
-				addRenderableWidget(Button.builder(Component.literal("L4"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_4", player.uuid(), "")).bounds(right - 132, y + 26, 30, 18).build());
-				addRenderableWidget(Button.builder(Component.literal("L8"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_8", player.uuid(), "")).bounds(right - 98, y + 26, 30, 18).build());
-				addRenderableWidget(Button.builder(Component.literal("L16"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_16", player.uuid(), "")).bounds(right - 64, y + 26, 38, 18).build());
+				addRenderableWidget(apiButton("admin_view", "View", right - 314, y + 14, 46, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_view", player.uuid(), "")));
+				addRenderableWidget(apiButton("admin_remove", "Remove", right - 264, y + 14, 60, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_remove", player.uuid(), "")));
+				addRenderableWidget(apiButton("admin_disband", "Disband", right - 200, y + 14, 64, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_disband", player.uuid(), "")));
+				addRenderableWidget(apiButton("admin_pvp_on", "PvP ON", right - 132, y + 4, 62, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_pvp_on", player.uuid(), "")));
+				addRenderableWidget(apiButton("admin_pvp_off", "PvP OFF", right - 66, y + 4, 62, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_pvp_off", player.uuid(), "")));
+				addRenderableWidget(apiButton("admin_limit_4", "L4", right - 132, y + 26, 30, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_4", player.uuid(), "")));
+				addRenderableWidget(apiButton("admin_limit_8", "L8", right - 98, y + 26, 30, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_8", player.uuid(), "")));
+				addRenderableWidget(apiButton("admin_limit_16", "L16", right - 64, y + 26, 38, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_16", player.uuid(), "")));
 			}
 		}
 
@@ -644,7 +816,8 @@ public final class PartyApiClient {
 
 		@Override
 		public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-			super.render(graphics, mouseX, mouseY, partialTick);
+			drawScreenBackground(graphics, GUI_ADMIN_BACKGROUND, this.width, this.height);
+			drawTexture(graphics, GUI_SEARCH, 16, 62, 200, 20, 200, 20);
 			graphics.drawCenteredString(this.font, "Party Admin", this.width / 2, 20, 0xFFFFFFFF);
 
 			List<${package}.network.PartyApiNetwork.OnlinePlayerSyncData> rows = filteredAdminPlayers();
@@ -666,7 +839,9 @@ public final class PartyApiClient {
 					lastPartyId = null;
 				}
 
-				graphics.fill(14, y - 2, this.width - 14, y + 46, player.inAnyParty() ? 0x88000000 : 0x66222222);
+				if (!drawTexture(graphics, GUI_ADMIN_PLAYER_ROW, 14, y - 2, this.width - 28, 48, 420, 48)) {
+					graphics.fill(14, y - 2, this.width - 14, y + 46, player.inAnyParty() ? 0x88000000 : 0x66222222);
+				}
 
 				String marker = player.partyLeader() ? " ★ leader" : "";
 				String partyLine = player.inAnyParty()
@@ -681,6 +856,9 @@ public final class PartyApiClient {
 			if (rows.isEmpty()) {
 				graphics.drawString(this.font, "No online players received. Press Refresh or reopen Admin GUI.", 20, 94, 0xFFFFFFFF, false);
 			}
+
+			renderScrollBar(graphics, this.width - 10, 94, Math.max(24, this.height - 142), rows.size(), Math.max(1, (this.height - 142) / 54), scroll);
+			renderRenderables(graphics, mouseX, mouseY, partialTick);
 		}
 	}
 
@@ -699,7 +877,7 @@ public final class PartyApiClient {
 
 		@Override
 		public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-			graphics.fill(0, 0, this.width, this.height, 0x22000000);
+			// Custom render below.
 		}
 
 		@Override
@@ -710,28 +888,36 @@ public final class PartyApiClient {
 			int boxY = (this.height - boxHeight) / 2;
 			int buttonY = boxY + 58;
 
-			addRenderableWidget(Button.builder(Component.literal("Accept"), b -> {
+			addRenderableWidget(apiButton("accept", "Accept", boxX + 22, buttonY, 70, 20, b -> {
 				${package}.network.PartyApiNetwork.sendClientAction("accept_invite", "", "");
 				this.minecraft.setScreen(null);
-			}).bounds(boxX + 22, buttonY, 70, 20).build());
+			}));
 
-			addRenderableWidget(Button.builder(Component.literal("Decline"), b -> {
+			addRenderableWidget(apiButton("decline", "Decline", boxX + boxWidth - 92, buttonY, 70, 20, b -> {
 				${package}.network.PartyApiNetwork.sendClientAction("decline_invite", "", "");
 				this.minecraft.setScreen(null);
-			}).bounds(boxX + boxWidth - 92, buttonY, 70, 20).build());
+			}));
 		}
 
 		@Override
 		public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-			super.render(graphics, mouseX, mouseY, partialTick);
+			graphics.fill(0, 0, this.width, this.height, 0x55000000);
+
 			int boxWidth = 220;
 			int boxHeight = 88;
 			int boxX = (this.width - boxWidth) / 2;
 			int boxY = (this.height - boxHeight) / 2;
 
-			graphics.fill(boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xCC000000);
+			if (!drawTexture(graphics, GUI_INVITE_POPUP_BACKGROUND, boxX, boxY, boxWidth, boxHeight, 220, 88)) {
+				graphics.fill(boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xCC000000);
+			}
+
 			graphics.drawCenteredString(this.font, "Party Invite", this.width / 2, boxY + 10, 0xFFFFFFFF);
 			graphics.drawCenteredString(this.font, inviterName + " invited you to a party", this.width / 2, boxY + 30, 0xFFDCDCDC);
+
+			for (Renderable renderable : this.renderables) {
+				renderable.render(graphics, mouseX, mouseY, partialTick);
+			}
 		}
 	}
 }
