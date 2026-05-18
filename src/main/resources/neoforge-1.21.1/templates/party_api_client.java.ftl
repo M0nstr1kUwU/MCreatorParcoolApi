@@ -672,9 +672,6 @@ public final class PartyApiClient {
 				}
 
 				renderSmallBar(graphics, barX, y + 24, barW, 4, foodRatio, 0xFF2B1B0B, 0xFFC9823A);
-
-				graphics.drawString(this.font, Math.round(member.health()) + "/" + Math.round(member.maxHealth()), barX + barW + 6, y + 14, 0xFFCCCCCC, false);
-				graphics.drawString(this.font, member.food() + "/20", barX + barW + 6, y + 23, 0xFFCCCCCC, false);
 			}
 
 			renderScrollBar(graphics, x + rowWidth + 6, startY, Math.max(24, this.height - startY - 30), MEMBERS.size(), Math.max(1, (this.height - startY - 30) / rowHeight), scroll);
