@@ -172,14 +172,45 @@ public final class PartyApiClient {
 	}
 
 	private static boolean drawTexture(GuiGraphics graphics, ResourceLocation texture, int x, int y, int width, int height, int textureWidth, int textureHeight) {
-		if (!textureExists(texture)) {
+		if (width <= 0 || height <= 0 || textureWidth <= 0 || textureHeight <= 0 || !textureExists(texture)) {
 			return false;
 		}
 
+		boolean pushed = false;
+
 		try {
-			graphics.blit(texture, x, y, 0, 0, width, height, textureWidth, textureHeight);
+			/*
+			 * IMPORTANT:
+			 * GuiGraphics#blit(ResourceLocation, x, y, u, v, width, height, textureWidth, textureHeight)
+			 * uses "width" and "height" both as the drawn size and as the sampled source size.
+			 *
+			 * If we pass a drawn size larger than the real PNG size, the UV area becomes larger than
+			 * the texture itself. Depending on texture wrapping this looks like repeated / clipped
+			 * fragments instead of a stretched image.
+			 *
+			 * So for GUI backgrounds, rows and scalable panels we draw the PNG at its real native size
+			 * and stretch it with the pose matrix. The sampled source area always stays exactly:
+			 * 0..textureWidth, 0..textureHeight.
+			 */
+			float scaleX = width / (float) textureWidth;
+			float scaleY = height / (float) textureHeight;
+
+			graphics.pose().pushPose();
+			pushed = true;
+			graphics.pose().translate(x, y, 0.0F);
+			graphics.pose().scale(scaleX, scaleY, 1.0F);
+			graphics.blit(texture, 0, 0, 0, 0, textureWidth, textureHeight, textureWidth, textureHeight);
+			graphics.pose().popPose();
+			pushed = false;
 			return true;
 		} catch (Throwable ignored) {
+			if (pushed) {
+				try {
+					graphics.pose().popPose();
+				} catch (Throwable ignoredAgain) {
+				}
+			}
+
 			return false;
 		}
 	}
@@ -527,8 +558,8 @@ public final class PartyApiClient {
 		@Override
 		public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 			drawScreenBackground(graphics, GUI_MAIN_BACKGROUND, this.width, this.height);
-			graphics.drawCenteredString(this.font, "Party", this.width / 2, 20, 0xFFFFFFFF);
-			graphics.drawCenteredString(this.font, "PvP: " + (pvpEnabled ? "ON" : "OFF"), this.width / 2, 34, pvpEnabled ? 0xFFFF7777 : 0xFF77FF77);
+			graphics.drawCenteredString(this.font, "Party", (this.width / 2) + 50, 20, 0xFFFFFFFF);
+			graphics.drawCenteredString(this.font, "PvP: " + (pvpEnabled ? "ON" : "OFF"), (this.width / 2) + 50, 34, pvpEnabled ? 0xFFFF7777 : 0xFF77FF77);
 
 			if (MEMBERS.isEmpty()) {
 				graphics.drawCenteredString(this.font, "No online party members", this.width / 2, 58, 0xFFFFFFFF);
