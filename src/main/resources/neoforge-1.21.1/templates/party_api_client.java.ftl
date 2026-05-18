@@ -102,11 +102,54 @@ public final class PartyApiClient {
 
 		CUSTOM_ENTRIES.clear();
 		CUSTOM_ENTRIES.addAll(payload.customEntries() == null ? List.of() : payload.customEntries());
+
+		refreshCurrentPartyScreen();
 	}
 
 	public static void acceptOnlinePlayers(List<${package}.network.PartyApiNetwork.OnlinePlayerSyncData> players) {
 		ONLINE_PLAYERS.clear();
 		ONLINE_PLAYERS.addAll(players == null ? List.of() : players);
+
+		refreshCurrentOnlineListScreen();
+	}
+
+	private static boolean hasParty() {
+		return partyId != null && !partyId.isBlank();
+	}
+
+	private static String localPlayerUuid() {
+		Minecraft minecraft = Minecraft.getInstance();
+		return minecraft != null && minecraft.player != null ? minecraft.player.getUUID().toString() : "";
+	}
+
+	private static boolean isLocalLeader() {
+		return hasParty() && leaderId != null && leaderId.equals(localPlayerUuid());
+	}
+
+	private static void refreshCurrentPartyScreen() {
+		Minecraft minecraft = Minecraft.getInstance();
+		if (minecraft == null || minecraft.screen == null) {
+			return;
+		}
+
+		if (minecraft.screen instanceof PartyMainScreen screen) {
+			screen.rebuildPartyWidgets();
+		} else if (minecraft.screen instanceof PartySettingsScreen screen) {
+			screen.rebuildSettingsWidgets();
+		}
+	}
+
+	private static void refreshCurrentOnlineListScreen() {
+		Minecraft minecraft = Minecraft.getInstance();
+		if (minecraft == null || minecraft.screen == null) {
+			return;
+		}
+
+		if (minecraft.screen instanceof PartyInviteListScreen screen) {
+			screen.rebuild();
+		} else if (minecraft.screen instanceof PartyAdminScreen screen) {
+			screen.rebuildAdminWidgets();
+		}
 	}
 
 	public static void openPartyScreen() {
@@ -521,7 +564,17 @@ public final class PartyApiClient {
 		@Override
 		protected void init() {
 			drawTopButtons();
-			int startY = 50;
+
+			if (!hasParty()) {
+				addRenderableWidget(apiButton("create_party", "Create party", this.width / 2 - 60, 52, 120, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("create_party", "", "")));
+				return;
+			}
+
+			if (!isLocalLeader()) {
+				addRenderableWidget(apiButton("leave_party", "Leave party", this.width / 2 - 60, 52, 120, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("leave_party", "", "")));
+			}
+
+			int startY = isLocalLeader() ? 50 : 78;
 			int rowHeight = 38;
 			int x = this.width / 2 - 150;
 			int rowWidth = 300;
@@ -539,7 +592,9 @@ public final class PartyApiClient {
 				int kickX = x + rowWidth - 52;
 
 				addRenderableWidget(apiButton(member.pinned() ? "unpin" : "pin", member.pinned() ? "Unpin" : "Pin", pinX, y + 8, 48, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction(member.pinned() ? "unpin" : "pin", member.uuid(), "")));
-				addRenderableWidget(apiButton("kick", "Kick", kickX, y + 8, 48, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("kick", member.uuid(), "")));
+				if (isLocalLeader()) {
+					addRenderableWidget(apiButton("kick", "Kick", kickX, y + 8, 48, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("kick", member.uuid(), "")));
+				}
 			}
 		}
 
@@ -561,13 +616,19 @@ public final class PartyApiClient {
 			graphics.drawCenteredString(this.font, "Party", (this.width / 2) + 60, 20, 0xFFFFFFFF);
 			graphics.drawCenteredString(this.font, "PvP: " + (pvpEnabled ? "ON" : "OFF"), (this.width / 2) + 60, 34, pvpEnabled ? 0xFFFF7777 : 0xFF77FF77);
 
-			if (MEMBERS.isEmpty()) {
-				graphics.drawCenteredString(this.font, "No online party members", this.width / 2, 58, 0xFFFFFFFF);
+			if (!hasParty()) {
+				graphics.drawCenteredString(this.font, "You are not in a party", this.width / 2, 84, 0xFFFFFFFF);
 				renderRenderables(graphics, mouseX, mouseY, partialTick);
 				return;
 			}
 
-			int startY = 50;
+			if (MEMBERS.isEmpty()) {
+				graphics.drawCenteredString(this.font, "No online party members", this.width / 2, isLocalLeader() ? 58 : 104, 0xFFFFFFFF);
+				renderRenderables(graphics, mouseX, mouseY, partialTick);
+				return;
+			}
+
+			int startY = isLocalLeader() ? 50 : 78;
 			int rowHeight = 38;
 			int x = this.width / 2 - 150;
 			int rowWidth = 300;
@@ -621,6 +682,7 @@ public final class PartyApiClient {
 	private static final class PartyInviteListScreen extends PartyBaseScreen {
 		private EditBox search;
 		private int scroll = 0;
+		private String filter = "";
 
 		private PartyInviteListScreen() {
 			super("Invite Players");
@@ -630,30 +692,44 @@ public final class PartyApiClient {
 		protected void init() {
 			drawTopButtons();
 			search = new EditBox(this.font, 16, 38, 180, 20, Component.literal("Search"));
+			search.setValue(filter);
 			search.setHint(Component.literal("Search nickname"));
-			search.setResponder(value -> rebuild());
+			search.setResponder(value -> {
+				if (!value.equals(filter)) {
+					filter = value;
+					scroll = 0;
+					rebuild();
+				}
+			});
 			addRenderableWidget(search);
 			addPlayerButtons();
 		}
 
 		private void rebuild() {
-			String oldFilter = search == null ? "" : search.getValue();
 			clearWidgets();
 			drawTopButtons();
 			search = new EditBox(this.font, 16, 38, 180, 20, Component.literal("Search"));
-			search.setValue(oldFilter);
+			search.setValue(filter);
 			search.setHint(Component.literal("Search nickname"));
-			search.setResponder(value -> rebuild());
+			search.setResponder(value -> {
+				if (!value.equals(filter)) {
+					filter = value;
+					scroll = 0;
+					rebuild();
+				}
+			});
 			addRenderableWidget(search);
+			this.setFocused(search);
+			search.setFocused(true);
 			addPlayerButtons();
 		}
 
 		private void addPlayerButtons() {
-			String filter = search == null ? "" : search.getValue().toLowerCase(Locale.ROOT);
+			String filterText = filter.toLowerCase(Locale.ROOT);
 			int row = 0;
 
 			for (var player : ONLINE_PLAYERS) {
-				if (!player.name().toLowerCase(Locale.ROOT).contains(filter)) {
+				if (!player.name().toLowerCase(Locale.ROOT).contains(filterText)) {
 					continue;
 				}
 
@@ -686,11 +762,11 @@ public final class PartyApiClient {
 			drawTexture(graphics, GUI_SEARCH, 16, 38, 180, 20, 180, 20);
 			graphics.drawCenteredString(this.font, "Invite Players", (this.width / 2) + 60, 20, 0xFFFFFFFF);
 
-			String filter = search == null ? "" : search.getValue().toLowerCase(Locale.ROOT);
+			String filterText = filter.toLowerCase(Locale.ROOT);
 			int row = 0;
 
 			for (var player : ONLINE_PLAYERS) {
-				if (!player.name().toLowerCase(Locale.ROOT).contains(filter)) {
+				if (!player.name().toLowerCase(Locale.ROOT).contains(filterText)) {
 					continue;
 				}
 
@@ -724,17 +800,31 @@ public final class PartyApiClient {
 			drawTopButtons();
 			addRenderableWidget(apiButton("show_self_on", "Show self: ON", 20, 52, 120, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("show_self_on", "", "")));
 			addRenderableWidget(apiButton("show_self_off", "Show self: OFF", 145, 52, 120, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("show_self_off", "", "")));
-			addRenderableWidget(apiButton("pvp_on", "PvP: ON", 20, 78, 120, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("pvp_on", "", "")));
-			addRenderableWidget(apiButton("pvp_off", "PvP: OFF", 145, 78, 120, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("pvp_off", "", "")));
-			addRenderableWidget(apiButton("reset_position", "Reset overlay position", 20, 104, 180, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("position_xy", "", "8,58")));
+			addRenderableWidget(apiButton("reset_position", "Reset overlay position", 20, 78, 180, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("position_xy", "", "8,58")));
+
+			if (isLocalLeader()) {
+				addRenderableWidget(apiButton("pvp_on", "PvP: ON", 20, 112, 120, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("pvp_on", "", "")));
+				addRenderableWidget(apiButton("pvp_off", "PvP: OFF", 145, 112, 120, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("pvp_off", "", "")));
+			}
+		}
+
+		private void rebuildSettingsWidgets() {
+			clearWidgets();
+			init();
 		}
 
 		@Override
 		public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 			drawScreenBackground(graphics, GUI_SETTINGS_BACKGROUND, this.width, this.height);
 			graphics.drawCenteredString(this.font, "Party Settings", (this.width / 2) + 60, 20, 0xFFFFFFFF);
-			graphics.drawString(this.font, "Show self: " + showSelf, 20, 136, 0xFFFFFFFF, false);
-			graphics.drawString(this.font, "Overlay: x=" + overlayX + " y=" + overlayY, 20, 150, 0xFFFFFFFF, false);
+			graphics.drawString(this.font, "Show self: " + showSelf, 20, 146, 0xFFFFFFFF, false);
+			graphics.drawString(this.font, "Overlay: x=" + overlayX + " y=" + overlayY, 20, 160, 0xFFFFFFFF, false);
+			graphics.drawString(this.font, "PvP: " + (pvpEnabled ? "ON" : "OFF"), 20, 174, pvpEnabled ? 0xFFFF7777 : 0xFF77FF77, false);
+
+			if (hasParty() && !isLocalLeader()) {
+				graphics.drawString(this.font, "Only party leader can change party PvP.", 20, 112, 0xFFCCCCCC, false);
+			}
+
 			renderRenderables(graphics, mouseX, mouseY, partialTick);
 		}
 	}
@@ -742,6 +832,7 @@ public final class PartyApiClient {
 	private static final class PartyAdminScreen extends PartyBaseScreen {
 		private EditBox search;
 		private int scroll = 0;
+		private String filter = "";
 
 		private PartyAdminScreen() {
 			super("Party Admin");
@@ -756,15 +847,21 @@ public final class PartyApiClient {
 			addRenderableWidget(apiButton("admin_refresh", "Refresh", 190, 36, 70, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_refresh", "", "")));
 
 			search = new EditBox(this.font, 16, 62, 200, 20, Component.literal("Search"));
+			search.setValue(filter);
 			search.setHint(Component.literal("Search player / party leader"));
-			search.setResponder(value -> rebuildAdminWidgets());
+			search.setResponder(value -> {
+				if (!value.equals(filter)) {
+					filter = value;
+					scroll = 0;
+					rebuildAdminWidgets();
+				}
+			});
 			addRenderableWidget(search);
 
 			addAdminButtons();
 		}
 
 		private void rebuildAdminWidgets() {
-			String oldFilter = search == null ? "" : search.getValue();
 			clearWidgets();
 			drawTopButtons();
 
@@ -773,20 +870,34 @@ public final class PartyApiClient {
 			addRenderableWidget(apiButton("admin_refresh", "Refresh", 190, 36, 70, 20, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_refresh", "", "")));
 
 			search = new EditBox(this.font, 16, 62, 200, 20, Component.literal("Search"));
-			search.setValue(oldFilter);
+			search.setValue(filter);
 			search.setHint(Component.literal("Search player / party leader"));
-			search.setResponder(value -> rebuildAdminWidgets());
+			search.setResponder(value -> {
+				if (!value.equals(filter)) {
+					filter = value;
+					scroll = 0;
+					rebuildAdminWidgets();
+				}
+			});
 			addRenderableWidget(search);
+			this.setFocused(search);
+			search.setFocused(true);
 
 			addAdminButtons();
 		}
 
 		private List<${package}.network.PartyApiNetwork.OnlinePlayerSyncData> filteredAdminPlayers() {
-			String filter = search == null ? "" : search.getValue().toLowerCase(Locale.ROOT);
+			String filterText = filter.toLowerCase(Locale.ROOT);
 			List<${package}.network.PartyApiNetwork.OnlinePlayerSyncData> result = new ArrayList<>();
 
 			for (var player : ONLINE_PLAYERS) {
-				if (filter.isBlank() || player.name().toLowerCase(Locale.ROOT).contains(filter) || player.leaderName().toLowerCase(Locale.ROOT).contains(filter)) {
+				// Admin panel is a party-list, not a full online-player list:
+				// show only party leaders. View opens that leader's full party roster.
+				if (!player.inAnyParty() || !player.partyLeader()) {
+					continue;
+				}
+
+				if (filterText.isBlank() || player.name().toLowerCase(Locale.ROOT).contains(filterText) || player.leaderName().toLowerCase(Locale.ROOT).contains(filterText)) {
 					result.add(player);
 				}
 			}
@@ -824,14 +935,18 @@ public final class PartyApiClient {
 				var player = rows.get(i);
 				int right = this.width - 16;
 
-				addRenderableWidget(apiButton("admin_view", "View", right - 314, y + 14, 46, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_view", player.uuid(), "")));
-				addRenderableWidget(apiButton("admin_remove", "Remove", right - 264, y + 14, 60, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_remove", player.uuid(), "")));
-				addRenderableWidget(apiButton("admin_disband", "Disband", right - 200, y + 14, 64, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_disband", player.uuid(), "")));
-				addRenderableWidget(apiButton("admin_pvp_on", "PvP ON", right - 132, y + 4, 62, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_pvp_on", player.uuid(), "")));
-				addRenderableWidget(apiButton("admin_pvp_off", "PvP OFF", right - 66, y + 4, 62, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_pvp_off", player.uuid(), "")));
-				addRenderableWidget(apiButton("admin_limit_4", "L4", right - 132, y + 26, 30, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_4", player.uuid(), "")));
-				addRenderableWidget(apiButton("admin_limit_8", "L8", right - 98, y + 26, 30, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_8", player.uuid(), "")));
-				addRenderableWidget(apiButton("admin_limit_16", "L16", right - 64, y + 26, 38, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_16", player.uuid(), "")));
+				addRenderableWidget(apiButton("admin_view", "View", right - 224, y + 4, 46, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_view", player.uuid(), ""), player.inAnyParty()));
+				addRenderableWidget(apiButton("admin_remove", "Remove", right - 174, y + 4, 60, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_remove", player.uuid(), ""), player.inAnyParty() && !player.partyLeader()));
+				addRenderableWidget(apiButton("admin_disband", "Disband", right - 110, y + 4, 64, 18, b -> {
+					if (this.minecraft != null) {
+						this.minecraft.setScreen(new PartyAdminDisbandConfirmScreen(player.uuid(), player.leaderName()));
+					}
+				}, player.inAnyParty() && player.partyLeader()));
+				addRenderableWidget(apiButton("admin_pvp_on", "PvP ON", right - 214, y + 26, 62, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_pvp_on", player.uuid(), ""), player.inAnyParty()));
+				addRenderableWidget(apiButton("admin_pvp_off", "PvP OFF", right - 148, y + 26, 62, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_pvp_off", player.uuid(), ""), player.inAnyParty()));
+				addRenderableWidget(apiButton("admin_limit_4", "L4", right - 80, y + 26, 30, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_4", player.uuid(), ""), player.inAnyParty()));
+				addRenderableWidget(apiButton("admin_limit_8", "L8", right - 44, y + 26, 30, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_8", player.uuid(), ""), player.inAnyParty()));
+				addRenderableWidget(apiButton("admin_limit_16", "L16", right - 42, y + 4, 38, 18, b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_16", player.uuid(), ""), player.inAnyParty()));
 			}
 		}
 
@@ -876,17 +991,71 @@ public final class PartyApiClient {
 					? "Party: " + player.leaderName() + " | Size: " + player.partySize() + "/" + player.partyMaxMembers()
 					: "No party";
 
-				graphics.drawString(this.font, player.name() + marker, 20, y + 4, player.partyLeader() ? 0xFFE6C75A : 0xFFFFFFFF, false);
+				graphics.drawString(this.font, player.name() + marker, 30, y + 4, player.partyLeader() ? 0xFFE6C75A : 0xFFFFFFFF, false);
 				graphics.drawString(this.font, partyLine, 20, y + 16, 0xFFCCCCCC, false);
 				graphics.drawString(this.font, "UUID: " + player.uuid(), 20, y + 28, 0xFF999999, false);
 			}
 
 			if (rows.isEmpty()) {
-				graphics.drawString(this.font, "No online players received. Press Refresh or reopen Admin GUI.", 20, 94, 0xFFFFFFFF, false);
+				graphics.drawString(this.font, "No party leaders online. Press Refresh or reopen Admin GUI.", 20, 94, 0xFFFFFFFF, false);
 			}
 
 			renderScrollBar(graphics, this.width - 10, 94, Math.max(24, this.height - 142), rows.size(), Math.max(1, (this.height - 142) / 54), scroll);
 			renderRenderables(graphics, mouseX, mouseY, partialTick);
+		}
+	}
+
+	private static final class PartyAdminDisbandConfirmScreen extends Screen {
+		private final String targetUuid;
+		private final String leaderName;
+
+		private PartyAdminDisbandConfirmScreen(String targetUuid, String leaderName) {
+			super(Component.literal("Confirm Disband"));
+			this.targetUuid = targetUuid == null ? "" : targetUuid;
+			this.leaderName = leaderName == null || leaderName.isBlank() ? "this party" : leaderName;
+		}
+
+		@Override
+		public boolean isPauseScreen() {
+			return false;
+		}
+
+		@Override
+		protected void init() {
+			int boxWidth = 260;
+			int boxX = (this.width - boxWidth) / 2;
+			int boxY = this.height / 2 - 44;
+
+			addRenderableWidget(apiButton("admin_confirm_disband", "Disband", boxX + 26, boxY + 58, 88, 20, b -> {
+				${package}.network.PartyApiNetwork.sendClientAction("admin_disband", targetUuid, "");
+				if (this.minecraft != null) {
+					this.minecraft.setScreen(new PartyAdminScreen());
+				}
+			}));
+
+			addRenderableWidget(apiButton("admin_cancel_disband", "Cancel", boxX + boxWidth - 114, boxY + 58, 88, 20, b -> {
+				if (this.minecraft != null) {
+					this.minecraft.setScreen(new PartyAdminScreen());
+				}
+			}));
+		}
+
+		@Override
+		public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+			graphics.fill(0, 0, this.width, this.height, 0x77000000);
+			int boxWidth = 260;
+			int boxHeight = 92;
+			int boxX = (this.width - boxWidth) / 2;
+			int boxY = this.height / 2 - 44;
+
+			graphics.fill(boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xDD000000);
+			graphics.drawCenteredString(this.font, "Disband party?", this.width / 2, boxY + 10, 0xFFFF7777);
+			graphics.drawCenteredString(this.font, "Leader: " + leaderName, this.width / 2, boxY + 28, 0xFFFFFFFF);
+			graphics.drawCenteredString(this.font, "This will remove all members.", this.width / 2, boxY + 42, 0xFFCCCCCC);
+
+			for (Renderable renderable : this.renderables) {
+				renderable.render(graphics, mouseX, mouseY, partialTick);
+			}
 		}
 	}
 

@@ -29,6 +29,7 @@ public final class PartyApiSystem {
 	private static final String DATA_NAME = "${modid}_party_api_system_v1";
 	private static final int MAX_OVERLAY_PINNED = 4;
 	private static final Map<UUID, InviteData> INVITES = new ConcurrentHashMap<>();
+	private static final Map<String, Long> INVITE_COOLDOWNS = new ConcurrentHashMap<>();
 
 	private PartyApiSystem() {
 	}
@@ -137,6 +138,13 @@ public final class PartyApiSystem {
 		}
 
 		clearExpiredInvites();
+		clearExpiredInviteCooldowns();
+
+		long remainingCooldown = getInviteCooldownSecondsRemaining(leader, invited);
+		if (remainingCooldown > 0L) {
+			leader.displayClientMessage(Component.literal("Invite cooldown: wait " + remainingCooldown + "s before inviting this player again."), false);
+			return false;
+		}
 
 		PartySavedData data = getSavedData();
 
@@ -172,6 +180,7 @@ public final class PartyApiSystem {
 			return false;
 		}
 
+		INVITE_COOLDOWNS.put(inviteCooldownKey(leader.getUUID(), invited.getUUID()), System.currentTimeMillis());
 		INVITES.put(invited.getUUID(), new InviteData(party.id, leader.getUUID(), invited.getUUID(), System.currentTimeMillis()));
 
 		invited.displayClientMessage(Component.literal("Party invite from " + leader.getGameProfile().getName() + ". Use /party accept"), false);
@@ -899,7 +908,9 @@ public final class PartyApiSystem {
 		PartyData party = data != null ? data.getPartyOf(targetPartyMember.getUUID()) : null;
 
 		if (party != null) {
-			syncPartyTo(viewer, party);
+			// Admin View must show the full party roster, even if the viewer is also a member
+			// and their personal showSelf option is disabled.
+			syncPartyTo(viewer, party, true);
 		}
 
 		${package}.network.PartyApiNetwork.openPartyScreen(viewer, "MAIN");
@@ -959,6 +970,18 @@ public final class PartyApiSystem {
 			case "pvp_off" -> setPvp(player, false);
 			case "accept_invite" -> acceptInvite(player);
 			case "decline_invite" -> declineInvite(player);
+			case "create_party" -> {
+				createParty(player, PartyApiServerConfig.defaultShowSelf());
+				openPartyMainGui(player);
+			}
+			case "leave_party" -> {
+				leaveParty(player);
+				openPartyMainGui(player);
+			}
+			case "disband_party" -> {
+				disbandParty(player);
+				openPartyMainGui(player);
+			}
 			case "open_main" -> openPartyMainGui(player);
 			case "open_invite" -> openInviteGui(player);
 			case "open_settings" -> openSettingsGui(player);
@@ -1075,13 +1098,17 @@ public final class PartyApiSystem {
 	}
 
 	private static void syncPartyTo(ServerPlayer viewer, PartyData party) {
+		syncPartyTo(viewer, party, false);
+	}
+
+	private static void syncPartyTo(ServerPlayer viewer, PartyData party, boolean forceShowAllMembers) {
 		if (viewer == null || party == null) {
 			return;
 		}
 
 		PartySavedData data = getSavedData();
 		LinkedHashSet<UUID> pins = party.pinsByViewer.getOrDefault(viewer.getUUID(), new LinkedHashSet<>());
-		boolean showSelf = party.showSelfByViewer.getOrDefault(viewer.getUUID(), party.defaultShowSelf);
+		boolean showSelf = forceShowAllMembers || party.showSelfByViewer.getOrDefault(viewer.getUUID(), party.defaultShowSelf);
 		List<${package}.network.PartyApiNetwork.MemberSyncData> members = new ArrayList<>();
 
 		for (UUID memberId : party.members) {
@@ -1192,6 +1219,44 @@ public final class PartyApiSystem {
 		}
 
 		return list;
+	}
+
+	private static String inviteCooldownKey(UUID sender, UUID target) {
+		return String.valueOf(sender) + "->" + String.valueOf(target);
+	}
+
+	private static long getInviteCooldownSecondsRemaining(ServerPlayer sender, ServerPlayer target) {
+		if (sender == null || target == null) {
+			return 0L;
+		}
+
+		Long started = INVITE_COOLDOWNS.get(inviteCooldownKey(sender.getUUID(), target.getUUID()));
+		if (started == null) {
+			return 0L;
+		}
+
+		long cooldownMs = Math.max(1L, PartyApiServerConfig.inviteCooldownSeconds()) * 1000L;
+		long elapsed = System.currentTimeMillis() - started;
+		long remaining = cooldownMs - elapsed;
+
+		if (remaining <= 0L) {
+			INVITE_COOLDOWNS.remove(inviteCooldownKey(sender.getUUID(), target.getUUID()));
+			return 0L;
+		}
+
+		return Math.max(1L, (remaining + 999L) / 1000L);
+	}
+
+	private static void clearExpiredInviteCooldowns() {
+		long cooldownMs = Math.max(1L, PartyApiServerConfig.inviteCooldownSeconds()) * 1000L;
+		long now = System.currentTimeMillis();
+
+		for (String key : new ArrayList<>(INVITE_COOLDOWNS.keySet())) {
+			Long started = INVITE_COOLDOWNS.get(key);
+			if (started == null || now - started > cooldownMs) {
+				INVITE_COOLDOWNS.remove(key);
+			}
+		}
 	}
 
 	private static void clearExpiredInvites() {

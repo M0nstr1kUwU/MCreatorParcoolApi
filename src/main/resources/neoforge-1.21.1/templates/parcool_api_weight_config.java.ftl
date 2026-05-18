@@ -65,33 +65,52 @@ public final class ParCoolApiWeightConfig {
 	public static boolean setWeightEnabled(boolean enabled) {
 		Config config = get();
 		config.weightEnabled = enabled;
-		return save(config);
+		boolean ok = save(config);
+
+		if (ok) {
+			try {
+				ParCoolApiWeightSystem.onWeightConfigChanged();
+			} catch (Throwable ignored) {
+			}
+		}
+
+		return ok;
 	}
 
 	public static boolean setUseDefaultPunishments(boolean enabled) {
 		Config config = get();
 		config.useDefaultPunishments = enabled;
-		return save(config);
+		boolean ok = save(config);
+
+		if (ok) {
+			try {
+				ParCoolApiWeightSystem.onWeightConfigChanged();
+			} catch (Throwable ignored) {
+			}
+		}
+
+		return ok;
 	}
 
 	public static boolean setPunishmentStage(int stage, double percent, boolean disableJump, boolean darkness) {
 		Config config = get();
+		double safePercent = Math.max(0.0D, percent);
 
 		switch (stage) {
 			case 1 -> {
-				config.stage1Percent = percent;
+				config.stage1Percent = safePercent;
 				config.stage1DisableJump = disableJump;
 			}
 			case 2 -> {
-				config.stage2Percent = percent;
+				config.stage2Percent = safePercent;
 				config.stage2DisableJump = disableJump;
 			}
 			case 3 -> {
-				config.stage3Percent = percent;
+				config.stage3Percent = safePercent;
 				config.stage3DisableJump = disableJump;
 			}
 			case 4 -> {
-				config.stage4Percent = percent;
+				config.stage4Percent = safePercent;
 				config.stage4DisableJump = disableJump;
 				config.stage4Darkness = darkness;
 			}
@@ -100,7 +119,16 @@ public final class ParCoolApiWeightConfig {
 			}
 		}
 
-		return save(config);
+		boolean ok = save(config);
+
+		if (ok) {
+			try {
+				ParCoolApiWeightSystem.onWeightConfigChanged();
+			} catch (Throwable ignored) {
+			}
+		}
+
+		return ok;
 	}
 
 	private static boolean save(Config config) {
@@ -119,10 +147,16 @@ public final class ParCoolApiWeightConfig {
 		String text = """
 # ${modid} Weight Server Config
 
+# false = the weight system is fully disabled:
+# - no inventory weight calculation for gameplay state
+# - no load percent/status
+# - no default punishments
+# - no ParCool restrictions
+# - no vanilla jump restriction
 weight_enabled=%s
 
 # true = built-in punishment logic from plugin
-# false = plugin only calculates weight; you implement punishments through procedure blocks/triggers
+# false = plugin only calculates weight/status; you implement punishments through procedure blocks/triggers
 use_default_punishments=%s
 
 stage_1_percent=%.2f
@@ -165,8 +199,8 @@ stage_4_darkness=%s
 		public boolean useDefaultPunishments = true;
 
 		public double stage1Percent = 75.0D;
-		public double stage2Percent = 100.0D;
-		public double stage3Percent = 150.0D;
+		public double stage2Percent = 125.0D;
+		public double stage3Percent = 175.0D;
 		public double stage4Percent = 200.0D;
 
 		public boolean stage1DisableJump = false;
