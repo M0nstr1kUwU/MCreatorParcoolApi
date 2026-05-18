@@ -28,7 +28,7 @@
   "tooltip": "Weight system config block.",
   "helpUrl": "",
   "mcreator": {
-    "toolbox_id": "weight_tools",
+    "toolbox_id": "weight_system",
     "toolbox_init": [
       "<value name=\"STAGE\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>",
       "<value name=\"PERCENT\"><block type=\"math_number\"><field name=\"NUM\">75</field></block></value>",

@@ -8,12 +8,12 @@
       "check": "Boolean"
     }
   ],
-  "inputsInline": true,
+  "inputsInline": false,
   "colour": 35,
-  "tooltip": "Weight system config block.",
+  "tooltip": "set weight system enabled to %1",
   "helpUrl": "",
   "mcreator": {
-    "toolbox_id": "weight_tools",
+    "toolbox_id": "weight_system",
     "toolbox_init": [
       "<value name=\"ENABLED\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
     ],

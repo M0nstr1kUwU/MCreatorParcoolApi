@@ -88,3 +88,6 @@ base_templates:
 
   - template: parcool_api_weight_config.java.ftl
     name: "@SRCROOT/@BASEPACKAGEPATH/weight/ParCoolApiWeightConfig.java"
+
+  - template: party_api_name_visibility.java.ftl
+    name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiNameVisibility.java"

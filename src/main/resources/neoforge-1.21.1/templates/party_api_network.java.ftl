@@ -19,7 +19,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 @EventBusSubscriber(modid = "${modid}", bus = EventBusSubscriber.Bus.MOD)
 public final class PartyApiNetwork {
-	private static final String NETWORK_VERSION = "2";
+	private static final String NETWORK_VERSION = "3";
 
 	private PartyApiNetwork() {
 	}
@@ -52,7 +52,7 @@ public final class PartyApiNetwork {
 		}
 
 		try {
-			PacketDistributor.sendToPlayer(player, new SyncPartyPayload("", "", false, "CUSTOM", 8, 74, 80, false, false, List.of(), List.of(), List.of()));
+			PacketDistributor.sendToPlayer(player, new SyncPartyPayload("", "", false, "CUSTOM", 8, 58, 80, false, false, List.of(), List.of(), List.of()));
 		} catch (Throwable ignored) {
 		}
 	}
@@ -133,10 +133,19 @@ public final class PartyApiNetwork {
 		}
 	}
 
-	public record OnlinePlayerSyncData(String uuid, String name, boolean inMyParty, boolean pendingInvite) {
+	public record OnlinePlayerSyncData(String uuid, String name, boolean inMyParty, boolean pendingInvite, String partyId, String leaderId, String leaderName, int partySize, int partyMaxMembers, boolean partyLeader) {
 		public OnlinePlayerSyncData {
 			uuid = uuid == null ? "" : uuid;
 			name = name == null ? "" : name;
+			partyId = partyId == null ? "" : partyId;
+			leaderId = leaderId == null ? "" : leaderId;
+			leaderName = leaderName == null ? "" : leaderName;
+			partySize = Math.max(0, partySize);
+			partyMaxMembers = Math.max(0, partyMaxMembers);
+		}
+
+		public boolean inAnyParty() {
+			return !partyId.isEmpty();
 		}
 	}
 
@@ -155,7 +164,7 @@ public final class PartyApiNetwork {
 		List<CustomOverlayEntrySyncData> customEntries
 	) implements CustomPacketPayload {
 		public static final CustomPacketPayload.Type<SyncPartyPayload> TYPE =
-			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_sync_v2"));
+			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_sync_v3"));
 
 		public static final net.minecraft.network.codec.StreamCodec<RegistryFriendlyByteBuf, SyncPartyPayload> STREAM_CODEC =
 			new net.minecraft.network.codec.StreamCodec<>() {
@@ -287,7 +296,7 @@ public final class PartyApiNetwork {
 
 	public record OpenPartyScreenPayload(String screen) implements CustomPacketPayload {
 		public static final CustomPacketPayload.Type<OpenPartyScreenPayload> TYPE =
-			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_open_screen_v2"));
+			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_open_screen_v3"));
 
 		public static final net.minecraft.network.codec.StreamCodec<RegistryFriendlyByteBuf, OpenPartyScreenPayload> STREAM_CODEC =
 			new net.minecraft.network.codec.StreamCodec<>() {
@@ -314,7 +323,7 @@ public final class PartyApiNetwork {
 
 	public record OpenPartyInvitePayload(String inviterName) implements CustomPacketPayload {
 		public static final CustomPacketPayload.Type<OpenPartyInvitePayload> TYPE =
-			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_open_invite"));
+			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_open_invite_v3"));
 
 		public static final net.minecraft.network.codec.StreamCodec<RegistryFriendlyByteBuf, OpenPartyInvitePayload> STREAM_CODEC =
 			new net.minecraft.network.codec.StreamCodec<>() {
@@ -341,7 +350,7 @@ public final class PartyApiNetwork {
 
 	public record OnlinePlayerListPayload(List<OnlinePlayerSyncData> players) implements CustomPacketPayload {
 		public static final CustomPacketPayload.Type<OnlinePlayerListPayload> TYPE =
-			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_online_players"));
+			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_online_players_v3"));
 
 		public static final net.minecraft.network.codec.StreamCodec<RegistryFriendlyByteBuf, OnlinePlayerListPayload> STREAM_CODEC =
 			new net.minecraft.network.codec.StreamCodec<>() {
@@ -351,7 +360,18 @@ public final class PartyApiNetwork {
 					List<OnlinePlayerSyncData> players = new ArrayList<>();
 
 					for (int i = 0; i < count; i++) {
-						players.add(new OnlinePlayerSyncData(buffer.readUtf(), buffer.readUtf(), buffer.readBoolean(), buffer.readBoolean()));
+						players.add(new OnlinePlayerSyncData(
+							buffer.readUtf(),
+							buffer.readUtf(),
+							buffer.readBoolean(),
+							buffer.readBoolean(),
+							buffer.readUtf(),
+							buffer.readUtf(),
+							buffer.readUtf(),
+							buffer.readInt(),
+							buffer.readInt(),
+							buffer.readBoolean()
+						));
 					}
 
 					return new OnlinePlayerListPayload(players);
@@ -367,6 +387,12 @@ public final class PartyApiNetwork {
 						buffer.writeUtf(player.name());
 						buffer.writeBoolean(player.inMyParty());
 						buffer.writeBoolean(player.pendingInvite());
+						buffer.writeUtf(player.partyId());
+						buffer.writeUtf(player.leaderId());
+						buffer.writeUtf(player.leaderName());
+						buffer.writeInt(player.partySize());
+						buffer.writeInt(player.partyMaxMembers());
+						buffer.writeBoolean(player.partyLeader());
 					}
 				}
 			};
@@ -383,7 +409,7 @@ public final class PartyApiNetwork {
 
 	public record PartyActionPayload(String action, String targetId, String value) implements CustomPacketPayload {
 		public static final CustomPacketPayload.Type<PartyActionPayload> TYPE =
-			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_action"));
+			new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("${modid}", "party_action_v3"));
 
 		public static final net.minecraft.network.codec.StreamCodec<RegistryFriendlyByteBuf, PartyActionPayload> STREAM_CODEC =
 			new net.minecraft.network.codec.StreamCodec<>() {

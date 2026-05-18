@@ -1,6 +1,6 @@
 {
-  "type": "party_set_player_stat",
-  "message0": "set party stat of %1 key %2 to %3",
+  "type": "party_clear_player_stat",
+  "message0": "clear party stat of %1 key %2",
   "args0": [
     {
       "type": "input_value",
@@ -11,28 +11,21 @@
       "type": "input_value",
       "name": "KEY",
       "check": "String"
-    },
-    {
-      "type": "input_value",
-      "name": "VALUE",
-      "check": "String"
     }
   ],
   "inputsInline": false,
   "colour": 260,
-  "tooltip": "Sets a synced party stat for a player. Example: key LVL, value player's persistent LVL variable.",
+  "tooltip": "Clears a synced party stat for a player.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "party_tools",
     "toolbox_init": [
       "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
-      "<value name=\"KEY\"><block type=\"text\"><field name=\"TEXT\">LVL</field></block></value>",
-      "<value name=\"VALUE\"><block type=\"text\"><field name=\"TEXT\">1</field></block></value>"
+      "<value name=\"KEY\"><block type=\"text\"><field name=\"TEXT\">LVL</field></block></value>"
     ],
     "inputs": [
       "ENTITY",
-      "KEY",
-      "VALUE"
+      "KEY"
     ]
   },
   "previousStatement": null,

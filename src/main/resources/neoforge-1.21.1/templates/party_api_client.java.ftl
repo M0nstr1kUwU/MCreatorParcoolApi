@@ -2,6 +2,7 @@ package ${package}.client;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -220,9 +221,16 @@ public final class PartyApiClient {
 		graphics.drawString(minecraft.font, name, 0, 0, 0xFFFFFFFF, false);
 		graphics.pose().popPose();
 
+		String lvl = member.stats().getOrDefault("LVL", member.stats().getOrDefault("lvl", ""));
+
+		if (!lvl.isBlank()) {
+			String lvlText = "LVL " + lvl;
+			graphics.drawString(minecraft.font, lvlText, x + width - 4 - minecraft.font.width(lvlText), y + 2, 0xFFE6C75A, false);
+		}
+
 		int barX = x + 4;
 		int hpY = y + 11;
-		int foodY = y + 14; // 1px higher than previous 15
+		int foodY = y + 15; // restored: not pressed directly into HP bar
 		int barWidth = width - 8;
 
 		float hpRatio = member.maxHealth() <= 0 ? 0.0F : Math.max(0.0F, Math.min(1.0F, member.health() / member.maxHealth()));
@@ -275,6 +283,12 @@ public final class PartyApiClient {
 		}
 	}
 
+	private static void renderSmallBar(GuiGraphics graphics, int x, int y, int width, int height, float ratio, int emptyColor, int fillColor) {
+		int w = Math.max(0, Math.min(width, Math.round(width * ratio)));
+		graphics.fill(x, y, x + width, y + height, emptyColor);
+		graphics.fill(x, y, x + w, y + height, fillColor);
+	}
+
 	private static float parseFloat(String value, float fallback) {
 		try {
 			return Float.parseFloat(value);
@@ -320,9 +334,9 @@ public final class PartyApiClient {
 		protected void init() {
 			drawTopButtons();
 			int startY = 50;
-			int rowHeight = 32;
-			int x = this.width / 2 - 140;
-			int rowWidth = 280;
+			int rowHeight = 38;
+			int x = this.width / 2 - 150;
+			int rowWidth = 300;
 
 			for (int i = 0; i < MEMBERS.size(); i++) {
 				int visibleIndex = i - scroll;
@@ -336,8 +350,8 @@ public final class PartyApiClient {
 				int pinX = x + rowWidth - 104;
 				int kickX = x + rowWidth - 52;
 
-				addRenderableWidget(Button.builder(Component.literal(member.pinned() ? "Unpin" : "Pin"), b -> ${package}.network.PartyApiNetwork.sendClientAction(member.pinned() ? "unpin" : "pin", member.uuid(), "")).bounds(pinX, y + 5, 48, 18).build());
-				addRenderableWidget(Button.builder(Component.literal("Kick"), b -> ${package}.network.PartyApiNetwork.sendClientAction("kick", member.uuid(), "")).bounds(kickX, y + 5, 48, 18).build());
+				addRenderableWidget(Button.builder(Component.literal(member.pinned() ? "Unpin" : "Pin"), b -> ${package}.network.PartyApiNetwork.sendClientAction(member.pinned() ? "unpin" : "pin", member.uuid(), "")).bounds(pinX, y + 8, 48, 18).build());
+				addRenderableWidget(Button.builder(Component.literal("Kick"), b -> ${package}.network.PartyApiNetwork.sendClientAction("kick", member.uuid(), "")).bounds(kickX, y + 8, 48, 18).build());
 			}
 		}
 
@@ -365,9 +379,9 @@ public final class PartyApiClient {
 			}
 
 			int startY = 50;
-			int rowHeight = 32;
-			int x = this.width / 2 - 140;
-			int rowWidth = 280;
+			int rowHeight = 38;
+			int x = this.width / 2 - 150;
+			int rowWidth = 300;
 
 			for (int i = scroll; i < MEMBERS.size(); i++) {
 				int visibleIndex = i - scroll;
@@ -378,14 +392,39 @@ public final class PartyApiClient {
 				}
 
 				var member = MEMBERS.get(i);
-				boolean customMemberFrame = drawTexture(graphics, GUI_MEMBER_FRAME, x, y, rowWidth, 28, 280, 28);
+				boolean customMemberFrame = drawTexture(graphics, GUI_MEMBER_FRAME, x, y, rowWidth, 34, 300, 34);
 
 				if (!customMemberFrame) {
-					graphics.fill(x, y, x + rowWidth, y + 28, 0x99000000);
+					graphics.fill(x, y, x + rowWidth, y + 34, 0x99000000);
+					graphics.fill(x, y, x + rowWidth, y + 1, member.leader() ? 0xFFE6C75A : 0xFF555555);
+					graphics.fill(x, y + 33, x + rowWidth, y + 34, member.leader() ? 0xFFE6C75A : 0xFF555555);
 				}
 
-				graphics.drawString(this.font, member.name() + (member.leader() ? " ★" : ""), x + 8, y + 5, 0xFFFFFFFF, false);
-				graphics.drawString(this.font, "HP " + Math.round(member.health()) + "/" + Math.round(member.maxHealth()) + " Food " + member.food(), x + 8, y + 17, 0xFFCCCCCC, false);
+				String extra = member.leader() ? " ★" : "";
+				String lvl = member.stats().getOrDefault("LVL", member.stats().getOrDefault("lvl", ""));
+
+				if (!lvl.isBlank()) {
+					extra += "   LVL " + lvl;
+				}
+
+				graphics.drawString(this.font, member.name() + extra, x + 8, y + 4, 0xFFFFFFFF, false);
+
+				int barX = x + 8;
+				int barW = 160;
+				float hpRatio = member.maxHealth() <= 0.0F ? 0.0F : Math.max(0.0F, Math.min(1.0F, member.health() / member.maxHealth()));
+				float absorptionRatio = member.maxHealth() <= 0.0F ? 0.0F : Math.max(0.0F, Math.min(1.0F, member.absorption() / member.maxHealth()));
+				float foodRatio = Math.max(0.0F, Math.min(1.0F, member.food() / 20.0F));
+
+				renderSmallBar(graphics, barX, y + 16, barW, 5, hpRatio, 0xFF321010, 0xFFB93A3A);
+
+				if (absorptionRatio > 0.0F) {
+					renderSmallBar(graphics, barX, y + 16, barW, 5, absorptionRatio, 0x00000000, 0x88FFD966);
+				}
+
+				renderSmallBar(graphics, barX, y + 24, barW, 4, foodRatio, 0xFF2B1B0B, 0xFFC9823A);
+
+				graphics.drawString(this.font, Math.round(member.health()) + "/" + Math.round(member.maxHealth()), barX + barW + 6, y + 14, 0xFFCCCCCC, false);
+				graphics.drawString(this.font, member.food() + "/20", barX + barW + 6, y + 23, 0xFFCCCCCC, false);
 			}
 		}
 	}
@@ -414,6 +453,7 @@ public final class PartyApiClient {
 			drawTopButtons();
 			search = new EditBox(this.font, 16, 38, 180, 20, Component.literal("Search"));
 			search.setValue(oldFilter);
+			search.setHint(Component.literal("Search nickname"));
 			search.setResponder(value -> rebuild());
 			addRenderableWidget(search);
 			addPlayerButtons();
@@ -465,7 +505,9 @@ public final class PartyApiClient {
 				int y = 70 + (row - scroll) * 24;
 
 				if (y >= 64 && y < this.height - 24) {
+					String status = player.inMyParty() ? "already in your party" : (player.inAnyParty() ? "in another party" : "online");
 					graphics.drawString(this.font, player.name(), 20, y, player.inMyParty() ? 0xFFAAAAAA : 0xFFFFFFFF, false);
+					graphics.drawString(this.font, status, 150, y, 0xFF999999, false);
 				}
 
 				row++;
@@ -498,6 +540,9 @@ public final class PartyApiClient {
 	}
 
 	private static final class PartyAdminScreen extends PartyBaseScreen {
+		private EditBox search;
+		private int scroll = 0;
+
 		private PartyAdminScreen() {
 			super("Party Admin");
 		}
@@ -505,14 +550,137 @@ public final class PartyApiClient {
 		@Override
 		protected void init() {
 			drawTopButtons();
-			addRenderableWidget(Button.builder(Component.literal("Admin tools are command-backed"), b -> {}).bounds(20, 52, 180, 20).build());
+
+			addRenderableWidget(Button.builder(Component.literal("System ON"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_enable", "", "")).bounds(16, 36, 80, 20).build());
+			addRenderableWidget(Button.builder(Component.literal("System OFF"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_disable", "", "")).bounds(100, 36, 86, 20).build());
+			addRenderableWidget(Button.builder(Component.literal("Refresh"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_refresh", "", "")).bounds(190, 36, 70, 20).build());
+
+			search = new EditBox(this.font, 16, 62, 200, 20, Component.literal("Search"));
+			search.setHint(Component.literal("Search player / party leader"));
+			search.setResponder(value -> rebuildAdminWidgets());
+			addRenderableWidget(search);
+
+			addAdminButtons();
+		}
+
+		private void rebuildAdminWidgets() {
+			String oldFilter = search == null ? "" : search.getValue();
+			clearWidgets();
+			drawTopButtons();
+
+			addRenderableWidget(Button.builder(Component.literal("System ON"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_enable", "", "")).bounds(16, 36, 80, 20).build());
+			addRenderableWidget(Button.builder(Component.literal("System OFF"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_disable", "", "")).bounds(100, 36, 86, 20).build());
+			addRenderableWidget(Button.builder(Component.literal("Refresh"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_refresh", "", "")).bounds(190, 36, 70, 20).build());
+
+			search = new EditBox(this.font, 16, 62, 200, 20, Component.literal("Search"));
+			search.setValue(oldFilter);
+			search.setHint(Component.literal("Search player / party leader"));
+			search.setResponder(value -> rebuildAdminWidgets());
+			addRenderableWidget(search);
+
+			addAdminButtons();
+		}
+
+		private List<${package}.network.PartyApiNetwork.OnlinePlayerSyncData> filteredAdminPlayers() {
+			String filter = search == null ? "" : search.getValue().toLowerCase(Locale.ROOT);
+			List<${package}.network.PartyApiNetwork.OnlinePlayerSyncData> result = new ArrayList<>();
+
+			for (var player : ONLINE_PLAYERS) {
+				if (filter.isBlank() || player.name().toLowerCase(Locale.ROOT).contains(filter) || player.leaderName().toLowerCase(Locale.ROOT).contains(filter)) {
+					result.add(player);
+				}
+			}
+
+			result.sort((a, b) -> {
+				if (a.inAnyParty() != b.inAnyParty()) {
+					return a.inAnyParty() ? -1 : 1;
+				}
+
+				int leaderCompare = a.leaderName().compareToIgnoreCase(b.leaderName());
+				if (leaderCompare != 0) {
+					return leaderCompare;
+				}
+
+				if (a.partyLeader() != b.partyLeader()) {
+					return a.partyLeader() ? -1 : 1;
+				}
+
+				return a.name().compareToIgnoreCase(b.name());
+			});
+
+			return result;
+		}
+
+		private void addAdminButtons() {
+			List<${package}.network.PartyApiNetwork.OnlinePlayerSyncData> rows = filteredAdminPlayers();
+
+			for (int i = 0; i < rows.size(); i++) {
+				int y = 94 + (i - scroll) * 54;
+
+				if (y < 88 || y >= this.height - 48) {
+					continue;
+				}
+
+				var player = rows.get(i);
+				int right = this.width - 16;
+
+				addRenderableWidget(Button.builder(Component.literal("View"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_view", player.uuid(), "")).bounds(right - 314, y + 14, 46, 18).build());
+				addRenderableWidget(Button.builder(Component.literal("Remove"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_remove", player.uuid(), "")).bounds(right - 264, y + 14, 60, 18).build());
+				addRenderableWidget(Button.builder(Component.literal("Disband"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_disband", player.uuid(), "")).bounds(right - 200, y + 14, 64, 18).build());
+				addRenderableWidget(Button.builder(Component.literal("PvP ON"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_pvp_on", player.uuid(), "")).bounds(right - 132, y + 4, 62, 18).build());
+				addRenderableWidget(Button.builder(Component.literal("PvP OFF"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_pvp_off", player.uuid(), "")).bounds(right - 66, y + 4, 62, 18).build());
+				addRenderableWidget(Button.builder(Component.literal("L4"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_4", player.uuid(), "")).bounds(right - 132, y + 26, 30, 18).build());
+				addRenderableWidget(Button.builder(Component.literal("L8"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_8", player.uuid(), "")).bounds(right - 98, y + 26, 30, 18).build());
+				addRenderableWidget(Button.builder(Component.literal("L16"), b -> ${package}.network.PartyApiNetwork.sendClientAction("admin_limit_16", player.uuid(), "")).bounds(right - 64, y + 26, 38, 18).build());
+			}
+		}
+
+		@Override
+		public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+			scroll = Math.max(0, scroll - (int) Math.signum(deltaY));
+			rebuildAdminWidgets();
+			return true;
 		}
 
 		@Override
 		public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 			super.render(graphics, mouseX, mouseY, partialTick);
 			graphics.drawCenteredString(this.font, "Party Admin", this.width / 2, 20, 0xFFFFFFFF);
-			graphics.drawString(this.font, "Use /party admin ... for target-specific actions.", 20, 84, 0xFFFFFFFF, false);
+
+			List<${package}.network.PartyApiNetwork.OnlinePlayerSyncData> rows = filteredAdminPlayers();
+			String lastPartyId = null;
+
+			for (int i = scroll; i < rows.size(); i++) {
+				int y = 94 + (i - scroll) * 54;
+
+				if (y >= this.height - 48) {
+					break;
+				}
+
+				var player = rows.get(i);
+
+				if (player.inAnyParty() && !player.partyId().equals(lastPartyId)) {
+					lastPartyId = player.partyId();
+					graphics.drawString(this.font, "Party leader: " + player.leaderName() + "  (" + player.partySize() + "/" + player.partyMaxMembers() + ")", 18, y - 10, 0xFFE6C75A, false);
+				} else if (!player.inAnyParty() && lastPartyId != null) {
+					lastPartyId = null;
+				}
+
+				graphics.fill(14, y - 2, this.width - 14, y + 46, player.inAnyParty() ? 0x88000000 : 0x66222222);
+
+				String marker = player.partyLeader() ? " ★ leader" : "";
+				String partyLine = player.inAnyParty()
+					? "Party: " + player.leaderName() + " | Size: " + player.partySize() + "/" + player.partyMaxMembers()
+					: "No party";
+
+				graphics.drawString(this.font, player.name() + marker, 20, y + 4, player.partyLeader() ? 0xFFE6C75A : 0xFFFFFFFF, false);
+				graphics.drawString(this.font, partyLine, 20, y + 16, 0xFFCCCCCC, false);
+				graphics.drawString(this.font, "UUID: " + player.uuid(), 20, y + 28, 0xFF999999, false);
+			}
+
+			if (rows.isEmpty()) {
+				graphics.drawString(this.font, "No online players received. Press Refresh or reopen Admin GUI.", 20, 94, 0xFFFFFFFF, false);
+			}
 		}
 	}
 

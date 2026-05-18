@@ -1,0 +1,26 @@
+{
+  "type": "party_show_player_in_tab",
+  "message0": "show %1 in server tab list",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": false,
+  "colour": 260,
+  "tooltip": "Restores a player in the client tab player list.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ENTITY"
+    ]
+  },
+  "previousStatement": null,
+  "nextStatement": null
+}

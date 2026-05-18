@@ -1,0 +1,26 @@
+{
+  "type": "party_hide_player_name_tag",
+  "message0": "hide name tag of %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    }
+  ],
+  "inputsInline": false,
+  "colour": 260,
+  "tooltip": "Hides the vanilla name tag above a server player using a scoreboard team.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>"
+    ],
+    "inputs": [
+      "ENTITY"
+    ]
+  },
+  "previousStatement": null,
+  "nextStatement": null
+}

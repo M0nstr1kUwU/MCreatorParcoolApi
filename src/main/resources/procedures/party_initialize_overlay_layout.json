@@ -25,7 +25,7 @@
   ],
   "inputsInline": false,
   "colour": 260,
-  "tooltip": "Party GUI / overlay server-side helper block.",
+  "tooltip": "Initializes party overlay layout for a player. Put it in player join / party created / accepted invite procedures.",
   "helpUrl": "",
   "mcreator": {
     "toolbox_id": "party_tools",
@@ -33,7 +33,7 @@
       "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
       "<value name=\"SHOW_SELF\"><block type=\"logic_boolean\"><field name=\"BOOL\">FALSE</field></block></value>",
       "<value name=\"X\"><block type=\"math_number\"><field name=\"NUM\">8</field></block></value>",
-      "<value name=\"Y\"><block type=\"math_number\"><field name=\"NUM\">74</field></block></value>"
+      "<value name=\"Y\"><block type=\"math_number\"><field name=\"NUM\">58</field></block></value>"
     ],
     "inputs": [
       "ENTITY",

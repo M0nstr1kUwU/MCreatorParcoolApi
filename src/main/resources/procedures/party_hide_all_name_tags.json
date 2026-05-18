@@ -1,0 +1,16 @@
+{
+  "type": "party_hide_all_name_tags",
+  "message0": "hide name tags of all players",
+  "args0": [],
+  "inputsInline": false,
+  "colour": 260,
+  "tooltip": "Hides vanilla name tags above all online players.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [],
+    "inputs": []
+  },
+  "previousStatement": null,
+  "nextStatement": null
+}

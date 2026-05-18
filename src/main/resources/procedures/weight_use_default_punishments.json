@@ -13,7 +13,7 @@
   "tooltip": "Weight system config block.",
   "helpUrl": "",
   "mcreator": {
-    "toolbox_id": "weight_tools",
+    "toolbox_id": "weight_system",
     "toolbox_init": [
       "<value name=\"ENABLED\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value>"
     ],

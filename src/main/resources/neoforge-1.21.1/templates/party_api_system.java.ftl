@@ -27,7 +27,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
 @EventBusSubscriber(modid = "${modid}")
 public final class PartyApiSystem {
 	private static final String DATA_NAME = "${modid}_party_api_system_v1";
-	private static final int MAX_OVERLAY_PINNED = 5;
+	private static final int MAX_OVERLAY_PINNED = 4;
 	private static final Map<UUID, InviteData> INVITES = new ConcurrentHashMap<>();
 
 	private PartyApiSystem() {
@@ -867,7 +867,7 @@ public final class PartyApiSystem {
 			return;
 		}
 
-		${package}.network.PartyApiNetwork.sendOnlinePlayerList(player, buildOnlinePlayerList(player));
+		${package}.network.PartyApiNetwork.sendOnlinePlayerList(player, buildOnlinePlayerList(player, false));
 		${package}.network.PartyApiNetwork.openPartyScreen(player, "INVITE");
 	}
 
@@ -886,7 +886,7 @@ public final class PartyApiSystem {
 		}
 
 		syncPartyTo(player);
-		${package}.network.PartyApiNetwork.sendOnlinePlayerList(player, buildOnlinePlayerList(player));
+		${package}.network.PartyApiNetwork.sendOnlinePlayerList(player, buildOnlinePlayerList(player, true));
 		${package}.network.PartyApiNetwork.openPartyScreen(player, "ADMIN");
 	}
 
@@ -1141,25 +1141,54 @@ public final class PartyApiSystem {
 		);
 	}
 
-	private static List<${package}.network.PartyApiNetwork.OnlinePlayerSyncData> buildOnlinePlayerList(ServerPlayer viewer) {
+	private static List<${package}.network.PartyApiNetwork.OnlinePlayerSyncData> buildOnlinePlayerList(ServerPlayer viewer, boolean includeViewer) {
 		List<${package}.network.PartyApiNetwork.OnlinePlayerSyncData> list = new ArrayList<>();
 		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 		PartySavedData data = getSavedData();
-		PartyData party = viewer != null && data != null ? data.getPartyOf(viewer.getUUID()) : null;
+		PartyData viewerParty = viewer != null && data != null ? data.getPartyOf(viewer.getUUID()) : null;
 
 		if (server == null || viewer == null) {
 			return list;
 		}
 
 		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-			if (player.getUUID().equals(viewer.getUUID())) {
+			if (!includeViewer && player.getUUID().equals(viewer.getUUID())) {
 				continue;
 			}
 
-			boolean inParty = party != null && party.members.contains(player.getUUID());
-			boolean pending = party != null && INVITES.containsKey(player.getUUID()) && INVITES.get(player.getUUID()).partyId.equals(party.id) && !INVITES.get(player.getUUID()).isExpired();
+			PartyData targetParty = data != null ? data.getPartyOf(player.getUUID()) : null;
+			boolean inViewerParty = viewerParty != null && viewerParty.members.contains(player.getUUID());
+			boolean pending = viewerParty != null && INVITES.containsKey(player.getUUID()) && INVITES.get(player.getUUID()).partyId.equals(viewerParty.id) && !INVITES.get(player.getUUID()).isExpired();
 
-			list.add(new ${package}.network.PartyApiNetwork.OnlinePlayerSyncData(player.getUUID().toString(), player.getGameProfile().getName(), inParty, pending));
+			String targetPartyId = "";
+			String leaderId = "";
+			String leaderName = "";
+			int partySize = 0;
+			int partyMax = 0;
+			boolean targetIsLeader = false;
+
+			if (targetParty != null) {
+				targetPartyId = targetParty.id.toString();
+				leaderId = targetParty.leader.toString();
+				ServerPlayer leader = getServerPlayer(targetParty.leader);
+				leaderName = leader != null ? leader.getGameProfile().getName() : leaderId;
+				partySize = targetParty.members.size();
+				partyMax = targetParty.maxMembers;
+				targetIsLeader = targetParty.leader.equals(player.getUUID());
+			}
+
+			list.add(new ${package}.network.PartyApiNetwork.OnlinePlayerSyncData(
+				player.getUUID().toString(),
+				player.getGameProfile().getName(),
+				inViewerParty,
+				pending,
+				targetPartyId,
+				leaderId,
+				leaderName,
+				partySize,
+				partyMax,
+				targetIsLeader
+			));
 		}
 
 		return list;
