@@ -1,0 +1,33 @@
+{
+  "type": "party_set_player_level_stat_rounded",
+  "message0": "set party LVL stat of %1 to rounded %2",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "ENTITY",
+      "check": "Entity"
+    },
+    {
+      "type": "input_value",
+      "name": "VALUE",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": false,
+  "colour": 260,
+  "tooltip": "Stores LVL as rounded text. It is displayed only if required mod id is loaded.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"ENTITY\"><block type=\"entity_from_deps\"></block></value>",
+      "<value name=\"VALUE\"><block type=\"math_number\"><field name=\"NUM\">1</field></block></value>"
+    ],
+    "inputs": [
+      "ENTITY",
+      "VALUE"
+    ]
+  },
+  "previousStatement": null,
+  "nextStatement": null
+}

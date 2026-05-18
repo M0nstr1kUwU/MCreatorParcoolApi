@@ -672,6 +672,9 @@ public final class PartyApiClient {
 				}
 
 				renderSmallBar(graphics, barX, y + 24, barW, 4, foodRatio, 0xFF2B1B0B, 0xFFC9823A);
+
+				graphics.drawString(this.font, Math.round(member.health()) + "/" + Math.round(member.maxHealth()), barX + barW + 6, y + 14, 0xFFCCCCCC, false);
+				graphics.drawString(this.font, member.food() + "/20", barX + barW + 6, y + 23, 0xFFCCCCCC, false);
 			}
 
 			renderScrollBar(graphics, x + rowWidth + 6, startY, Math.max(24, this.height - startY - 30), MEMBERS.size(), Math.max(1, (this.height - startY - 30) / rowHeight), scroll);
@@ -778,8 +781,9 @@ public final class PartyApiClient {
 					}
 
 					String status = player.inMyParty() ? "already in your party" : (player.inAnyParty() ? "in another party" : "online");
-					graphics.drawString(this.font, player.name(), 20, y, player.inMyParty() ? 0xFFAAAAAA : 0xFFFFFFFF, false);
-					graphics.drawString(this.font, status, 150, y, 0xFF999999, false);
+					String levelSuffix = player.levelVisible() ? "  LVL " + player.levelText() : "";
+					graphics.drawString(this.font, player.name() + levelSuffix, 20, y, player.inMyParty() ? 0xFFAAAAAA : 0xFFFFFFFF, false);
+					graphics.drawString(this.font, status, 180, y, 0xFF999999, false);
 				}
 
 				row++;
@@ -987,11 +991,12 @@ public final class PartyApiClient {
 				}
 
 				String marker = player.partyLeader() ? " ★ leader" : "";
+				String levelSuffix = player.levelVisible() ? "   LVL " + player.levelText() : "";
 				String partyLine = player.inAnyParty()
 					? "Party: " + player.leaderName() + " | Size: " + player.partySize() + "/" + player.partyMaxMembers()
 					: "No party";
 
-				graphics.drawString(this.font, player.name() + marker, 30, y + 4, player.partyLeader() ? 0xFFE6C75A : 0xFFFFFFFF, false);
+				graphics.drawString(this.font, player.name() + marker + levelSuffix, 30, y + 4, player.partyLeader() ? 0xFFE6C75A : 0xFFFFFFFF, false);
 				graphics.drawString(this.font, partyLine, 20, y + 16, 0xFFCCCCCC, false);
 				graphics.drawString(this.font, "UUID: " + player.uuid(), 20, y + 28, 0xFF999999, false);
 			}

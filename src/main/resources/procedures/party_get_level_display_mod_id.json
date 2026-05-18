@@ -1,0 +1,15 @@
+{
+  "type": "party_get_level_display_mod_id",
+  "message0": "party LVL display required mod id",
+  "args0": [],
+  "inputsInline": false,
+  "colour": 260,
+  "tooltip": "Returns the mod id required for party LVL display.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [],
+    "inputs": []
+  },
+  "output": "String"
+}

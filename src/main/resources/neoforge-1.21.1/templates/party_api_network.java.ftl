@@ -133,7 +133,7 @@ public final class PartyApiNetwork {
 		}
 	}
 
-	public record OnlinePlayerSyncData(String uuid, String name, boolean inMyParty, boolean pendingInvite, String partyId, String leaderId, String leaderName, int partySize, int partyMaxMembers, boolean partyLeader) {
+	public record OnlinePlayerSyncData(String uuid, String name, boolean inMyParty, boolean pendingInvite, String partyId, String leaderId, String leaderName, int partySize, int partyMaxMembers, boolean partyLeader, boolean levelVisible, String levelText) {
 		public OnlinePlayerSyncData {
 			uuid = uuid == null ? "" : uuid;
 			name = name == null ? "" : name;
@@ -142,6 +142,8 @@ public final class PartyApiNetwork {
 			leaderName = leaderName == null ? "" : leaderName;
 			partySize = Math.max(0, partySize);
 			partyMaxMembers = Math.max(0, partyMaxMembers);
+			levelText = levelText == null ? "" : levelText;
+			levelVisible = levelVisible && !levelText.isBlank();
 		}
 
 		public boolean inAnyParty() {
@@ -370,7 +372,9 @@ public final class PartyApiNetwork {
 							buffer.readUtf(),
 							buffer.readInt(),
 							buffer.readInt(),
-							buffer.readBoolean()
+							buffer.readBoolean(),
+							buffer.readBoolean(),
+							buffer.readUtf()
 						));
 					}
 
@@ -393,6 +397,8 @@ public final class PartyApiNetwork {
 						buffer.writeInt(player.partySize());
 						buffer.writeInt(player.partyMaxMembers());
 						buffer.writeBoolean(player.partyLeader());
+						buffer.writeBoolean(player.levelVisible());
+						buffer.writeUtf(player.levelText());
 					}
 				}
 			};

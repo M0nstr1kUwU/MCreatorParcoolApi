@@ -1,0 +1,15 @@
+{
+  "type": "party_is_level_display_enabled",
+  "message0": "is party LVL display enabled",
+  "args0": [],
+  "inputsInline": false,
+  "colour": 260,
+  "tooltip": "True when the configured required mod id is loaded.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [],
+    "inputs": []
+  },
+  "output": "Boolean"
+}

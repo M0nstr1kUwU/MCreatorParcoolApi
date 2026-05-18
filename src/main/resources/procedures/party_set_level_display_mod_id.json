@@ -1,0 +1,26 @@
+{
+  "type": "party_set_level_display_mod_id",
+  "message0": "set party LVL display required mod id to %1",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "MOD_ID",
+      "check": "String"
+    }
+  ],
+  "inputsInline": false,
+  "colour": 260,
+  "tooltip": "Sets the mod id that must be loaded for party LVL display to appear.",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"MOD_ID\"><block type=\"text\"><field name=\"TEXT\">examplemod</field></block></value>"
+    ],
+    "inputs": [
+      "MOD_ID"
+    ]
+  },
+  "previousStatement": null,
+  "nextStatement": null
+}

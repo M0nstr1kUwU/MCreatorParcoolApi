@@ -20,6 +20,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.saveddata.SavedData;
 
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -720,6 +721,104 @@ public final class PartyApiSystem {
 		return true;
 	}
 
+	public static boolean setLevelDisplayRequiredModId(String modId) {
+		PartySavedData data = getSavedData();
+
+		if (data == null) {
+			return false;
+		}
+
+		data.levelDisplayRequiredModId = normalizeModId(modId);
+		data.setDirty();
+		syncAllOnlineParties();
+		return true;
+	}
+
+	public static String getLevelDisplayRequiredModId() {
+		PartySavedData data = getSavedData();
+		return data == null ? "" : normalizeModId(data.levelDisplayRequiredModId);
+	}
+
+	public static boolean isLevelDisplayEnabled() {
+		String modId = getLevelDisplayRequiredModId();
+
+		if (modId.isBlank()) {
+			return false;
+		}
+
+		try {
+			return ModList.get().isLoaded(modId);
+		} catch (Throwable ignored) {
+			return false;
+		}
+	}
+
+	public static String roundNoDecimals(double value) {
+		if (Double.isNaN(value) || Double.isInfinite(value)) {
+			return "0";
+		}
+
+		return String.valueOf(Math.round(value));
+	}
+
+	public static boolean setPlayerLevelStatRounded(ServerPlayer player, double value) {
+		return setPlayerStat(player, "LVL", roundNoDecimals(value));
+	}
+
+	private static String normalizeModId(String modId) {
+		return modId == null ? "" : modId.trim().toLowerCase(java.util.Locale.ROOT);
+	}
+
+	private static String formatLevelText(String raw) {
+		if (raw == null || raw.isBlank()) {
+			return "";
+		}
+
+		try {
+			return roundNoDecimals(Double.parseDouble(raw.trim().replace(',', '.')));
+		} catch (Throwable ignored) {
+			return raw.trim();
+		}
+	}
+
+	private static String getLevelTextForPlayer(PartySavedData data, UUID playerId) {
+		if (data == null || playerId == null || !isLevelDisplayEnabled()) {
+			return "";
+		}
+
+		Map<String, String> stats = data.extraStatsByPlayer.get(playerId);
+
+		if (stats == null || stats.isEmpty()) {
+			return "";
+		}
+
+		String raw = stats.getOrDefault("LVL", stats.getOrDefault("lvl", ""));
+		return formatLevelText(raw);
+	}
+
+	private static Map<String, String> filterStatsForDisplay(Map<String, String> rawStats) {
+		if (rawStats == null || rawStats.isEmpty()) {
+			return Map.of();
+		}
+
+		Map<String, String> result = new LinkedHashMap<>(rawStats);
+
+		if (!isLevelDisplayEnabled()) {
+			result.remove("LVL");
+			result.remove("lvl");
+			return result;
+		}
+
+		String level = formatLevelText(result.getOrDefault("LVL", result.getOrDefault("lvl", "")));
+		result.remove("lvl");
+
+		if (!level.isBlank()) {
+			result.put("LVL", level);
+		}
+
+		return result;
+	}
+
 	public static boolean isInParty(ServerPlayer player) {
 		PartySavedData data = getSavedData();
 		return player != null && data != null && data.getPartyOf(player.getUUID()) != null;
@@ -1122,7 +1221,7 @@ public final class PartyApiSystem {
 				continue;
 			}
 
-			Map<String, String> stats = data == null ? Map.of() : data.extraStatsByPlayer.getOrDefault(memberId, Map.of());
+			Map<String, String> stats = data == null ? Map.of() : filterStatsForDisplay(data.extraStatsByPlayer.getOrDefault(memberId, Map.of()));
 
 			members.add(new ${package}.network.PartyApiNetwork.MemberSyncData(
 				memberId.toString(),
@@ -1204,6 +1303,8 @@ public final class PartyApiSystem {
 				targetIsLeader = targetParty.leader.equals(player.getUUID());
 			}
 
+			String levelText = getLevelTextForPlayer(data, player.getUUID());
+
 			list.add(new ${package}.network.PartyApiNetwork.OnlinePlayerSyncData(
 				player.getUUID().toString(),
 				player.getGameProfile().getName(),
@@ -1214,7 +1315,9 @@ public final class PartyApiSystem {
 				leaderName,
 				partySize,
 				partyMax,
-				targetIsLeader
+				targetIsLeader,
+				!levelText.isBlank(),
+				levelText
 			));
 		}
 
@@ -1436,6 +1539,7 @@ public final class PartyApiSystem {
 	public static final class PartySavedData extends SavedData {
 		private final Map<UUID, PartyData> parties = new ConcurrentHashMap<>();
 		private final Map<UUID, Map<String, String>> extraStatsByPlayer = new ConcurrentHashMap<>();
+		private String levelDisplayRequiredModId = "";
 
 		private PartyData getPartyOf(UUID playerId) {
 			if (playerId == null) {
@@ -1453,6 +1557,7 @@ public final class PartyApiSystem {
 
 		public static PartySavedData load(CompoundTag tag, HolderLookup.Provider provider) {
 			PartySavedData data = new PartySavedData();
+			data.levelDisplayRequiredModId = tag.contains("LevelDisplayRequiredModId") ? normalizeModId(tag.getString("LevelDisplayRequiredModId")) : "";
 			ListTag partiesTag = tag.getList("Parties", Tag.TAG_COMPOUND);
 
 			for (int i = 0; i < partiesTag.size(); i++) {
@@ -1555,6 +1660,7 @@ public final class PartyApiSystem {
 				statsTag.add(st);
 			}
 			tag.put("Stats", statsTag);
+			tag.putString("LevelDisplayRequiredModId", normalizeModId(levelDisplayRequiredModId));
 
 			return tag;
 		}

@@ -1,0 +1,25 @@
+{
+  "type": "party_round_no_decimals",
+  "message0": "round %1 to no decimals text",
+  "args0": [
+    {
+      "type": "input_value",
+      "name": "VALUE",
+      "check": "Number"
+    }
+  ],
+  "inputsInline": false,
+  "colour": 260,
+  "tooltip": "Rounds a number and returns text without decimal part. Example: 12.6 -> \"13\".",
+  "helpUrl": "",
+  "mcreator": {
+    "toolbox_id": "party_tools",
+    "toolbox_init": [
+      "<value name=\"VALUE\"><block type=\"math_number\"><field name=\"NUM\">1.5</field></block></value>"
+    ],
+    "inputs": [
+      "VALUE"
+    ]
+  },
+  "output": "String"
+}
