@@ -1,131 +1,109 @@
-# MCreatorParcoolApi — полная документация плагина
+# MCreatorParcoolApi / ParCool API — полная документация плагина
 
-Документация описывает весь плагин **ParCool API / MCreatorParcoolApi** для **MCreator 2025.3 + NeoForge 1.21.1**. Плагин предназначен для связки MCreator-процедур с ParCool, а также добавляет собственные игровые системы: вес, party, экономику, казино, сообщения, хитбоксы, атрибуты и свойства сущностей.
+Документация описывает актуальную архитектуру плагина **ParCool API** для **MCreator 2025.3** и **NeoForge 1.21.1**, включая все добавленные механики: ParCool-интеграцию, stamina, camera, client wait, систему веса, party/GUI/overlay, party assets, экономику, казино, сообщения, хитбоксы, атрибуты и свойства сущностей.
 
-> Важно: названия блоков в MCreator могут немного отличаться в зависимости от последней версии JSON-блоков, но логика и назначение блоков остаются такими же. Если в документации написано `ENTITY`, это почти всегда игрок или сущность из зависимостей процедуры.
+Плагин устроен как набор **helper-классов** и **procedure-блоков**. Проще говоря:
+
+```text
+MCreator procedure block
+    -> генерирует Java через .java.ftl
+        -> вызывает helper-класс
+            -> helper работает с Minecraft / NeoForge / ParCool API
+```
+
+Такой подход удобен: если в API ParCool или NeoForge что-то меняется, чинится helper, а блоки в MCreator остаются понятными.
 
 ---
 
-## 1. Что добавляет плагин
-
-Плагин условно делится на несколько больших систем:
+# 1. Поддерживаемая среда
 
 ```text
-1. ParCool API
-   - включение/отключение движений ParCool
-   - принудительная синхронизация ParCool permissions
-   - работа со stamina
-   - клиентский wait
-   - управление камерой
-   - отключение ванильного прыжка
-   - триггеры ParCool-состояний
+MCreator: 2025.3
+Minecraft: 1.21.1
+Loader: NeoForge
+ParCool: 1.21.1-3.4.3.3-NF
+Plugin id: parcool_api
+```
 
-2. Weight System
-   - вес предметов
-   - вес инвентаря
-   - максимальный переносимый вес игрока
-   - проценты загрузки
-   - стадии перегруза
-   - наказания за перегруз
-   - отключение системы веса через конфиг/блоки
+Плагин рассчитан на server-side логику там, где это важно:
 
-3. Party System
-   - создание party
-   - приглашения
-   - GUI приглашений
-   - поиск игроков онлайн
-   - pin/unpin участников
-   - kick
-   - showSelf
-   - party overlay
-   - party chat
-   - party PvP guard
-   - admin-команды
-   - кастомные overlay elements
-   - кастомные GUI/overlay PNG-текстуры
+```text
+вес
+экономика
+party состав
+party PvP
+атрибуты
+хитбоксы
+ParCool limitations
+скрытие ников
+```
 
-4. Economy System
-   - 4 валюты: Cooper, Iron, Gold, Platine
-   - личный счёт / wallet
-   - банковский счёт / bank
-   - перевод денег между игроками
-   - комиссия
-   - потеря wallet-денег при смерти
-   - привязка монет к item id
-   - депозит/снятие через предметы
-   - команды экономики
+А клиент используется там, где без него нельзя:
 
-5. Casino System
-   - честный серверный random
-   - шанс с house edge
-   - dice
-   - roulette
-   - slots
-   - blackjack helper
-   - crash helper
-   - weighted random
-   - готовые шаблоны логики казино
-
-6. Message Tools
-   - styled text
-   - цвет, bold, italic, underline, strikethrough, obfuscated
-   - отправка игроку
-   - broadcast
-   - отправка nearby
-   - отправка операторам
-   - party-сообщения
-
-7. Hitbox Tools
-   - чтение размеров хитбокса
-   - временное изменение хитбокса
-   - постоянное изменение хитбокса через SavedData + EntityEvent.Size
-   - сброс persistent hitbox
-
-8. Attribute / Entity Property Tools
-   - универсальная работа с атрибутами по registry id
-   - здоровье, absorption, воздух, огонь, заморозка
-   - no gravity, glowing, invulnerable, silent
-   - hunger/saturation/exhaustion для игрока
+```text
+GUI
+overlay
+camera perspective
+client wait
+визуальные элементы
+TAB list packets
 ```
 
 ---
 
-## 2. Установка и генерация
+# 2. Главные файлы проекта
 
-### 2.1. Куда копировать файлы
-
-Плагин устроен как обычный MCreator plugin. Основные папки:
+## 2.1. Основной plugin file
 
 ```text
 src/main/resources/plugin.json
-src/main/resources/procedures/
-src/main/resources/neoforge-1.21.1/generator.yaml
-src/main/resources/neoforge-1.21.1/templates/
-src/main/resources/neoforge-1.21.1/procedures/
 ```
 
-Если добавляешь новые блоки:
+В нём задаются:
 
 ```text
-src/main/resources/procedures/<block_name>.json
-src/main/resources/neoforge-1.21.1/procedures/<block_name>.java.ftl
+id
+supportedversions
+name
+version
+description
+author
 ```
 
-Если добавляешь helper-класс:
-
-```text
-src/main/resources/neoforge-1.21.1/templates/<helper_name>.java.ftl
-```
-
-И обязательно добавляешь его в:
+## 2.2. Generator file
 
 ```text
 src/main/resources/neoforge-1.21.1/generator.yaml
 ```
 
-### 2.2. Что делать после замены шаблонов
+Именно он говорит MCreator, какие `.java.ftl` helper-шаблоны должны генерироваться в Java-классы проекта.
 
-После замены helper-шаблонов лучше удалить уже сгенерированные Java-файлы в workspace MCreator:
+Ключевые helper-группы:
+
+```text
+parcool/
+weight/
+party/
+network/
+client/
+economy/
+message/
+hitbox/
+attributes/
+events/
+```
+
+---
+
+# 3. Как правильно ставить обновления плагина
+
+Когда заменяешь `.java.ftl` helper-шаблоны:
+
+```text
+src/main/resources/neoforge-1.21.1/templates/*.java.ftl
+```
+
+лучше удалить уже сгенерированные Java-файлы из workspace:
 
 ```text
 src/main/java/net/mcreator/<modid>/parcool/
@@ -137,180 +115,67 @@ src/main/java/net/mcreator/<modid>/economy/
 src/main/java/net/mcreator/<modid>/message/
 src/main/java/net/mcreator/<modid>/hitbox/
 src/main/java/net/mcreator/<modid>/attributes/
+src/main/java/net/mcreator/<modid>/events/
 ```
 
-Потом в MCreator:
+Потом:
 
 ```text
 Regenerate code
+Build
 ```
 
-Если не удалить старые generated-файлы, MCreator иногда оставляет старую версию класса, и кажется, что новый блок “не работает”.
+Если этого не сделать, MCreator иногда продолжает использовать старый generated Java-класс, и кажется, что новый блок “не работает”.
 
 ---
 
-## 3. Server configs
+# 4. ParCool API
 
-Плагин создаёт несколько server config-файлов в папке:
+ParCool API часть плагина нужна, чтобы управлять движениями ParCool из MCreator-процедур.
 
-```text
-<workspace or run folder>/config/
-```
+## 4.1. Что умеет ParCool bridge
 
-Обычно это:
+Плагин может:
 
 ```text
-<modid>-party-server.toml
-<modid>-economy-server.toml
-<modid>-weight-server.toml
+отключать sprint / fast run
+отключать climb
+отключать jump-движения ParCool
+отключать hang / cling
+отключать wall run / wall slide / wall jump
+отключать все движения ParCool
+включать все движения обратно
+принудительно синхронизировать permissions
+чистить повреждённый limitation-файл игрока
+делать handshake клиента
 ```
 
-### 3.1. Party config
+## 4.2. Как это работает внутри
 
-Пример:
+ParCool использует систему `Limitation`.
 
-```toml
-party_enabled=true
-default_show_self=false
-default_overlay_x=8
-default_overlay_y=58
-overlay_nickname_font_scale_percent=80
-invite_cooldown_seconds=120
-invite_gui_enabled=true
-default_max_members=4
-hard_max_members=200
-admin_permission_level=2
-
-asset_overlay_panel=""
-asset_overlay_member_frame=""
-asset_overlay_hp_bar_empty=""
-asset_overlay_hp_bar_full=""
-asset_overlay_absorption_bar_full=""
-asset_overlay_food_bar_empty=""
-asset_overlay_food_bar_full=""
-
-asset_gui_background=""
-asset_gui_button=""
-asset_gui_button_hover=""
-asset_gui_search=""
-asset_gui_scrollbar=""
-asset_gui_member_row=""
-asset_gui_button_invite=""
-asset_gui_button_revoke=""
-asset_gui_button_kick=""
-asset_gui_button_pin=""
-asset_gui_button_unpin=""
-```
-
-Пояснение:
-
-| Параметр | Что делает |
-|---|---|
-| `party_enabled` | Полностью включает/отключает party-систему на сервере. |
-| `default_show_self` | Показывать ли игроку самого себя в party overlay по умолчанию. Рекомендуется `false`. |
-| `default_overlay_x` | X-координата overlay по умолчанию. |
-| `default_overlay_y` | Y-координата overlay по умолчанию. |
-| `overlay_nickname_font_scale_percent` | Размер ника в overlay. `80` = 80% от обычного размера. |
-| `invite_cooldown_seconds` | Сколько живёт pending invite. Пока invite активен, повторно пригласить того же игрока нельзя. |
-| `invite_gui_enabled` | Открывать ли popup приглашения. |
-| `default_max_members` | Стандартный лимит участников party. |
-| `hard_max_members` | Максимальный технический лимит участников. |
-| `admin_permission_level` | Уровень OP-доступа для admin GUI/команд. |
-
-### 3.2. Economy config
-
-Пример:
-
-```toml
-economy_enabled=true
-casino_enabled=true
-auto_compact_display=true
-
-death_wallet_loss_percent=25.0000
-transfer_fee_percent=10.0000
-
-casino_house_edge_percent=5.0000
-casino_min_bet_cooper=100
-casino_max_bet_cooper=1000000
-
-coin_item_cooper="minecraft:copper_coin_item"
-coin_item_iron="minecraft:iron_coin_item"
-coin_item_gold="minecraft:gold_coin_item"
-coin_item_platine="minecraft:netherite_coin_item"
-```
-
-Пояснение:
-
-| Параметр | Что делает |
-|---|---|
-| `economy_enabled` | Включает/отключает экономику. |
-| `casino_enabled` | Включает/отключает казино. |
-| `auto_compact_display` | Показывать деньги компактно: Platine / Gold / Iron / Cooper. |
-| `death_wallet_loss_percent` | Сколько процентов личного кошелька теряется при смерти. Bank не трогается. |
-| `transfer_fee_percent` | Комиссия при переводе между игроками. |
-| `casino_house_edge_percent` | Математическое преимущество казино. Например, 5% уменьшает шанс/выплату. |
-| `casino_min_bet_cooper` | Минимальная ставка в Cooper. |
-| `casino_max_bet_cooper` | Максимальная ставка в Cooper. |
-| `coin_item_*` | Item id монеты для депозитов/снятия через предметы. |
-
-### 3.3. Weight config
-
-Пример:
-
-```toml
-weight_enabled=true
-use_default_punishments=true
-
-stage_1_percent=75.00
-stage_2_percent=100.00
-stage_3_percent=150.00
-stage_4_percent=200.00
-
-stage_1_disable_jump=false
-stage_2_disable_jump=true
-stage_3_disable_jump=true
-stage_4_disable_jump=true
-stage_4_darkness=true
-```
-
-Пояснение:
-
-| Параметр | Что делает |
-|---|---|
-| `weight_enabled` | Полностью включает/отключает систему веса. |
-| `use_default_punishments` | Если `false`, система считает вес, но стандартные наказания не применяет. |
-| `stage_1_percent` | Первый этап нагрузки. По умолчанию 75%. |
-| `stage_2_percent` | Второй этап. По умолчанию 100%. |
-| `stage_3_percent` | Третий этап. По умолчанию 150%. |
-| `stage_4_percent` | Последний этап. По умолчанию 200%. |
-| `stage_*_disable_jump` | Отключать ли ванильный прыжок на этом этапе. |
-| `stage_4_darkness` | Давать ли darkness на последнем этапе. |
-
----
-
-## 4. ParCool API
-
-Эта часть плагина отвечает за управление возможностями ParCool у конкретного игрока.
-
-### 4.1. Основная идея
-
-ParCool хранит ограничения игрока через систему `Limitation`. Плагин создаёт собственный bridge limitation id и через него разрешает или запрещает движения.
-
-Проще говоря:
+Плагин создаёт свой limitation id:
 
 ```text
-Игрок
-  -> ParCool Limitation
-      -> разрешить/запретить конкретные Action
-      -> применить limitation
-      -> принудительно синхронизировать клиент
+parcool_api:mcreator_bridge
 ```
 
-Это нужно потому, что ParCool — не обычный vanilla sprint/jump. Если просто изменить speed или potion effect, ParCool-движения могут всё равно работать.
+и через него запрещает или разрешает ParCool Action-классы.
 
-### 4.2. Блоки движения
+Примерно так:
 
-Основные блоки:
+```text
+игрок
+  -> Limitation mcreator_bridge
+      -> permit(FastRun, false)
+      -> setLeastStaminaConsumption(FastRun, Integer.MAX_VALUE)
+      -> apply()
+      -> несколько повторных sync через delay
+```
+
+Повторная синхронизация нужна потому, что клиент ParCool может получить ограничения не сразу, особенно при первом входе игрока на сервер.
+
+## 4.3. Основные movement blocks
 
 ```text
 disable sprint for player
@@ -323,158 +188,232 @@ enable all parcool movement abilities
 force sync parcool permissions
 ```
 
-Что отключает каждый блок:
+## 4.4. Что отключает каждый блок
 
 | Блок | Что примерно отключает |
 |---|---|
-| `disable sprint` | FastRun / ускоренный бег ParCool |
-| `disable climb` | ClimbUp / ClimbPoles |
-| `disable jump` | ChargeJump / JumpFromBar / WallJump |
-| `disable hang` | HangDown / ClingToCliff |
-| `disable wall run` | HorizontalWallRun / VerticalWallRun / WallSlide / WallJump |
-| `disable all parcool movement abilities` | Все Action из `Actions.LIST` |
-| `enable all parcool movement abilities` | Сбрасывает limitation и снова разрешает движения |
-| `force sync parcool permissions` | Делает несколько повторных sync-запросов, чтобы клиент точно получил ограничения |
+| `disable sprint` | `FastRun` |
+| `disable climb` | `ClimbUp`, `ClimbPoles` |
+| `disable jump` | `ChargeJump`, `JumpFromBar`, `WallJump` |
+| `disable hang` | `HangDown`, `ClingToCliff` |
+| `disable wall run` | `HorizontalWallRun`, `VerticalWallRun`, `WallSlide`, `WallJump` |
+| `disable all parcool movement abilities` | все actions из `Actions.LIST` |
+| `enable all parcool movement abilities` | снимает bridge limitation и возвращает движения |
+| `force sync parcool permissions` | повторно применяет limitation и делает handshake |
 
-### 4.3. Пример: отключить все движения при перегрузе
-
-Процедура:
+## 4.5. Пример: отключить все ParCool движения при перегрузе
 
 ```text
-Global trigger: On player tick update
+Trigger: Player tick update
 
-if weight load percent of Event/Target entity >= 150
-    disable all parcool movement abilities for Event/Target entity
-    disable vanilla jump for Event/Target entity
-    force sync parcool permissions for Event/Target entity
+if get weight status of player >= 3
+    disable all parcool movement abilities of player
+    disable vanilla jump of player
+    force sync parcool permissions of player
     send actionbar "Вы перегружены!"
 else
-    enable all parcool movement abilities for Event/Target entity
-    enable vanilla jump for Event/Target entity
-    force sync parcool permissions for Event/Target entity
+    enable all parcool movement abilities of player
+    enable vanilla jump of player
+    force sync parcool permissions of player
 ```
 
-Совет: не вызывай `force sync` каждый тик без причины. Лучше делать это при смене стадии перегруза или раз в несколько тиков.
+Совет: лучше не делать `force sync` каждый тик. Используй его при смене состояния или раз в 20–40 тиков.
 
-### 4.4. Stamina blocks
+---
 
-В плагине есть блоки для чтения и изменения stamina ParCool:
+# 5. Stamina API
+
+Stamina API работает с ParCool stamina игрока.
+
+## 5.1. Что умеет stamina bridge
 
 ```text
-get parcool stamina
-get parcool max stamina
-set parcool stamina
-set parcool max stamina
+get stamina
+get max stamina
+is exhausted
+get stamina percent with rounding
+add stamina
+consume stamina
+set stamina
+set max stamina
+get stamina recovery
+set stamina recovery
+```
+
+## 5.2. Основные блоки stamina
+
+```text
+get parcool stamina of player
+get max parcool stamina of player
+is parcool stamina exhausted
+get parcool stamina percent rounded to N decimals
 add parcool stamina
-take parcool stamina
-is parcool stamina empty
-is parcool stamina full
+consume parcool stamina
+set parcool stamina
+set max parcool stamina
+get stamina recovery
+set stamina recovery
 if parcool stamina reached 0 run until full
 ```
 
-Особый блок:
+## 5.3. Важный блок: run until full
 
 ```text
 if parcool stamina reached 0 run until full
 ```
 
-Логика такая:
+Логика:
 
 ```text
-1. Если stamina не падала до 0 — вложенные блоки не выполняются.
-2. Когда stamina достигла 0 — включается режим "exhausted".
-3. Пока stamina не восстановилась до полного значения — вложенные блоки выполняются.
-4. Когда stamina стала full — режим выключается.
+1. Пока stamina не упала до 0 — вложенные блоки не выполняются.
+2. Когда stamina стала 0 — включается режим exhausted.
+3. Пока stamina не восстановилась до full — вложенные блоки выполняются.
+4. Когда stamina восстановилась — режим выключается.
 ```
 
 Пример:
 
 ```text
-On player tick update
-    if parcool stamina reached 0 run until full
-        disable all parcool movement abilities
-        send actionbar "Вы выдохлись!"
+Trigger: Player tick update
+
+if parcool stamina reached 0 run until full
+    disable all parcool movement abilities
+    send actionbar "Вы выдохлись!"
 ```
 
-### 4.5. Client wait
+---
 
-Блок client wait нужен для клиентских эффектов: камера, GUI, визуальные задержки.
+# 6. Camera API и client wait
 
-Пример:
-
-```text
-switch camera to third person
-client wait 40 ticks
-switch camera to first person
-```
-
-Важно: client wait не должен использоваться для серверной логики экономики, веса, party или урона. Для серверной логики используй обычный server wait / queueServerWork.
-
-### 4.6. Camera blocks
-
-Типовые сценарии:
+## 6.1. Camera blocks
 
 ```text
 set camera first person
 set camera third person back
 set camera third person front
-reset camera
-client wait
+set camera perspective with delay
 ```
 
-Пример кат-сцены:
+Камера меняется через network payload на клиенте.
+
+Поддерживаемые значения:
 
 ```text
-set camera third person front
-client wait 60 ticks
-send player message "Ты чувствуешь тяжесть..."
-client wait 40 ticks
-reset camera
+FIRST_PERSON
+THIRD_PERSON_BACK
+THIRD_PERSON_FRONT
 ```
 
----
+## 6.2. Client wait
 
-## 5. Weight System
-
-Система веса считает общий вес предметов игрока и сравнивает его с максимальным переносимым весом.
-
-### 5.1. Как считается вес
-
-У каждого item id есть вес одной штуки:
+Client wait нужен для визуальных задержек на стороне клиента:
 
 ```text
-minecraft:stone = 1.0
-minecraft:diamond = 0.2
-modid:big_sword = 15.0
-```
-
-Вес стака:
-
-```text
-unit_weight * count
-```
-
-Вес инвентаря:
-
-```text
-main inventory + armor + offhand
-```
-
-Процент загрузки:
-
-```text
-current_weight / max_weight * 100
+camera
+GUI
+маленькие локальные эффекты
 ```
 
 Пример:
 
 ```text
-max weight = 100
-inventory weight = 75
-load percent = 75%
+set camera third person front
+client wait 60 ticks
+set camera first person
 ```
 
-### 5.2. Основные блоки веса
+Не используй client wait для:
+
+```text
+экономики
+веса
+урона
+party состава
+серверных прав
+```
+
+Для этого нужен server-side wait / queueServerWork.
+
+---
+
+# 7. Vanilla Jump Bridge
+
+Отдельная система для отключения обычного ванильного прыжка.
+
+## 7.1. Зачем нужна
+
+ParCool jump и vanilla jump — разные вещи.
+
+Можно отключить ParCool-прыжки, но игрок всё ещё сможет делать обычный прыжок Minecraft. Поэтому добавлен отдельный bridge.
+
+## 7.2. Типовые блоки
+
+```text
+disable vanilla jump of player
+enable vanilla jump of player
+is vanilla jump disabled for player
+```
+
+## 7.3. Пример
+
+```text
+if weight status >= 2
+    disable vanilla jump
+else
+    enable vanilla jump
+```
+
+---
+
+# 8. Weight System
+
+Система веса считает массу предметов в инвентаре игрока и применяет стадии перегруза.
+
+## 8.1. Что хранится
+
+```text
+вес каждого item id
+default item weight
+default max carry weight
+max carry weight каждого игрока
+auto enabled каждого игрока
+last weight status
+client sync current weight
+client sync load percent
+```
+
+Сохраняется через `SavedData`, а также частично мигрирует/дублирует legacy persistent tags игрока.
+
+## 8.2. Как считается вес
+
+У каждого предмета есть вес одной штуки:
+
+```text
+unit weight
+```
+
+Вес стака:
+
+```text
+stack weight = unit weight * count
+```
+
+Вес инвентаря:
+
+```text
+inventory weight =
+    main inventory
+  + armor
+  + offhand
+```
+
+Загрузка:
+
+```text
+load percent = inventory weight / max carry weight * 100
+```
+
+## 8.3. Основные блоки веса
 
 ```text
 set default item weight
@@ -486,141 +425,172 @@ get unit weight of item
 get stack weight of item
 get unit weight by item id
 get stack weight by item id
-get inventory weight of player
-set max carry weight of player
-get max carry weight of player
+get inventory weight
+set max carry weight
+get max carry weight
 set default max carry weight
-get load percent of player
+get load percent
 get rounded load percent
-is player overloaded
+is overloaded
 get weight status
-set weight auto enabled
-is weight auto enabled
+set auto weight enabled
+is auto weight enabled
 set weight system enabled
 is weight system enabled
-set weight default punishments enabled
+set default punishments enabled
 set weight punishment stage
 ```
 
-### 5.3. Item ID для предметов из других модов
+## 8.4. Item id для предметов из других модов
 
-Для предметов из других модов используй блок:
+Для модовых предметов используй полный id:
 
 ```text
-set item weight by id ITEM_ID to WEIGHT
+modid:item_name
 ```
 
-Примеры item id:
+Примеры:
 
 ```text
+minecraft:stone
 minecraft:diamond
-minecraft:netherite_sword
 irons_spellbooks:arcane_essence
 alexsmobs:bear_fur
 yourmod:heavy_backpack
 ```
 
-Если namespace не указан, плагин обычно воспринимает id как `minecraft:<id>`. Лучше всегда писать полностью.
+Если namespace не указан, helper может воспринимать id как `minecraft:<id>`, но лучше всегда писать полностью.
 
-### 5.4. Пример: задать вес всем предметам при старте сервера
+## 8.5. Пример инициализации весов
 
 ```text
-Global trigger: Server started
+Trigger: Server started
 
 set default item weight to 0.1
-set item weight by id "minecraft:stone" to 1
-set item weight by id "minecraft:cobblestone" to 1
+
+set item weight by id "minecraft:stone" to 1.0
+set item weight by id "minecraft:cobblestone" to 1.0
 set item weight by id "minecraft:iron_ingot" to 0.5
 set item weight by id "minecraft:gold_ingot" to 0.8
 set item weight by id "minecraft:diamond" to 0.2
-set item weight by id "minecraft:netherite_sword" to 12
+set item weight by id "minecraft:netherite_sword" to 12.0
 ```
 
-### 5.5. Пример: максимальный вес игрока
+## 8.6. Пример максимального веса игрока
 
 ```text
-Global trigger: Player joins world
+Trigger: Player joins world
 
-set max carry weight of Event/Target entity to 100
-set weight auto enabled of Event/Target entity to true
+set max carry weight of player to 100
+set auto weight enabled of player to true
 ```
 
-Если у игрока есть прокачка:
+Если у тебя есть прокачка силы:
 
 ```text
-max = 100 + player_strength_level * 10
-set max carry weight to max
+maxWeight = 100 + strengthLevel * 10
+set max carry weight to maxWeight
 ```
 
-### 5.6. Стадии перегруза
+## 8.7. Стадии перегруза
 
-По умолчанию:
+В текущей логике weight status:
 
-| Стадия | Процент | Идея |
-|---|---:|---|
-| 0 | 0–74% | Нормально |
-| 1 | 75–99% | Тяжеловато |
-| 2 | 100–149% | Перегруз |
-| 3 | 150–199% | Сильный перегруз |
-| 4 | 200%+ | Критический перегруз + darkness |
+| Status | Условие | Смысл |
+|---:|---:|---|
+| 0 | меньше 75% | нормально |
+| 1 | от 75% | тяжело |
+| 2 | от 125% | перегруз |
+| 3 | от 175% | сильный перегруз |
+| 4 | от 200% | критический перегруз |
 
-Пример наказаний:
+Текущая реализация default punishments:
+
+| Status | Наказание |
+|---:|---|
+| 1 | Slowness II |
+| 2 | Slowness III + Mining Fatigue I + vanilla jump disabled |
+| 3 | Slowness IV + Mining Fatigue II + Weakness I + сильнее ParCool restrictions |
+| 4 | Slowness V + Mining Fatigue III + Weakness II + Darkness + почти все ParCool actions disabled |
+
+## 8.8. Отключение weight system
+
+Блоки:
 
 ```text
-if weight status = 1
-    slightly slow player
-
-if weight status = 2
-    disable vanilla jump
-    disable sprint
-
-if weight status = 3
-    disable all parcool movement abilities
-    heavy effect
-
-if weight status = 4
-    disable all parcool movement abilities
-    disable vanilla jump
-    darkness
+set weight system enabled to false
+is weight system enabled
 ```
 
-### 5.7. Как сделать свои наказания
-
-В config:
-
-```toml
-use_default_punishments=false
-```
-
-Потом процедурой:
+Если хочешь оставить расчёт веса, но отключить стандартные наказания:
 
 ```text
-On player tick update
+set weight default punishments enabled to false
+```
 
-if weight system enabled
-    if load percent >= 75 and load percent < 100
-        send actionbar "Тяжёлый рюкзак"
+Потом делай свои наказания процедурой.
 
-    if load percent >= 100 and load percent < 150
-        disable sprint
-        disable vanilla jump
+## 8.9. Свои стадии наказаний
 
-    if load percent >= 150
-        disable all parcool movement abilities
+Блок:
 
-    if load percent >= 200
-        give darkness
+```text
+set weight punishment stage STAGE percent PERCENT disable jump BOOLEAN darkness BOOLEAN
+```
+
+Пример:
+
+```text
+set weight punishment stage 1 percent 75 disable jump false darkness false
+set weight punishment stage 2 percent 100 disable jump true darkness false
+set weight punishment stage 3 percent 150 disable jump true darkness false
+set weight punishment stage 4 percent 200 disable jump true darkness true
 ```
 
 ---
 
-## 6. Party System
+# 9. Party System
 
-Party System — это система группы игроков с overlay, GUI, приглашениями, PvP-настройками и party chat.
+Party System — система групп игроков с overlay, GUI, приглашениями, PvP, party chat и admin tools.
 
-### 6.1. Команды party
+## 9.1. Что хранится в party
 
-Основные команды:
+```text
+party id
+leader uuid
+pvp enabled
+max members
+members
+pins by viewer
+overlay x/y by viewer
+showSelf by viewer
+custom overlay entries
+extra stats by player
+```
+
+## 9.2. Основные возможности
+
+```text
+создать party
+распустить party
+пригласить игрока
+отозвать invite
+принять invite
+отклонить invite
+выйти из party
+кикнуть игрока
+передать лидерство
+включить/выключить PvP
+задать лимит участников
+pin/unpin участников
+showSelf per player
+overlay x/y per player
+custom overlay value/bar entries
+party chat
+admin управление чужими party
+```
+
+## 9.3. Команды
 
 ```text
 /party create
@@ -644,7 +614,7 @@ Party System — это система группы игроков с overlay, G
 /party info
 ```
 
-Admin-команды:
+Admin:
 
 ```text
 /party admin enabled <true|false>
@@ -658,409 +628,323 @@ Admin-команды:
 /party admin disband <player>
 ```
 
-### 6.2. GUI party
+## 9.4. showSelf
 
-Плагин добавляет несколько экранов:
+`showSelf` определяет, видит ли игрок самого себя в своём overlay.
 
-| GUI | Что делает |
-|---|---|
-| Main GUI | Показывает участников party, HP, еду, кнопки Pin/Unpin и Kick. |
-| Invite GUI | Показывает всех онлайн-игроков, поиск по нику, Invite/Revoke. |
-| Settings GUI | Show self, PvP, reset overlay position. |
-| Admin GUI | Видна только игрокам с OP permission level из конфига. |
-| Invite Popup | Всплывающее окно Accept/Decline при приглашении. |
+По умолчанию:
 
-### 6.3. Party overlay
+```text
+false
+```
 
-Overlay рисуется поверх игры. По умолчанию:
+Блоки:
+
+```text
+set party show self of player to true/false
+party show self of player
+```
+
+## 9.5. Party overlay position
+
+Актуальные default координаты:
 
 ```text
 x = 8
 y = 58
 ```
 
-То есть слева, но примерно на 50 пикселей выше старого положения.
+Блоки:
 
-Overlay показывает:
+```text
+set party overlay position of player to x X y Y
+initialize party overlay layout of player show self false x 8 y 58
+```
+
+## 9.6. Invite GUI
+
+Invite GUI показывает:
+
+```text
+онлайн-игроков
+поиск по нику
+статус игрока
+Invite
+Revoke
+In party
+```
+
+Важно: Invite GUI не показывает HP/food/LVL, потому что это не party roster, а список приглашений.
+
+## 9.7. Main Party GUI
+
+Main GUI показывает союзников:
 
 ```text
 nickname
-HP bar
-golden HP / absorption поверх HP
-food bar
-рамку участника
 leader marker
+LVL stat, если передан
+HP bar
+absorption / golden HP
+food bar
+числовые значения HP/food
+Pin / Unpin
+Kick
 ```
 
-Если участников больше 4, overlay показывает только 4 закреплённых. Остальные доступны в GUI со скроллом.
+## 9.8. Admin GUI
 
-### 6.4. showSelf
-
-`showSelf` отвечает за то, видит ли игрок самого себя в своём party overlay.
-
-По умолчанию:
+Admin GUI показывает:
 
 ```text
-default_show_self=false
+список онлайн-игроков
+кто находится в party
+кто лидер
+размер party
+лимит party
 ```
 
-То есть игрок видит только союзников, а не самого себя.
-
-Изменить командой:
+Кнопки:
 
 ```text
-/party showself true
-/party showself false
+System ON
+System OFF
+Refresh
+View
+Remove
+Disband
+PvP ON
+PvP OFF
+L4
+L8
+L16
 ```
 
-Изменить блоком:
+## 9.9. Party stats
+
+Party stats — это key/value данные игрока, которые синхронизируются участникам party.
+
+Блоки:
 
 ```text
-set party show self of ENTITY to VALUE
+set party stat of player key KEY to VALUE
+clear party stat of player key KEY
 ```
 
-### 6.5. Invite cooldown
-
-Логика invite:
+Пример LVL:
 
 ```text
-1. Leader отправляет invite.
-2. Target получает popup.
-3. Пока invite pending, повторно кинуть invite тому же target нельзя.
-4. Invite пропадает, если:
-   - target accepted
-   - target declined
-   - leader revoked
-   - вышло invite_cooldown_seconds
+set party stat of player key "LVL" to text from persistent variable LVL
 ```
 
-В Invite GUI:
-
-```text
-если invite ещё не отправлен -> кнопка Invite
-если invite уже pending -> кнопка Revoke
-если игрок уже в party -> In party
-```
-
-### 6.6. Party PvP
-
-Если PvP выключен:
-
-```text
-party.pvp=false
-```
-
-то урон между участниками одной party должен отменяться через PartyApiPvpGuard.
-
-Команда:
-
-```text
-/party pvp false
-/party pvp true
-```
-
-Admin-команда:
-
-```text
-/party admin pvp <player> false
-```
-
-### 6.7. Party chat
-
-Команда:
-
-```text
-/party chat Привет всем!
-```
-
-Сообщение видят только участники party.
-
-Важный момент: команда не должна писать отправителю лишнее сообщение “Party message sent”. Иначе чат засоряется.
+После этого LVL может отображаться рядом с ником в overlay и Main Party GUI.
 
 ---
 
-## 7. Party GUI textures
+# 10. Party assets: GUI и overlay
 
-Это самый важный раздел для кастомизации.
-
-### 7.1. Куда класть текстуры
-
-Путь:
+## 10.1. Папка текстур
 
 ```text
 src/main/resources/assets/<modid>/textures/gui/party/
 ```
 
-Пример для мода `encorecraftnew`:
+Пример:
 
 ```text
 src/main/resources/assets/encorecraftnew/textures/gui/party/
 ```
 
-Файлы:
+Если PNG отсутствует, плагин использует fallback-отрисовку прямоугольниками.
+
+## 10.2. Используемые texture assets
+
+| Файл | Размер | Где используется |
+|---|---:|---|
+| `overlay_member_frame.png` | `96x19` | рамка одного участника overlay |
+| `overlay_hp_empty.png` | `88x3` | пустая HP bar |
+| `overlay_hp_full.png` | `88x3` | заполненная HP bar |
+| `overlay_absorption.png` | `88x3` | golden HP / absorption поверх HP |
+| `overlay_food_empty.png` | `88x2` | пустая food bar |
+| `overlay_food_full.png` | `88x2` | заполненная food bar |
+| `gui_member_frame.png` | `300x34` | строка союзника в Main Party GUI |
+| `gui_background.png` | `320x220` рекомендовано | зарезервировано, сейчас фон стандартный |
+| `gui_button.png` | `80x20` рекомендовано | зарезервировано под кастомные кнопки |
+| `gui_button_hover.png` | `80x20` рекомендовано | зарезервировано под hover-кнопки |
+
+## 10.3. Overlay member frame
 
 ```text
 overlay_member_frame.png
-overlay_hp_empty.png
-overlay_hp_full.png
-overlay_absorption.png
-overlay_food_empty.png
-overlay_food_full.png
+размер: 96x19
+```
 
-gui_background.png
+Разметка:
+
+```text
+x=0..95
+y=0..18
+
+рамка сверху:     y=0
+рамка снизу:      y=18
+рамка слева:      x=0
+рамка справа:     x=95
+
+nickname zone:    x=4..70,  y=2..9
+LVL zone:         x=70..92, y=2..9
+
+HP zone:          x=4..91, y=11..13
+gap:              y=14
+Food zone:        x=4..91, y=15..16
+```
+
+Схема:
+
+```text
++------------------------------------------------+
+| Nickname                              LVL 10   |
+|                                                |
+| [ HP + absorption ]                            |
+| [ Food ]                                       |
++------------------------------------------------+
+```
+
+## 10.4. HP assets
+
+```text
+overlay_hp_empty.png  88x3
+overlay_hp_full.png   88x3
+```
+
+Код обрезает `overlay_hp_full.png` по проценту HP:
+
+```text
+hpWidth = 88 * health / maxHealth
+```
+
+Если HP = 50%, будет нарисовано 44 px.
+
+## 10.5. Absorption asset
+
+```text
+overlay_absorption.png 88x3
+```
+
+Рисуется поверх HP.
+
+Лучше делать полупрозрачной золотой полосой, чтобы она не полностью перекрывала красный HP.
+
+## 10.6. Food assets
+
+```text
+overlay_food_empty.png 88x2
+overlay_food_full.png  88x2
+```
+
+Позиция:
+
+```text
+x = rowX + 4
+y = rowY + 15
+```
+
+## 10.7. Main GUI member frame
+
+```text
 gui_member_frame.png
-gui_button.png
-gui_button_hover.png
-gui_search.png
-gui_scrollbar.png
-gui_member_row.png
-button_pin.png
-button_unpin.png
-button_invite.png
-button_revoke.png
-button_kick.png
+размер: 300x34
 ```
 
-Если файла нет, плагин использует fallback — обычные прямоугольники и полоски.
-
-### 7.2. Рекомендуемые размеры PNG
-
-#### Overlay
-
-| Файл | Размер | Назначение |
-|---|---:|---|
-| `overlay_member_frame.png` | `96x19` | Рамка одного участника в overlay |
-| `overlay_hp_empty.png` | `88x3` | Пустая полоска HP |
-| `overlay_hp_full.png` | `88x3` | Заполненная полоска HP |
-| `overlay_absorption.png` | `88x3` | Золотые HP поверх обычных |
-| `overlay_food_empty.png` | `88x2` | Пустая полоска еды |
-| `overlay_food_full.png` | `88x2` | Заполненная полоска еды |
-
-#### Main GUI
-
-| Файл | Размер | Назначение |
-|---|---:|---|
-| `gui_background.png` | `320x220` | Фон party GUI |
-| `gui_member_frame.png` | `280x28` | Рамка участника в GUI |
-| `gui_button.png` | `80x20` | Обычная кнопка |
-| `gui_button_hover.png` | `80x20` | Кнопка при наведении |
-| `gui_search.png` | `180x20` | Поле поиска |
-| `gui_scrollbar.png` | `6x120` | Скроллбар |
-| `gui_member_row.png` | `280x28` | Строка игрока |
-
-#### Кнопки
-
-| Файл | Размер | Назначение |
-|---|---:|---|
-| `button_pin.png` | `44x16` | Pin |
-| `button_unpin.png` | `44x16` | Unpin |
-| `button_invite.png` | `78x20` | Invite |
-| `button_revoke.png` | `78x20` | Revoke |
-| `button_kick.png` | `48x18` | Kick |
-
-### 7.3. Как рисовать overlay_member_frame.png
-
-Рекомендуемая структура:
+Разметка:
 
 ```text
-96x19 px
-
-0..95   width
-0..18   height
-
-верхняя рамка: 1 px
-нижняя рамка: 1 px
-левая рамка: 1 px
-правая рамка: 1 px
-фон: полупрозрачный
+nickname:       x=8..180,  y=4
+HP bar:         x=8..167,  y=16..20, width=160, height=5
+Food bar:       x=8..167,  y=24..27, width=160, height=4
+HP text:        x=174..220, y=14
+Food text:      x=174..220, y=23
+Pin button:     справа, примерно 48x18
+Kick button:    справа, примерно 48x18
 ```
 
-Пример разметки:
+## 10.8. Зарезервированные assets для будущей стилизации
+
+Эти файлы можно подготовить заранее:
 
 ```text
-+------------------------------------------------+
-| Nickname                                       |  y=2
-| HP bar                                         |  y=11, height 3
-| Food bar                                       |  y=14, height 2
-+------------------------------------------------+
+gui_search.png                180x20 или 200x20
+gui_scrollbar.png             6x120
+gui_member_row.png            300x34
+button_pin.png                48x18
+button_unpin.png              48x18
+button_kick.png               48x18
+button_invite.png             78x20
+button_revoke.png             78x20
+button_accept.png             70x20
+button_decline.png            70x20
+button_admin_view.png         46x18
+button_admin_remove.png       60x18
+button_admin_disband.png      64x18
+button_admin_pvp.png          62x18
+button_admin_limit.png        38x18
 ```
 
-### 7.4. Как рисовать HP bar
-
-`overlay_hp_empty.png`:
-
-```text
-88x3
-тёмно-красная/тёмная пустая подложка
-```
-
-`overlay_hp_full.png`:
-
-```text
-88x3
-красная заполненная полоска
-```
-
-Плагин сам обрежет `overlay_hp_full.png` по проценту HP.
-
-Например:
-
-```text
-health = 10
-maxHealth = 20
-ratio = 50%
-отрисуется 44 px из 88 px
-```
-
-### 7.5. Golden HP / absorption
-
-`overlay_absorption.png` рисуется поверх HP bar.
-
-Если у игрока есть absorption:
-
-```text
-absorption > 0
-```
-
-то поверх красной полосы появится золотая.
-
-Рекомендация:
-
-```text
-88x3 px
-цвет: #FFD966 или похожий золотой
-можно сделать прозрачность 70–90%
-```
-
-### 7.6. Food bar
-
-`overlay_food_empty.png` и `overlay_food_full.png`:
-
-```text
-88x2 px
-```
-
-Food bar специально тоньше HP, чтобы overlay был компактным.
-
-Положение в overlay:
-
-```text
-foodY = y + 14
-```
-
-То есть на 1 px выше, чем в прошлой версии.
-
-### 7.7. Как сделать новые текстуры
-
-1. Создай PNG нужного размера.
-2. Назови файл точно как ожидает плагин.
-3. Положи в:
-
-```text
-assets/<modid>/textures/gui/party/
-```
-
-4. Перезапусти client или сделай resource reload.
-5. Если текстура не найдена — плагин молча использует fallback.
-
-### 7.8. Частые ошибки с текстурами
-
-| Проблема | Причина |
-|---|---|
-| Текстура не отображается | Неверный путь или namespace modid |
-| Вместо PNG рисуется прямоугольник | Плагин не нашёл файл |
-| Текстура растянута | Размер PNG отличается от ожидаемого |
-| HP bar выглядит криво | В full/empty разные размеры |
-| Кнопка не совпадает с кликом | PNG больше/меньше размера кнопки в коде |
-| Всё слишком крупное | Нужно уменьшить исходный PNG или изменить размеры в client helper |
-| GUI слишком тёмный | У фона слишком большая непрозрачность |
+Сейчас кнопки рендерятся vanilla `Button.builder(...)`. Чтобы эти PNG реально рисовались, нужно будет заменить vanilla Button на custom button render.
 
 ---
 
-## 8. Party overlay custom entries
+# 11. Party name visibility
 
-Плагин позволяет добавлять свои элементы в overlay через блоки.
+Отдельный helper `PartyApiNameVisibility` управляет никами игроков.
 
-### 8.1. Value entry
-
-Блок:
+## 11.1. Блоки
 
 ```text
-add party overlay value entry
+hide name tag of player
+show name tag of player
+hide name tags of all players
+show name tags of all players
+hide player from server tab list
+show player in server tab list
 ```
 
-Параметры:
+## 11.2. Hide name tag
+
+Скрывает ник над головой через scoreboard team:
 
 ```text
-ENTITY     игрок, для которого добавляем элемент
-ID         уникальный id элемента
-LABEL      подпись
-VALUE      значение
-X          смещение по X от overlay
-Y          смещение по Y от overlay
-WIDTH      ширина
-HEIGHT     высота
-TEXTURE    имя текстуры или пусто
+Team.Visibility.NEVER
 ```
 
-Пример:
+Helper запоминает прошлую team игрока и пытается вернуть её при `show`.
+
+## 11.3. Hide from TAB
+
+Скрытие из TAB list работает пакетами:
 
 ```text
-add party overlay value entry
-    entity = Event/Target entity
-    id = "coins"
-    label = "Coins"
-    value = "150"
-    x = 0
-    y = 90
-    width = 80
-    height = 10
-    texture = ""
+ClientboundPlayerInfoRemovePacket
+ClientboundPlayerInfoUpdatePacket
 ```
 
-### 8.2. Bar entry
-
-Блок:
-
-```text
-add party overlay bar entry
-```
-
-Пример stamina bar:
-
-```text
-add party overlay bar entry
-    entity = Event/Target entity
-    id = "stamina"
-    label = "Stamina"
-    current = get parcool stamina
-    max = get parcool max stamina
-    x = 0
-    y = 105
-    width = 88
-    height = 4
-    texture = ""
-```
-
-### 8.3. Как обновлять custom overlay
-
-Custom overlay entries не должны создаваться каждый тик бесконтрольно. Лучше:
-
-```text
-On player tick update
-    if tick % 20 == 0
-        clear custom party overlay entries
-        add value entry coins
-        add bar entry stamina
-```
+Это визуальное скрытие из списка игроков. Игрок остаётся на сервере.
 
 ---
 
-## 9. Economy System
+# 12. Economy System
 
-Экономика хранит все деньги внутри как Cooper.
+Экономика хранит все деньги в Cooper.
 
-Курс:
+## 12.1. Курсы валют
+
+```text
+1 Cooper = 1
+1 Iron = 100 Cooper
+1 Gold = 10 000 Cooper
+1 Platine = 10 000 000 Cooper
+```
+
+То есть:
 
 ```text
 100 Cooper = 1 Iron
@@ -1068,45 +952,32 @@ On player tick update
 1000 Gold = 1 Platine
 ```
 
-В Cooper это:
+## 12.2. Wallet и Bank
 
-```text
-1 Cooper = 1
-1 Iron = 100
-1 Gold = 10 000
-1 Platine = 10 000 000
-```
-
-### 9.1. Wallet и Bank
-
-У игрока два счёта:
+У игрока есть два счёта:
 
 ```text
 wallet — личные деньги
-bank   — банковский счёт
+bank — банковский счёт
 ```
 
 При смерти:
 
 ```text
-игрок теряет death_wallet_loss_percent от wallet
+теряется percentage от wallet
 bank не трогается
 ```
 
-По умолчанию:
-
-```text
-death_wallet_loss_percent = 25
-```
-
-### 9.2. Основные блоки экономики
+## 12.3. Основные economy blocks
 
 ```text
 is economy enabled
 set economy enabled
+is casino enabled
+set casino enabled
 
 coin value
-convert amount/unit to cooper
+convert amount/unit to Cooper
 format money
 
 get wallet
@@ -1125,21 +996,49 @@ transfer wallet from player to player
 calculate transfer fee
 set transfer fee percent
 
-deposit wallet to bank
-withdraw bank to wallet
+move wallet to bank
+move bank to wallet
 
-deposit coin items
-withdraw coin items
+deposit coin items to bank
+withdraw coin items from bank
 set coin item id
 get coin item id
 ```
 
-### 9.3. Пример: выдать игроку 5 Gold
+## 12.4. Economy config
+
+Файл:
+
+```text
+config/<modid>-economy-server.toml
+```
+
+Пример:
+
+```toml
+economy_enabled=true
+casino_enabled=true
+auto_compact_display=true
+
+death_wallet_loss_percent=25.0000
+transfer_fee_percent=10.0000
+
+casino_house_edge_percent=5.0000
+casino_min_bet_cooper=100
+casino_max_bet_cooper=1000000
+
+coin_item_cooper="minecraft:copper_ingot"
+coin_item_iron="minecraft:iron_ingot"
+coin_item_gold="minecraft:gold_ingot"
+coin_item_platine="minecraft:netherite_ingot"
+```
+
+## 12.5. Пример: выдать 5 Gold
 
 ```text
 amount = convert 5 GOLD to Cooper
-add wallet of Event/Target entity by amount
-send message "Вы получили 5 Gold"
+add wallet of player by amount
+send message "Получено: 5 Gold"
 ```
 
 Внутри:
@@ -1148,71 +1047,36 @@ send message "Вы получили 5 Gold"
 5 Gold = 5 * 10 000 = 50 000 Cooper
 ```
 
-### 9.4. Пример: перевод между игроками
+## 12.6. Пример: перевод с комиссией
 
 ```text
-if wallet of sender >= 1000 Cooper
-    transfer wallet sender -> target amount 1000
-else
-    send sender "Недостаточно денег"
+transfer wallet from playerA to playerB amount 1000 Cooper
 ```
 
 Если комиссия 10%:
 
 ```text
-sender потеряет 1000 Cooper
-target получит 900 Cooper
+playerA теряет 1000 Cooper
+playerB получает 900 Cooper
 fee = 100 Cooper
-```
-
-### 9.5. Депозит монетами-предметами
-
-В config:
-
-```toml
-coin_item_cooper="yourmod:cooper_coin"
-coin_item_iron="yourmod:iron_coin"
-coin_item_gold="yourmod:gold_coin"
-coin_item_platine="yourmod:platine_coin"
-```
-
-Логика:
-
-```text
-игрок кладёт coin item
-блок deposit coin items считает предметы
-предметы удаляются
-деньги добавляются в wallet/bank
-```
-
-### 9.6. Снятие денег предметами
-
-```text
-withdraw 10 Gold as item coins
-```
-
-Плагин:
-
-```text
-проверяет баланс
-отнимает деньги
-выдаёт item coin из config
 ```
 
 ---
 
-## 10. Casino System
+# 13. Casino System
 
-Казино строится поверх экономики. Оно использует серверный random и настройки:
+Casino System работает поверх Economy System.
+
+## 13.1. Casino config
 
 ```toml
 casino_enabled=true
-casino_house_edge_percent=5
+casino_house_edge_percent=5.0000
 casino_min_bet_cooper=100
 casino_max_bet_cooper=1000000
 ```
 
-### 10.1. Блоки random
+## 13.2. Random blocks
 
 ```text
 casino roll int min max
@@ -1222,13 +1086,11 @@ casino coin flip
 casino dice sum dice sides
 casino dice csv dice sides
 weighted random index
-weighted multiplier
 csv value at index
+weighted multiplier
 ```
 
-### 10.2. Roulette
-
-Блоки/методы:
+## 13.3. Roulette blocks
 
 ```text
 roulette number
@@ -1237,7 +1099,7 @@ roulette is win betType choice number
 roulette payout multiplier
 ```
 
-Типы ставок:
+Bet types:
 
 ```text
 STRAIGHT
@@ -1248,34 +1110,15 @@ DOZEN
 COLUMN
 ```
 
-Примеры choice:
+Пример:
 
 ```text
-COLOR: RED / BLACK / GREEN
-EVEN_ODD: EVEN / ODD
-LOW_HIGH: LOW / HIGH
-DOZEN: FIRST / SECOND / THIRD
-COLUMN: FIRST / SECOND / THIRD
-STRAIGHT: "17"
+number = roulette number
+if roulette is win "COLOR" "RED" number
+    payout = bet * roulette payout multiplier "COLOR"
 ```
 
-Пример процедуры рулетки:
-
-```text
-bet = 1000 Cooper
-if take wallet player bet
-    number = roulette number
-    if roulette is win "COLOR" "RED" number
-        payout = bet * roulette payout multiplier "COLOR"
-        add wallet player payout
-        send "Выпало RED, победа!"
-    else
-        send "Вы проиграли. Выпало " + number
-```
-
-### 10.3. Slots
-
-Блоки/методы:
+## 13.4. Slots blocks
 
 ```text
 slot result symbols
@@ -1297,25 +1140,7 @@ else
     multiplier = 0
 ```
 
-Шаблон процедуры:
-
-```text
-bet = 500 Cooper
-if take wallet player bet
-    result = slot result 6
-    multiplier = slot payout multiplier result 10 2 0
-
-    if multiplier > 0
-        payout = bet * multiplier
-        add wallet player payout
-        send "Слоты: " + result + " Победа: " + format money payout
-    else
-        send "Слоты: " + result + " Проигрыш"
-```
-
-### 10.4. Blackjack helper
-
-Блоки/методы:
+## 13.5. Blackjack helpers
 
 ```text
 card rank
@@ -1327,19 +1152,15 @@ blackjack is bust
 blackjack dealer should hit
 ```
 
-Пример логики:
+Пример hand:
 
 ```text
-playerHand = "1,10"
-dealerHand = "9,7"
-
-if blackjack hand value playerHand == 21
-    payout = bet * 2.5
+"1,10"
 ```
 
-### 10.5. Crash
+где `1` — Ace, `10` — десятая карта / face card value.
 
-Блоки/методы:
+## 13.6. Crash helpers
 
 ```text
 crash multiplier maxMultiplier
@@ -1358,31 +1179,13 @@ else
     player loses bet
 ```
 
-### 10.6. Weighted random
-
-Пример:
-
-```text
-weights = "70,25,5"
-multipliers = "0,2,10"
-multiplier = weighted multiplier weights multipliers 0
-```
-
-Это значит:
-
-```text
-70% -> x0
-25% -> x2
-5%  -> x10
-```
-
 ---
 
-## 11. Message Tools
+# 14. Message Tools
 
-Message Tools нужны, чтобы делать красивые сообщения без ручного Java.
+Message Tools позволяют делать красивые сообщения.
 
-### 11.1. Styled text
+## 14.1. Styled text
 
 Параметры:
 
@@ -1396,7 +1199,7 @@ strikethrough
 obfuscated
 ```
 
-Цвет можно писать:
+Цвет:
 
 ```text
 #FFAA00
@@ -1404,20 +1207,7 @@ FFAA00
 0xFFAA00
 ```
 
-Пример:
-
-```text
-styled text:
-    text = "Вы перегружены!"
-    color = "#AA0000"
-    bold = true
-    italic = false
-    underlined = false
-    strikethrough = false
-    obfuscated = false
-```
-
-### 11.2. Отправка сообщений
+## 14.2. Отправка сообщений
 
 ```text
 send styled message to entity
@@ -1427,47 +1217,36 @@ send styled message nearby entity radius
 prefix message
 ```
 
-Пример:
+## 14.3. Пример
 
 ```text
-message = styled "Вы нашли золото!" color "#FFD700" bold true
-send message to player
+message = styled text "Вы перегружены!" color "#AA0000" bold true
+send message to player as actionbar
 ```
 
 ---
 
-## 12. Hitbox Tools
+# 15. Hitbox Tools
 
-Hitbox Tools позволяют менять размеры хитбокса сущности.
+Hitbox Tools работают с bounding box и persistent hitbox.
 
-### 12.1. Временный и постоянный хитбокс
-
-Временный:
+## 15.1. Временный hitbox
 
 ```text
 set temporary hitbox width height
 ```
 
-Это просто меняет bounding box. Minecraft может пересчитать его позже.
+Меняет bounding box прямо сейчас, но Minecraft может пересчитать размеры позже.
 
-Постоянный:
+## 15.2. Persistent hitbox
 
 ```text
 set persistent hitbox width height
 ```
 
-Работает через:
+Сохраняется через `SavedData` и применяется через `EntityEvent.Size`.
 
-```text
-SavedData
-EntityEvent.Size
-event.setNewSize(...)
-entity.refreshDimensions()
-```
-
-То есть размер будет переустанавливаться при пересчёте размера сущности.
-
-### 12.2. Блоки хитбоксов
+## 15.3. Основные блоки
 
 ```text
 hitbox width of entity
@@ -1488,43 +1267,32 @@ persistent hitbox width
 persistent hitbox height
 ```
 
-### 12.3. Пример: большой босс
+## 15.4. Пример: большой босс
 
 ```text
-When entity spawned
-    set persistent hitbox of entity width 2.5 height 4.0
+When entity spawned:
+    set persistent hitbox width 2.5 height 4.0
     refresh hitbox dimensions
 ```
 
-### 12.4. Пример: вернуть обычный хитбокс
-
-```text
-clear persistent hitbox of entity
-refresh hitbox dimensions
-```
-
-### 12.5. Важный нюанс
-
-Игроки и некоторые сущности могут иметь клиентскую prediction-логику. Серверный хитбокс будет правильный для логики/коллизий, но визуальный F3+B может обновиться не мгновенно.
-
 ---
 
-## 13. Attribute Tools
+# 16. Attribute Tools и Entity Properties
 
-Attribute Tools дают универсальный доступ к атрибутам через registry id.
+Attribute Tools позволяют работать с registry attributes и прямыми свойствами сущности.
 
-### 13.1. Основные блоки
+## 16.1. Attribute blocks
 
 ```text
-base attribute ATTRIBUTE_ID of ENTITY
-final attribute ATTRIBUTE_ID of ENTITY
-set base attribute ATTRIBUTE_ID of ENTITY to VALUE
-add VALUE to base attribute ATTRIBUTE_ID of ENTITY
-multiply base attribute ATTRIBUTE_ID of ENTITY by VALUE
-does ENTITY have attribute ATTRIBUTE_ID
+get base attribute
+get final attribute value
+set base attribute
+add to base attribute
+multiply base attribute
+has attribute
 ```
 
-### 13.2. Примеры attribute id
+Attribute id:
 
 ```text
 minecraft:max_health
@@ -1543,122 +1311,82 @@ minecraft:safe_fall_distance
 minecraft:fall_damage_multiplier
 ```
 
-### 13.3. Пример: увеличить scale
+## 16.2. Health / absorption
 
 ```text
-set base attribute "minecraft:scale" of entity to 1.5
+get health
+get max health
+set health
+heal
+damage
+get absorption
+set absorption
 ```
 
-### 13.4. Пример: временно замедлить игрока
+## 16.3. Air / fire / freeze
 
 ```text
-oldSpeed = base attribute "minecraft:movement_speed"
-set base attribute "minecraft:movement_speed" to oldSpeed * 0.5
-wait 100 ticks
-set base attribute "minecraft:movement_speed" to oldSpeed
+get air supply
+set air supply
+get fire ticks
+set fire ticks
+get freeze ticks
+set freeze ticks
 ```
 
----
-
-## 14. Entity / Player Property Tools
-
-Эти блоки работают не с registry attributes, а с прямыми свойствами сущности.
-
-### 14.1. Health
+## 16.4. Boolean properties
 
 ```text
-health of ENTITY
-max health of ENTITY
-set health of ENTITY to VALUE
-heal ENTITY by VALUE
-damage ENTITY by VALUE
+set no gravity
+is no gravity
+set glowing
+is glowing
+set invulnerable
+is invulnerable
+set silent
+is silent
+set custom name visible
+is custom name visible
 ```
 
-### 14.2. Absorption
+## 16.5. Player food
 
 ```text
-absorption of ENTITY
-set absorption of ENTITY to VALUE
-```
-
-### 14.3. Air / fire / freeze
-
-```text
-air supply of ENTITY
-set air supply of ENTITY to VALUE
-
-fire ticks of ENTITY
-set fire ticks of ENTITY to VALUE
-
-freeze ticks of ENTITY
-set freeze ticks of ENTITY to VALUE
-```
-
-### 14.4. Boolean-свойства
-
-```text
-is ENTITY no gravity
-set no gravity of ENTITY to VALUE
-
-is ENTITY glowing
-set glowing of ENTITY to VALUE
-
-is ENTITY invulnerable
-set invulnerable of ENTITY to VALUE
-
-is ENTITY silent
-set silent of ENTITY to VALUE
-
-is custom name visible of ENTITY
-set custom name visible of ENTITY to VALUE
-```
-
-### 14.5. Player food
-
-```text
-food level of ENTITY
-set food level of ENTITY to VALUE
-
-saturation of ENTITY
-set saturation of ENTITY to VALUE
-
-set exhaustion of ENTITY to VALUE
+get food level
+set food level
+get saturation
+set saturation
+set exhaustion
 ```
 
 ---
 
-## 15. Spawn item block
+# 17. Utility blocks
 
-Плагин добавляет блок, похожий на стандартный MCreator spawn item, но с количеством и задержкой:
+В plugin-наборе также используются utility-блоки для общих задач.
+
+## 17.1. Spawn item with count/delay/removable
+
+Идея блока:
 
 ```text
-spawn item ITEM at x y z count COUNT delay DELAY removable REMOVABLE
+spawn ITEM at x y z count COUNT delay DELAY removable BOOLEAN
 ```
 
-Параметры:
-
-| Параметр | Значение |
-|---|---|
-| `ITEM` | ItemStack / предмет |
-| `x y z` | координаты |
-| `COUNT` | количество предметов |
-| `DELAY` | задержка перед появлением |
-| `REMOVABLE` | можно ли удалить/убрать позже |
-
-Пример:
+Зачем нужен:
 
 ```text
-spawn minecraft:gold_ingot at x y z count 5 delay 20 removable true
+стандартный MCreator spawn item часто неудобен для точного количества
+можно делать delayed loot
+можно делать временные/удаляемые предметы
 ```
 
----
+## 17.2. Entity inside cube
 
-## 16. Entity in cube block
-
-Блок:
+Идея блока:
 
 ```text
-if entity is inside cube x1 y1 z1 x2 y2 z2 do
+if ENTITY is inside cube x1 y1 z1 x2 y2 z2 do
 ```
 
 Логика:
@@ -1670,7 +1398,7 @@ maxX = max(x1, x2)
 entity position внутри диапазона
 ```
 
-Пример зоны:
+Пример:
 
 ```text
 if player inside cube 10 60 10 30 80 30
@@ -1679,172 +1407,116 @@ if player inside cube 10 60 10 30 80 30
 
 ---
 
-## 17. Триггеры
+# 18. Примеры процедур
 
-Плагин добавляет/использует несколько типов событий.
-
-### 17.1. ParCool triggers
-
-Примеры:
-
-```text
-when ParCool permission force synced
-when ParCool movement ability changed
-when stamina reached 0
-when stamina recovered to full
-```
-
-### 17.2. Weight triggers
-
-Примеры:
-
-```text
-when weight status changed
-when overload started
-when overload ended
-when critical overload started
-```
-
-### 17.3. Party triggers
-
-Полезные события:
-
-```text
-party created
-player invited
-invite accepted
-invite declined
-invite revoked
-party member joined
-party member left
-party member kicked
-party PvP changed
-party system enabled/disabled
-overlay layout initialized
-```
-
-### 17.4. Economy triggers
-
-Полезные события:
-
-```text
-wallet changed
-bank changed
-money transferred
-player lost money on death
-casino bet placed
-casino payout
-casino loss
-```
-
-Если каких-то событий ещё нет отдельными procedure triggers, их можно имитировать через обычные MCreator triggers + проверки состояния, например `Player tick update`.
-
----
-
-## 18. Рекомендуемые procedure-шаблоны
-
-### 18.1. Инициализация игрока
+## 18.1. Инициализация игрока
 
 ```text
 Trigger: Player joins world
 
-set max carry weight player to 100
-set weight auto enabled player true
-set party show self player false
-set party overlay position player x 8 y 58
+set max carry weight of player to 100
+set auto weight enabled of player to true
+initialize party overlay layout of player show self false x 8 y 58
+set party stat of player key "LVL" to text from persistent LVL
 ```
 
-### 18.2. Инициализация весов предметов
+## 18.2. Инициализация веса предметов
 
 ```text
 Trigger: Server started
 
-set default item weight 0.1
-set item weight by id "minecraft:stone" 1
-set item weight by id "minecraft:iron_ingot" 0.5
-set item weight by id "minecraft:gold_ingot" 0.8
-set item weight by id "minecraft:netherite_sword" 12
+set default item weight to 0.1
+set item weight by id "minecraft:stone" to 1
+set item weight by id "minecraft:iron_ingot" to 0.5
+set item weight by id "minecraft:gold_ingot" to 0.8
+set item weight by id "minecraft:diamond" to 0.2
+set item weight by id "minecraft:netherite_sword" to 12
 ```
 
-### 18.3. Открыть party invite GUI предметом
+## 18.3. Открыть party invite GUI предметом
 
 ```text
-Trigger: Right click with item
+Trigger: Right clicked with item
 
 if item = yourmod:party_phone
     open party invite GUI for player
 ```
 
-### 18.4. Добавить деньги за квест
+## 18.4. Выдать деньги за квест
 
 ```text
 Trigger: Quest completed
 
 amount = convert 3 GOLD to Cooper
-add wallet player amount
+add wallet of player amount
 send styled message "Получено: 3 Gold" color "#FFD700"
 ```
 
-### 18.5. Слот-машина
+## 18.5. Простая слот-машина
 
 ```text
-Trigger: Right click slot machine block
+bet = 500 Cooper
 
-bet = 100 Cooper
-
-if take wallet player bet
+if take casino bet player bet
     result = slot result 6
     multiplier = slot payout multiplier result 10 2 0
 
     if multiplier > 0
-        payout = bet * multiplier
-        add wallet player payout
-        send "Победа! " + result
+        payout = give casino payout player bet multiplier
+        send "Слоты: " + result + " Победа: " + format money payout
     else
-        send "Проигрыш. " + result
+        send "Слоты: " + result + " Проигрыш"
 else
-    send "Недостаточно денег"
+    send "Недостаточно денег или ставка запрещена"
 ```
 
-### 18.6. Party overlay stamina
+## 18.6. LVL в party overlay
+
+### Вариант A: отдельный overlay value
 
 ```text
 Trigger: Player tick update, every 20 ticks
 
-clear custom party overlay entries player
-
-add party overlay bar entry:
-    id = "stamina"
-    label = "Stamina"
-    current = parcool stamina
-    max = parcool max stamina
+add party overlay value entry for player
+    id = "lvl"
+    label = "LVL"
+    value = text from persistent variable LVL
     x = 0
-    y = 105
-    width = 88
-    height = 4
+    y = 92
+    width = 60
+    height = 10
     texture = ""
+```
+
+### Вариант B: LVL у каждого участника party
+
+```text
+Trigger: Player tick update, every 20 ticks
+
+set party stat of player key "LVL" to text from persistent variable LVL
 ```
 
 ---
 
-## 19. Лучшие практики
+# 19. Лучшие практики
 
-### 19.1. Server side
-
-Делай на сервере:
+## 19.1. Что делать server-side
 
 ```text
 деньги
+банк
+casino ставки
 вес
 party состав
 party PvP
 урон
-hitbox logic
+hitbox
 attributes
 ParCool limitations
+name visibility
 ```
 
-На клиенте оставляй:
+## 19.2. Что делать client-side
 
 ```text
 GUI
@@ -1854,57 +1526,37 @@ client wait
 визуальные эффекты
 ```
 
-### 19.2. Не делай тяжёлую логику каждый тик
+## 19.3. Не делай тяжёлое каждый тик
 
 Плохо:
 
 ```text
-каждый тик пересчитывать всё, писать конфиг, синкать клиента
+каждый тик пересчитывать всё
+каждый тик сохранять config
+каждый тик force sync
 ```
 
 Лучше:
 
 ```text
-каждые 10–20 тиков
-или при изменении состояния
+раз в 10–20 тиков
+или только при смене состояния
 ```
-
-### 19.3. Не сохраняй layout каждый кадр
-
-Overlay layout лучше задавать:
-
-```text
-при входе игрока
-при смене настройки
-при открытии GUI настроек
-при специальном trigger init layout
-```
-
-### 19.4. Используй registry id
-
-Для модовых предметов и атрибутов всегда пиши полный id:
-
-```text
-modid:item_name
-minecraft:movement_speed
-```
-
-Не полагайся на короткое имя.
 
 ---
 
-## 20. Диагностика проблем
+# 20. Диагностика
 
-### 20.1. Блок появился, но не генерирует код
+## 20.1. Блок есть, но не генерирует код
 
 Проверь:
 
 ```text
-src/main/resources/procedures/block.json
-src/main/resources/neoforge-1.21.1/procedures/block.java.ftl
+src/main/resources/procedures/<block>.json
+src/main/resources/neoforge-1.21.1/procedures/<block>.java.ftl
 ```
 
-В JSON:
+В JSON должны быть:
 
 ```json
 "mcreator": {
@@ -1913,49 +1565,49 @@ src/main/resources/neoforge-1.21.1/procedures/block.java.ftl
 }
 ```
 
-### 20.2. Helper не создаётся
+## 20.2. Helper не появился в generated Java
 
-Проверь `generator.yaml`:
+Проверь `generator.yaml`.
+
+Пример:
 
 ```yaml
-- template: helper.java.ftl
-  name: "@SRCROOT/@BASEPACKAGEPATH/package/Helper.java"
+- template: party_api_name_visibility.java.ftl
+  name: "@SRCROOT/@BASEPACKAGEPATH/party/PartyApiNameVisibility.java"
 ```
 
-Потом удали старый generated Java и сделай `Regenerate code`.
-
-### 20.3. GUI PNG не отображается
+## 20.3. Party assets не отображаются
 
 Проверь путь:
 
 ```text
-assets/<modid>/textures/gui/party/file.png
+assets/<modid>/textures/gui/party/<file>.png
 ```
 
-Проверь размер PNG. Если размер другой, Minecraft растянет текстуру.
+Проверь размер PNG.
 
-### 20.4. Party PvP не работает
+## 20.4. Party PvP не блокирует урон
 
 Проверь:
 
 ```text
-PartyApiPvpGuard.java создан
-generator.yaml содержит party_api_pvp_guard.java.ftl
-/party pvp false
-игроки реально в одной party
+pvp_protection_enabled=true
+игроки в одной party
+party pvp false
+PartyApiPvpGuard.java сгенерирован
 ```
 
-### 20.5. Weight max сбрасывается
+## 20.5. Weight max сбрасывается
 
 Проверь:
 
 ```text
-ParCoolApiWeightSystem SavedData
 set max carry weight вызывается на ServerPlayer
-не вызывается ли где-то set default max weight обратно на 64
+SavedData не удаляется вместе с миром
+нет другой процедуры, которая ставит default 64
 ```
 
-### 20.6. ParCool движения не отключаются сразу
+## 20.6. ParCool движения не отключаются сразу
 
 Используй:
 
@@ -1964,37 +1616,42 @@ disable all parcool movement abilities
 force sync parcool permissions
 ```
 
-Иногда клиент ParCool получает sync не мгновенно, поэтому bridge делает несколько повторных sync-запросов.
+и не забывай, что на первом входе клиенту иногда нужен небольшой burst sync.
 
 ---
 
-## 21. Мини-чеклист перед релизом
+# 21. Чеклист перед релизом
 
 ```text
-[ ] runServer запускается без compile errors
-[ ] runClient запускается без payload mismatch
+[ ] runServer compile
+[ ] runClient compile
+[ ] ParCool 1.21.1-3.4.3.3-NF установлен
 [ ] /party create работает
-[ ] /party invitegui открывает GUI
+[ ] /party invitegui открывается
 [ ] invite / accept / decline / revoke работают
-[ ] showSelf false не показывает самого игрока
-[ ] overlay x/y работает
-[ ] PNG fallback работает при отсутствии текстур
-[ ] PNG кастомизация работает при наличии текстур
+[ ] Main Party GUI показывает HP/food барами
+[ ] Invite GUI не показывает HP/food
+[ ] Admin GUI показывает party leader / size / members
 [ ] /party pvp false блокирует урон союзникам
+[ ] hide name tag скрывает ник над игроком
+[ ] hide from tab убирает игрока из TAB list
 [ ] weight max сохраняется после перезахода
-[ ] weight max сохраняется после рестарта сервера
 [ ] economy wallet/bank сохраняются
 [ ] death wallet loss работает
-[ ] casino min/max bet работает
+[ ] casino bet limits работают
 [ ] hitbox persistent переживает refreshDimensions
-[ ] attributes compile на текущих mappings
+[ ] attribute blocks компилируются на текущих mappings
+[ ] GUI assets лежат по правильному пути и правильного размера
 ```
 
 ---
 
-## 22. Короткая карта файлов
+# 22. Карта helper-файлов
 
 ```text
+events/
+  ParCoolApiBridgeEvents.java
+
 parcool/
   ParCoolApiRuntime.java
   ParCoolApiMovementBridge.java
@@ -2006,12 +1663,22 @@ weight/
   ParCoolApiWeightSystem.java
   ParCoolApiWeightConfig.java
 
+network/
+  ParCoolApiCameraNetwork.java
+  ParCoolApiWeightNetwork.java
+  PartyApiNetwork.java
+
+client/
+  ParCoolApiClientScheduler.java
+  PartyApiClient.java
+
 party/
   PartyApiSystem.java
   PartyApiCommands.java
   PartyApiServerConfig.java
   PartyApiPvpGuard.java
   PartyApiChatGuard.java
+  PartyApiNameVisibility.java
 
 economy/
   EconomyApiServerConfig.java
@@ -2030,37 +1697,4 @@ hitbox/
 attributes/
   AttributeApiBridge.java
   AttributeApiModBus.java
-
-network/
-  ParCoolApiCameraNetwork.java
-  ParCoolApiWeightNetwork.java
-  PartyApiNetwork.java
-
-client/
-  ParCoolApiClientScheduler.java
-  PartyApiClient.java
 ```
-
----
-
-## 23. Главная идея архитектуры
-
-Плагин лучше воспринимать как “набор мостов”:
-
-```text
-MCreator blocks
-    -> .java.ftl generation
-        -> helper Java class
-            -> Minecraft / NeoForge / ParCool API
-```
-
-То есть блоки не должны содержать тяжёлую логику напрямую. Они должны вызывать helper:
-
-```java
-PartyApiSystem.setShowSelf(player, false);
-EconomyApiSystem.addWallet(player, amount);
-ParCoolApiWeightSystem.setItemWeightById("minecraft:stone", 1.0);
-HitboxApiBridge.setPersistentHitbox(entity, 2.0, 3.0);
-```
-
-Так проще чинить баги: меняется helper, а все блоки продолжают работать.
